@@ -1,0 +1,440 @@
+/**
+ * Styles pour le système de stickers
+ * Animation "salle de volleyball" avec flip 3D
+ */
+
+/* ========== MODAL DE RÉVÉLATION ========== */
+.sticker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sticker-modal.active {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.sticker-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(5px);
+}
+
+/* ========== FOND SALLE DE VOLLEYBALL ========== */
+.volleyball-court-bg {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+}
+
+.court-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.3;
+}
+
+.spotlight-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+.spotlight-effect.active {
+    opacity: 1;
+}
+
+/* ========== CARTE STICKER 3D ========== */
+.sticker-card-container {
+    perspective: 1000px;
+    margin-bottom: 40px;
+}
+
+.sticker-card {
+    width: 360px;
+    height: 520px;
+    position: relative;
+    transition: transform 0.3s ease;
+}
+
+.sticker-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform-style: preserve-3d;
+}
+
+.sticker-card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+/* Face avant (point d'interrogation) */
+.card-front {
+    background: linear-gradient(135deg, #2c2c44 0%, #1a1a2e 100%);
+    border: 3px solid rgba(255,255,255,0.1);
+}
+
+.card-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    opacity: 0;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.question-mark {
+    font-size: 120px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.3);
+    text-shadow: 0 0 30px rgba(255,255,255,0.5);
+}
+
+/* Face arrière (sticker révélé) */
+.card-back {
+    background: linear-gradient(135deg, #2c2c44 0%, #1a1a2e 100%);
+    transform: rotateY(180deg);
+    border: 3px solid;
+    gap: 15px;
+}
+
+/* Couleurs selon rareté */
+.sticker-card[data-rarity="common"] .card-back {
+    border-color: #4CAF50;
+    background: linear-gradient(135deg, #2d4a2f 0%, #1a2a1e 100%);
+}
+
+.sticker-card[data-rarity="common"] .card-glow {
+    box-shadow: 0 0 40px rgba(76, 175, 80, 0.6);
+}
+
+.sticker-card[data-rarity="rare"] .card-back {
+    border-color: #2196F3;
+    background: linear-gradient(135deg, #2d3e4a 0%, #1a2530 100%);
+}
+
+.sticker-card[data-rarity="rare"] .card-glow {
+    box-shadow: 0 0 50px rgba(33, 150, 243, 0.8);
+}
+
+.sticker-card[data-rarity="legendary"] .card-back {
+    border-color: #FFD700;
+    background: linear-gradient(135deg, #4a3e2d 0%, #30251a 100%);
+}
+
+.sticker-card[data-rarity="legendary"] .card-glow {
+    box-shadow: 0 0 60px rgba(255, 215, 0, 1);
+}
+
+/* Image du sticker */
+.sticker-image-container {
+    width: 220px;
+    height: 220px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.05);
+    flex-shrink: 0;
+}
+
+.sticker-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Textes */
+.sticker-name {
+    font-size: 26px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin: 8px 0 0 0;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    line-height: 1.2;
+}
+
+.sticker-description {
+    font-size: 15px;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    margin: 8px 0 0 0;
+    max-width: 280px;
+    line-height: 1.4;
+}
+
+/* Badge rareté */
+.rarity-badge {
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+.sticker-card[data-rarity="common"] .rarity-badge {
+    background: #4CAF50;
+    color: white;
+}
+
+.sticker-card[data-rarity="rare"] .rarity-badge {
+    background: #2196F3;
+    color: white;
+}
+
+.sticker-card[data-rarity="legendary"] .rarity-badge {
+    background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+/* Bouton continuer */
+.sticker-close-btn {
+    position: relative;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.sticker-close-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+    transform: scale(1.05);
+}
+
+/* ========== CONFETTI ========== */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ========== WIDGET COLLECTION DASHBOARD ========== */
+.sticker-widget {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.sticker-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.sticker-widget-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.sticker-count {
+    font-size: 12px;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.sticker-grid-mini {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.mini-sticker {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.mini-sticker:hover {
+    transform: scale(1.05);
+}
+
+.mini-sticker img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mini-sticker-locked {
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #9ca3af;
+}
+
+.view-collection-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.view-collection-btn:hover {
+    background: #e5e7eb;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .sticker-card {
+        width: 280px;
+        height: 400px;
+    }
+
+    .sticker-image-container {
+        width: 160px;
+        height: 160px;
+    }
+
+    .sticker-name {
+        font-size: 22px;
+    }
+
+    .sticker-description {
+        font-size: 14px;
+    }
+
+    .spotlight-effect {
+        width: 400px;
+        height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sticker-card {
+        width: 240px;
+        height: 350px;
+    }
+
+    .sticker-image-container {
+        width: 140px;
+        height: 140px;
+    }
+
+    .sticker-name {
+        font-size: 20px;
+    }
+
+    .sticker-description {
+        font-size: 13px;
+    }
+
+    .card-front,
+    .card-back {
+        padding: 20px;
+    }
+}

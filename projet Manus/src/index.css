@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color-scheme: dark;
+  --color-wonder-woman: #f59e0b;
+  --color-bad-girl: #8b5cf6;
+  --color-recovery: #ec4899;
+}
+
+@theme {
+  --color-wonder-woman: #f59e0b;
+  --color-bad-girl: #8b5cf6;
+  --color-recovery: #ec4899;
+}
+
+body {
+  background-color: #141414; /* Netflix Black */
+  color: #e5e5e5; /* Netflix White/Grey */
+  overflow-x: hidden;
+}
+
+/* Scrollbar personnalisée sombre */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #141414; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333; 
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+/* Classes utilitaires pour le thème Netflix */
+@layer components {
+  .netflix-card {
+    @apply bg-[#181818] border border-[#282828] rounded-md shadow-lg transition-transform duration-200 hover:scale-[1.01];
+  }
+  
+  .netflix-btn-primary {
+    @apply bg-[#E50914] text-white font-bold py-2 px-4 rounded hover:bg-[#b20710] transition-colors;
+  }
+
+  .netflix-btn-secondary {
+    @apply bg-[#2A2A2A] text-white font-medium py-2 px-4 rounded hover:bg-[#3A3A3A] transition-colors border border-[#404040];
+  }
+
+  .netflix-input {
+    @apply bg-[#333] text-white border-none rounded px-3 py-2 focus:ring-2 focus:ring-[#E50914] focus:outline-none placeholder-gray-400;
+  }
+}
+
+/* Styles d'impression */
+@media print {
+  @page {
+    size: portrait; /* Portrait par défaut pour une liste chronologique */
+    margin: 10mm;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Cacher tout sauf la modale lors de l'impression */
+  body > *:not(.fixed) {
+    display: none !important;
+  }
+
+  /* Forcer l'affichage de la modale en mode impression */
+  .fixed {
+    position: absolute !important;
+    inset: 0 !important;
+    background: white !important;
+    z-index: 9999 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Supprimer les ombres et bordures inutiles */
+  .shadow-2xl, .shadow-lg, .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  /* Sauts de page si nécessaire */
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Masquer les éléments d'interface inutiles à l'impression */
+  button, .print\:hidden {
+    display: none !important;
+  }
+
+  /* Forcer les couleurs de fond pour la lisibilité */
+  .bg-\[\#181818\], .bg-\[\#222\], .bg-\[\#111\], .bg-\[\#0a0a0a\], .bg-\[\#1a1a1a\] {
+    background-color: white !important;
+    border: 1px solid #ccc !important;
+  }
+
+  /* Style spécifique pour les séquences imprimées */
+  .border-l-4 {
+    border-left-width: 4px !important;
+    border-color: #000 !important; /* Bordure noire pour contraste */
+  }
+
+  textarea {
+    border: none !important;
+    resize: none !important;
+    height: auto !important;
+    min-height: 40px !important;
+  }
+}

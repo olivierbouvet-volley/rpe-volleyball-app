@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Corriger Date Cycle Charlotte</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button { margin: 10px 0; padding: 10px; font-size: 16px; }
+        button { background: #2180ac; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #1a6a8a; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Corriger Date de Cycle - Charlotte</h1>
+    
+    <div>
+        <p><strong>Date actuelle dans Firestore :</strong> <span id="currentDate">Chargement...</span></p>
+        <p><strong>Jour de cycle actuel :</strong> <span id="currentDay">Chargement...</span></p>
+    </div>
+    
+    <hr>
+    
+    <h3>📅 Nouvelle date de début de cycle</h3>
+    <p>Entrez la date du <strong>premier jour des règles</strong> :</p>
+    <input type="date" id="newDate" value="2026-01-12">
+    
+    <br>
+    <button onclick="updateCycleDate()">✅ Mettre à jour</button>
+    
+    <div id="result"></div>
+
+    <script type="module">
+        // Configuration Firebase de production
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA4h5uwMKz7rJ1GtAQCfGxuygcuXuSTLU",
+            authDomain: "rpe-volleyball-sable.firebaseapp.com",
+            projectId: "rpe-volleyball-sable",
+            storageBucket: "rpe-volleyball-sable.firebasestorage.app",
+            messagingSenderId: "691799022795",
+            appId: "1:691799022795:web:f1aa3a9a8e8e2f50b36a40"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const playerId = 'Charlotte';
+
+        // Charger la date actuelle
+        async function loadCurrentDate() {
+            try {
+                const cycleDoc = await db.collection('menstrualCycle').doc(playerId).get();
+                if (cycleDoc.exists) {
+                    const data = cycleDoc.data();
+                    document.getElementById('currentDate').textContent = data.cycleStartDate || 'Non défini';
+                    
+                    // Calculer le jour actuel
+                    if (data.cycleStartDate) {
+                        const startDate = new Date(data.cycleStartDate);
+                        const today = new Date();
+                        const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                        const dayOfCycle = diffDays + 1;
+                        document.getElementById('currentDay').textContent = `J${dayOfCycle}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Mettre à jour la date
+        window.updateCycleDate = async function() {
+            const newDate = document.getElementById('newDate').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!newDate) {
+                resultDiv.className = 'error';
+                resultDiv.textContent = '❌ Veuillez sélectionner une date';
+                return;
+            }
+            
+            try {
+                await db.collection('menstrualCycle').doc(playerId).update({
+                    cycleStartDate: newDate,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Calculer le nouveau jour
+                const startDate = new Date(newDate);
+                const today = new Date();
+                const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                const dayOfCycle = diffDays + 1;
+                
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    ✅ <strong>Date mise à jour avec succès !</strong><br>
+                    Nouveau début de cycle : ${newDate}<br>
+                    Charlotte est maintenant à : <strong>J${dayOfCycle}</strong><br><br>
+                    <em>Rechargez la page de l'application pour voir les changements.</em>
+                `;
+                
+                // Recharger l'affichage
+                setTimeout(() => loadCurrentDate(), 1000);
+                
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.textContent = '❌ Erreur : ' + error.message;
+            }
+        };
+
+        // Charger au démarrage
+        loadCurrentDate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+rules_version = '2';
+
+// Règles de sécurité pour Firebase Storage
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Règles pour les photos de profil des joueuses
+    match /profiles/{userId}/{fileName} {
+      // Lecture publique
+      allow read: if true;
+      // Écriture uniquement par le propriétaire
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Règles pour les médias du planning (photos/vidéos)
+    match /schedules/{userId}/{dateKey}/{fileName} {
+      // Lecture publique (pour partage)
+      allow read: if true;
+      // Écriture : permettre si userId='coach' OU si authentifié avec le bon uid
+      allow write: if userId == 'coach' || (request.auth != null && request.auth.uid == userId);
+    }
+    
+    // Règles pour les miniatures
+    match /schedules/{userId}/{dateKey}/thumbnails/{fileName} {
+      allow read: if true;
+      allow write: if userId == 'coach' || (request.auth != null && request.auth.uid == userId);
+    }
+    
+    // Règles pour les stickers/badges (assets statiques)
+    match /stickers/{fileName} {
+      allow read: if true;
+      // Écriture uniquement par admin (à définir)
+      allow write: if false;
+    }
+    
+    // Règles pour les vidéos de matchs
+    match /matches/{matchId}/{fileName} {
+      allow read: if true;
+      // Écriture par utilisateurs authentifiés
+      allow write: if request.auth != null;
+    }
+    
+    // Règle par défaut : lecture publique, écriture authentifiée
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+

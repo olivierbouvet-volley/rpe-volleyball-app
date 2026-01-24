@@ -1,0 +1,123 @@
+<!-- AJOUT APRÈS LA LIGNE 809 (avant </body>) -->
+
+    <!-- Modal Détails Joueuse -->
+    <div id="playerDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="playerDetailName">Détails Joueuse</h2>
+                <button class="btn btn-secondary" onclick="closePlayerDetailModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Photo et actions -->
+                <div style="display: flex; gap: var(--space-24); margin-bottom: var(--space-24);">
+                    <div style="position: relative;">
+                        <img id="playerDetailPhoto" src="/img/default-avatar.png" 
+                             style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-primary);" 
+                             alt="Photo joueuse">
+                        <button class="btn btn-primary" 
+                                style="position: absolute; bottom: 0; right: 0; border-radius: 50%; width: 36px; height: 36px; padding: 0; font-size: 18px;"
+                                onclick="document.getElementById('changePhotoInput').click()">
+                            📷
+                        </button>
+                        <input type="file" id="changePhotoInput" accept="image/*" style="display: none;" onchange="changePlayerPhoto(event)">
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 id="playerDetailFullName" style="margin: 0 0 var(--space-8) 0;"></h3>
+                        <p style="color: var(--color-text-secondary); margin: 0;">
+                            <strong>ID:</strong> <span id="playerDetailId"></span><br>
+                            <strong>Date de naissance:</strong> <span id="playerDetailBirthday"></span>
+                        </p>
+                        <div style="margin-top: var(--space-16);">
+                            <div class="status-gauge">
+                                <div id="playerDetailGauge" class="status-gauge-fill" style="width: 0%"></div>
+                            </div>
+                            <p style="margin-top: var(--space-8); font-size: 14px; color: var(--color-text-secondary);">
+                                Score actuel: <strong id="playerDetailScore">0/10</strong> - 
+                                <span id="playerDetailStatus">--</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onglets -->
+                <div class="nav-tabs" style="margin-bottom: var(--space-24);">
+                    <button class="nav-tab active" data-tab="overview" onclick="switchPlayerTab('overview')">Vue d'ensemble</button>
+                    <button class="nav-tab" data-tab="atl-ctl" onclick="switchPlayerTab('atl-ctl')">ATL / CTL</button>
+                    <button class="nav-tab" data-tab="alerts" onclick="switchPlayerTab('alerts')">Alertes</button>
+                    <button class="nav-tab" data-tab="history" onclick="switchPlayerTab('history')">Historique</button>
+                </div>
+
+                <!-- Contenu des onglets -->
+                <div id="overviewTab" class="tab-content active">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-16);">
+                        <div class="metric-card">
+                            <div class="metric-value" id="detailSleep">--</div>
+                            <div class="metric-label">Sommeil moyen</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="detailSoreness">--</div>
+                            <div class="metric-label">Courbatures</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="detailStress">--</div>
+                            <div class="metric-label">Stress</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="detailMood">--</div>
+                            <div class="metric-label">Humeur</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-24);">
+                        <canvas id="weeklyChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div id="atl-ctlTab" class="tab-content">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); margin-bottom: var(--space-24);">
+                        <div class="metric-card">
+                            <div class="metric-value" id="atlValue">--</div>
+                            <div class="metric-label">ATL (Fatigue Aiguë)</div>
+                            <p style="font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-8);">
+                                Moyenne sur 7 jours
+                            </p>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="ctlValue">--</div>
+                            <div class="metric-label">CTL (Forme Chronique)</div>
+                            <p style="font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-8);">
+                                Moyenne sur 28 jours
+                            </p>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="tsbValue">--</div>
+                        <div class="metric-label">TSB (Balance d'Entraînement)</div>
+                        <p style="font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-8);">
+                            TSB = CTL - ATL
+                        </p>
+                        <div id="tsbInterpretation" style="margin-top: var(--space-16);"></div>
+                    </div>
+                    <div style="margin-top: var(--space-24);">
+                        <canvas id="atlCtlChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+
+                <div id="alertsTab" class="tab-content">
+                    <div id="alertsList">
+                        <!-- Les alertes seront générées ici -->
+                    </div>
+                </div>
+
+                <div id="historyTab" class="tab-content">
+                    <div id="historyList">
+                        <!-- L'historique sera généré ici -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="deletePlayer()">🗑️ Supprimer la joueuse</button>
+                <button class="btn btn-secondary" onclick="closePlayerDetailModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+

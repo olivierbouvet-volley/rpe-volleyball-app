@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Recherche Check-in Règles Charlotte</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #2180ac; color: white; }
+        .yes { background: #fecaca; font-weight: bold; }
+        .no { background: #e5e7eb; }
+        button { margin: 5px; padding: 8px 16px; cursor: pointer; background: #10b981; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Recherche Check-ins Règles - Charlotte</h1>
+    <div id="results">Chargement...</div>
+
+    <script type="module">
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA4h5uwMKz7rJ1GtAQCfGxuygcuXuSTLU",
+            authDomain: "rpe-volleyball-sable.firebaseapp.com",
+            projectId: "rpe-volleyball-sable",
+            storageBucket: "rpe-volleyball-sable.firebasestorage.app",
+            messagingSenderId: "691799022795",
+            appId: "1:691799022795:web:f1aa3a9a8e8e2f50b36a40"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const playerId = 'Charlotte';
+
+        async function findPeriodCheckins() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Chercher TOUS les check-ins de Charlotte en janvier
+                const checkinsSnapshot = await db.collection('checkins')
+                    .where('playerId', '==', playerId)
+                    .where('date', '>=', '2026-01-01')
+                    .orderBy('date', 'desc')
+                    .get();
+                
+                let html = '<h2>📅 Tous les check-ins de janvier 2026</h2>';
+                html += '<table>';
+                html += '<tr><th>Date</th><th>Règles (hasPeriod)</th><th>Jour Cycle</th><th>Phase</th><th>Symptômes</th><th>Action</th></tr>';
+                
+                const checkinsWithPeriod = [];
+                
+                checkinsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const hasPeriod = data.hasPeriod;
+                    const rowClass = hasPeriod === true ? 'yes' : (hasPeriod === false ? 'no' : '');
+                    const hasPeriodText = hasPeriod === true ? '🔴 OUI' : (hasPeriod === false ? '⚪ Non' : '❓ Non renseigné');
+                    
+                    if (hasPeriod === true) {
+                        checkinsWithPeriod.push({ id: doc.id, date: data.date, data: data });
+                    }
+                    
+                    const symptoms = data.symptoms || {};
+                    const symptomsList = Object.entries(symptoms)
+                        .filter(([k, v]) => v > 0)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ') || '-';
+                    
+                    html += `<tr class="${rowClass}">
+                        <td><strong>${data.date}</strong></td>
+                        <td>${hasPeriodText}</td>
+                        <td>${data.dayOfCycle || data.cycleDay || '-'}</td>
+                        <td>${data.cyclePhase || '-'}</td>
+                        <td style="font-size: 11px;">${symptomsList}</td>
+                        <td>${hasPeriod === true ? `<button onclick="updateCycleDate('${data.date}')">✅ Utiliser comme J1</button>` : ''}</td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                
+                // Résumé
+                if (checkinsWithPeriod.length > 0) {
+                    html += '<div style="margin-top: 20px; padding: 15px; background: #fecaca; border-radius: 8px;">';
+                    html += '<h3>🔴 Check-ins avec règles trouvés :</h3>';
+                    checkinsWithPeriod.forEach(item => {
+                        html += `<p><strong>${item.date}</strong> - Cliquez sur "Utiliser comme J1" pour mettre à jour le cycle</p>`;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<div style="margin-top: 20px; padding: 15px; background: #fee2e2; border-radius: 8px;">';
+                    html += '<p>❌ <strong>Aucun check-in avec hasPeriod = true trouvé</strong></p>';
+                    html += '<p>Charlotte doit refaire un check-in en cliquant sur "Oui" pour les règles</p>';
+                    html += '</div>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = '<p style="color: red;">❌ Erreur : ' + error.message + '</p>';
+                console.error('Erreur:', error);
+            }
+        }
+
+        window.updateCycleDate = async function(date) {
+            if (!confirm(`Confirmer la mise à jour du cycle avec la date ${date} comme J1 ?`)) {
+                return;
+            }
+            
+            try {
+                await db.collection('menstrualCycle').doc(playerId).update({
+                    cycleStartDate: date,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('✅ Cycle mis à jour ! Charlotte est maintenant à J1 le ' + date);
+                findPeriodCheckins(); // Recharger
+                
+            } catch (error) {
+                alert('❌ Erreur : ' + error.message);
+            }
+        };
+
+        findPeriodCheckins();
+    </script>
+</body>
+</html>

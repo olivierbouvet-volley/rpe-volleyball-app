@@ -1,0 +1,30 @@
+{
+  "name": "RPE Monitor - Pôle Espoir Volleyball Sablé",
+  "short_name": "RPE Monitor",
+  "description": "Application de suivi RPE pour le Pôle Espoir Volleyball Sablé",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCFCF9",
+  "theme_color": "#21808D",
+  "orientation": "portrait",
+  "version": "2.0.1",
+  "icons": [
+    {
+      "src": "/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "permissions": [
+    "notifications"
+  ],
+  "prefer_related_applications": false
+}
+

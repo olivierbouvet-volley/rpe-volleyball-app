@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification Cycle Charlotte</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Vérification Cycle Charlotte</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Configuration Firebase de production
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA4h5uwMKz7rJ1GtAQCfGxuygcuXuSTLU",
+            authDomain: "rpe-volleyball-sable.firebaseapp.com",
+            projectId: "rpe-volleyball-sable",
+            storageBucket: "rpe-volleyball-sable.firebasestorage.app",
+            messagingSenderId: "691799022795",
+            appId: "1:691799022795:web:f1aa3a9a8e8e2f50b36a40"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const resultsDiv = document.getElementById('results');
+
+        async function checkCharlotteCycle() {
+            const playerId = 'Charlotte';
+            let html = '<h2>📊 Données de Charlotte</h2>';
+
+            try {
+                // 1. Configuration du cycle (menstrualCycle)
+                html += '<h3>1️⃣ Collection menstrualCycle</h3>';
+                const cycleDoc = await db.collection('menstrualCycle').doc(playerId).get();
+                if (cycleDoc.exists) {
+                    const data = cycleDoc.data();
+                    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    
+                    // Calculer le jour du cycle
+                    if (data.cycleStartDate) {
+                        const startDate = new Date(data.cycleStartDate);
+                        const today = new Date();
+                        const diffTime = today - startDate;
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                        const dayOfCycle = diffDays + 1;
+                        html += `<p><strong>🔴 Dernier début de cycle:</strong> ${data.cycleStartDate}</p>`;
+                        html += `<p><strong>📅 Jours écoulés:</strong> ${diffDays} jours</p>`;
+                        html += `<p><strong>🎯 Jour du cycle actuel:</strong> J${dayOfCycle}</p>`;
+                    }
+                } else {
+                    html += '<p>❌ Aucune configuration trouvée</p>';
+                }
+
+                // 2. Profil complet (cycleProfiles)
+                html += '<h3>2️⃣ Collection cycleProfiles</h3>';
+                const profileDoc = await db.collection('cycleProfiles').doc(playerId).get();
+                if (profileDoc.exists) {
+                    const data = profileDoc.data();
+                    html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    html += '<p>❌ Aucun profil trouvé</p>';
+                }
+
+                // 3. Derniers check-ins avec règles
+                html += '<h3>3️⃣ Derniers check-ins avec règles (hasPeriod = true)</h3>';
+                const checkinsSnapshot = await db.collection('checkins')
+                    .where('playerId', '==', playerId)
+                    .where('hasPeriod', '==', true)
+                    .orderBy('date', 'desc')
+                    .limit(5)
+                    .get();
+                
+                if (!checkinsSnapshot.empty) {
+                    html += '<ul>';
+                    checkinsSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        html += `<li><strong>${data.date}</strong> - Règles: ${data.hasPeriod ? '✅ Oui' : '❌ Non'}</li>`;
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p>❌ Aucun check-in avec règles trouvé</p>';
+                }
+
+                // 4. Tous les derniers check-ins (avec ou sans règles)
+                html += '<h3>4️⃣ Tous les derniers check-ins (10 derniers)</h3>';
+                const allCheckinsSnapshot = await db.collection('checkins')
+                    .where('playerId', '==', playerId)
+                    .orderBy('date', 'desc')
+                    .limit(10)
+                    .get();
+                
+                if (!allCheckinsSnapshot.empty) {
+                    html += '<table border="1" cellpadding="5" style="border-collapse: collapse;">';
+                    html += '<tr><th>Date</th><th>Règles</th><th>Énergie</th><th>Douleurs</th></tr>';
+                    allCheckinsSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        const hasPeriod = data.hasPeriod === true ? '🔴 Oui' : (data.hasPeriod === false ? '⚪ Non' : '❓ Non renseigné');
+                        html += `<tr>
+                            <td>${data.date}</td>
+                            <td>${hasPeriod}</td>
+                            <td>${data.energy || '-'}</td>
+                            <td>${data.pelvicPain || '-'}</td>
+                        </tr>`;
+                    });
+                    html += '</table>';
+                } else {
+                    html += '<p>❌ Aucun check-in trouvé</p>';
+                }
+
+                resultsDiv.innerHTML = html;
+
+            } catch (error) {
+                resultsDiv.innerHTML = '<p style="color: red;">❌ Erreur: ' + error.message + '</p>';
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Lancer la vérification
+        checkCharlotteCycle();
+    </script>
+</body>
+</html>

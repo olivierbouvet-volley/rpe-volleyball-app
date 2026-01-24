@@ -1,0 +1,5 @@
+Pour le moment: 
+Que les commentaire de check in pas de commentaire RPE et le RPE n'apparaît pas dans l'historiqe popup.
+pas tous les commentaires non plus . 
+bzarrement dans firebase elle n'apparaissent plus sous leur nom.
+et nos nom ont disparu aussi coach Olivier et Alexis.( pourrait on faire des commentaire journalier qui s'affiche sur le dashboard des filles?).

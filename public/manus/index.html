@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rpe-team-planner</title>
+    
+    <!-- Firebase SDK (compat version pour rester compatible avec le code existant) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    
+    <!-- Configuration Firebase -->
+    <script>
+      // Fonction d'initialisation Firebase avec retry
+      function initFirebase() {
+        return new Promise((resolve, reject) => {
+          let attempts = 0;
+          const maxAttempts = 20;
+          
+          const tryInit = () => {
+            attempts++;
+            
+            if (typeof firebase !== 'undefined' && firebase.storage) {
+              // Firebase et Storage sont chargés
+              if (!firebase.apps.length) {
+                const firebaseConfig = {
+                  apiKey: "AIzaSyDUUEJbH1P58s9F_S5cNSn25KNUVMjT8Q4",
+                  authDomain: "rpe-volleyball-sable.firebaseapp.com",
+                  projectId: "rpe-volleyball-sable",
+                  storageBucket: "rpe-volleyball-sable.firebasestorage.app",
+                  messagingSenderId: "539026612647",
+                  appId: "1:539026612647:web:30b5d2bf63f43fb2e0e2cf"
+                };
+                firebase.initializeApp(firebaseConfig);
+                console.log('✅ Firebase initialisé dans iframe avec Storage');
+              }
+              window.firebase = firebase;
+              resolve();
+            } else if (attempts < maxAttempts) {
+              // Réessayer après 50ms
+              setTimeout(tryInit, 50);
+            } else {
+              reject(new Error('Firebase Storage non chargé après ' + maxAttempts + ' tentatives'));
+            }
+          };
+          
+          tryInit();
+        });
+      }
+      
+      // Initialiser Firebase dès que possible
+      initFirebase().catch(err => console.error('❌ Erreur init Firebase:', err));
+    </script>
+    <script type="module" crossorigin src="./assets/index-BIKZ0_DK.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Dojrz1rJ.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

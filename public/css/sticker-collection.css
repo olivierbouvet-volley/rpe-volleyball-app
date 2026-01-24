@@ -1,0 +1,674 @@
+/**
+ * STICKER COLLECTION MODAL STYLES
+ */
+
+/* Modal overlay */
+.collection-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 20px;
+    pointer-events: none;
+}
+
+.collection-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Contenu du modal */
+.collection-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.collection-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.collection-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.collection-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.collection-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Bouton fermer */
+.collection-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 32px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.collection-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+/* Titre */
+.collection-content h2 {
+    color: white;
+    text-align: center;
+    margin: 0 0 30px 0;
+    font-size: 32px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Onglets */
+.collection-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 15px 20px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.tab-btn.active {
+    color: white;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+    border-radius: 3px 3px 0 0;
+}
+
+/* Contenu des onglets */
+.collection-tab-content {
+    display: none;
+}
+
+.collection-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stats */
+.collection-stats {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+}
+
+.collection-stats p {
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Catégories */
+.collection-category {
+    margin-bottom: 40px;
+}
+
+.collection-category h3 {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Grille de stickers */
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+/* Carte de sticker */
+.collection-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.collection-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.collection-card.rarity-common {
+    border-color: #10b981;
+}
+
+.collection-card.rarity-rare {
+    border-color: #3b82f6;
+}
+
+.collection-card.rarity-legendary {
+    border-color: #fbbf24;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+/* Image du sticker */
+.card-image {
+    width: 100%;
+    aspect-ratio: 1;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.collection-card.locked .card-image img {
+    filter: brightness(0.3) grayscale(1);
+}
+
+.lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* Info carte */
+.card-info {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.card-name {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0 0 5px 0;
+}
+
+.card-hint {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Guide content */
+.guide-content {
+    color: white;
+}
+
+.guide-section {
+    margin-bottom: 40px;
+}
+
+.guide-section h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.guide-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.guide-card h4 {
+    color: #10b981;
+    font-size: 20px;
+    margin: 0 0 15px 0;
+}
+
+.guide-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+}
+
+.guide-card ul li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.guide-card ul li:last-child {
+    border-bottom: none;
+}
+
+.guide-card ul li strong {
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.tip {
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid #10b981;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin: 15px 0 0 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.guide-tips {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+    border-radius: 15px;
+    padding: 25px;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.guide-tips h3 {
+    color: #10b981;
+    font-size: 22px;
+    margin: 0 0 20px 0;
+}
+
+.guide-tips ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.guide-tips ul li {
+    padding: 12px 0;
+    font-size: 16px;
+}
+
+.guide-tips ul li strong {
+    color: #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .collection-content {
+        padding: 20px;
+        max-height: 95vh;
+    }
+
+    .collection-content h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .collection-tabs {
+        flex-direction: column;
+    }
+
+    .tab-btn {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+
+    .collection-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+    }
+
+    .collection-category h3 {
+        font-size: 20px;
+    }
+
+    .guide-section h3 {
+        font-size: 20px;
+    }
+
+    .guide-card h4 {
+        font-size: 18px;
+    }
+
+    .guide-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .collection-modal {
+        padding: 10px;
+    }
+
+    .collection-content {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    .collection-content h2 {
+        font-size: 20px;
+    }
+
+    .collection-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+
+    .collection-card {
+        padding: 10px;
+    }
+
+    .card-name {
+        font-size: 12px;
+    }
+
+    .card-hint {
+        font-size: 11px;
+    }
+
+    .guide-card ul li {
+        font-size: 14px;
+    }
+
+    .guide-tips ul li {
+        font-size: 14px;
+    }
+}
+
+/* ========== MODAL DE DÉTAIL (GALERIE) ========== */
+.sticker-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 11000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sticker-detail-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.detail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.detail-card {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 25px;
+    padding: 40px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 3px solid;
+    overflow-y: auto;
+}
+
+.detail-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.detail-card::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.detail-card::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+.detail-card::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.detail-card[data-rarity="common"] {
+    border-color: #4CAF50;
+}
+
+.detail-card[data-rarity="rare"] {
+    border-color: #2196F3;
+}
+
+.detail-card[data-rarity="legendary"] {
+    border-color: #FFD700;
+    box-shadow: 0 30px 80px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.detail-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 28px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.detail-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.detail-image-container {
+    width: 100%;
+    max-width: 350px;
+    max-height: 500px;
+    margin: 0 auto 25px auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.detail-image {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    display: block;
+    object-fit: contain;
+}
+
+.detail-info {
+    text-align: center;
+}
+
+.detail-rarity {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+.detail-rarity.common {
+    background: #4CAF50;
+    color: white;
+}
+
+.detail-rarity.rare {
+    background: #2196F3;
+    color: white;
+}
+
+.detail-rarity.legendary {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.detail-name {
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    margin: 0 0 15px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.detail-description {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 25px 0;
+    line-height: 1.5;
+}
+
+.detail-criteria {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    line-height: 1.8;
+    text-align: left;
+}
+
+.detail-criteria strong {
+    color: white;
+}
+
+/* Indicateur de clic sur les stickers */
+.collection-card.clickable {
+    cursor: pointer;
+}
+
+.collection-card.clickable:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.click-hint {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.collection-card.clickable:hover .click-hint {
+    opacity: 1;
+}
+
+/* Styles pour le mode Coach Verification */
+#coachStickersVerification {
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+}
+
+#commonStickersGrid,
+#rareStickersGrid,
+#legendaryStickersGrid {
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+}
