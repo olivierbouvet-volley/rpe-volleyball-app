@@ -31,21 +31,21 @@ export default function ImportPage() {
         <h2 className="text-xl font-semibold mb-4 text-center">How to use</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="bg-slate-800 rounded-lg p-6 text-center">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3">📁</div>
             <h3 className="font-semibold mb-2">1. Select File</h3>
             <p className="text-sm text-slate-400">
               Drag & drop or click to select your .dvw file
             </p>
           </div>
           <div className="bg-slate-800 rounded-lg p-6 text-center">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3">⚡</div>
             <h3 className="font-semibold mb-2">2. Auto Parse</h3>
             <p className="text-sm text-slate-400">
               The file is automatically analyzed and statistics calculated
             </p>
           </div>
           <div className="bg-slate-800 rounded-lg p-6 text-center">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3">📊</div>
             <h3 className="font-semibold mb-2">3. View Stats</h3>
             <p className="text-sm text-slate-400">
               Explore detailed player statistics with filters

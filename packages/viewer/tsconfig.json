@@ -12,9 +12,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../data-model" },
-    { "path": "../dvw-parser" }
-  ]
+  "include": ["src"]
 }

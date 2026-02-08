@@ -264,7 +264,7 @@ export function PlaylistPlayer({
           <span>— #{currentItem.action.player.number}</span>
           {currentItem.sequenceStart && currentItem.sequenceEnd && (
             <span className="px-1.5 py-0.5 bg-blue-900/50 text-blue-300 rounded text-[10px]" title="Séquence complète (réception → passe → attaque)">
-               Séquence
+              🔗 Séquence
             </span>
           )}
           {currentItem.estimatedTimestamp && !currentItem.action.videoTimestamp && (

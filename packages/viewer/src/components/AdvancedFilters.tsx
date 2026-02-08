@@ -319,7 +319,7 @@ export function AdvancedFilters({ match, resultCount, className = '' }: Advanced
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-700/50 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold"> Filtres avancés</span>
+          <span className="text-sm font-semibold">🔍 Filtres avancés</span>
           {activeFilterCount > 0 && (
             <span className="px-2 py-0.5 bg-primary-blue rounded-full text-xs">
               {activeFilterCount} actif(s)

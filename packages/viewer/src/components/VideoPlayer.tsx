@@ -359,7 +359,7 @@ export function VideoPlayer() {
                   )}
                   {playerError && playerError.includes('intégrée') && (
                     <div className="mt-2 p-3 bg-amber-900/20 border border-amber-700 rounded text-xs text-amber-300">
-                      <p className="font-semibold mb-1"> Solution :</p>
+                      <p className="font-semibold mb-1">💡 Solution :</p>
                       <p>Le propriétaire a désactivé l'intégration. Essayez une autre vidéo ou demandez l'autorisation d'intégration.</p>
                     </div>
                   )}
