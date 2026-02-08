@@ -11,6 +11,7 @@ import { OffsetCalibrator } from '../components/OffsetCalibrator';
 import { ActionTimeline } from '../components/ActionTimeline';
 import { AdvancedFilters } from '../components/AdvancedFilters';
 import { PlaylistPlayer } from '../components/PlaylistPlayer';
+import { RotationView } from '../components/RotationView';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { usePopOutWindow } from '../hooks/usePopOutWindow';
@@ -28,6 +29,7 @@ export default function AnalysisPage() {
   const [selectedSet, setSelectedSet] = useState<number | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'timeline' | 'playlist'>('timeline');
+  const [rightTab, setRightTab] = useState<'stats' | 'rotation' | 'playbyplay' | 'distribution'>('stats');
 
   // Pop-out window for video
   const { popOutRef, popOut } = usePopOutWindow({
@@ -213,16 +215,81 @@ export default function AnalysisPage() {
 
       case 'stats':
         return (
-          <div className="p-4">
-            <h2 className="text-lg font-semibold mb-3">Statistiques des joueurs</h2>
-            <StatsTable stats={filteredStats} match={match} />
+          <div className="flex flex-col h-full">
+            {/* Tab selector for analysis views */}
+            <div className="flex gap-1 bg-slate-800 p-1 border-b border-slate-700">
+              <button
+                onClick={() => setRightTab('stats')}
+                className={`flex-1 px-3 py-2 rounded text-sm transition-colors font-medium ${
+                  rightTab === 'stats'
+                    ? 'bg-primary-blue text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                type="button"
+              >
+                📊 Stats
+              </button>
+              <button
+                onClick={() => setRightTab('rotation')}
+                className={`flex-1 px-3 py-2 rounded text-sm transition-colors font-medium ${
+                  rightTab === 'rotation'
+                    ? 'bg-primary-blue text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                type="button"
+              >
+                🏟️ Rotation
+              </button>
+              <button
+                onClick={() => setRightTab('playbyplay')}
+                className={`flex-1 px-3 py-2 rounded text-sm transition-colors font-medium ${
+                  rightTab === 'playbyplay'
+                    ? 'bg-primary-blue text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                type="button"
+                disabled
+                title="À venir dans PROMPT 2E"
+              >
+                📈 Play-by-Play
+              </button>
+              <button
+                onClick={() => setRightTab('distribution')}
+                className={`flex-1 px-3 py-2 rounded text-sm transition-colors font-medium ${
+                  rightTab === 'distribution'
+                    ? 'bg-primary-blue text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+                type="button"
+                disabled
+                title="À venir dans PROMPT 2F"
+              >
+                🏐 Passeuse
+              </button>
+            </div>
+
+            {/* Tab content */}
+            <div className="flex-1 overflow-auto p-4">
+              {rightTab === 'stats' && (
+                <>
+                  <h2 className="text-lg font-semibold mb-3">Statistiques des joueurs</h2>
+                  <StatsTable stats={filteredStats} match={match} />
+                </>
+              )}
+              {rightTab === 'rotation' && <RotationView />}
+              {rightTab === 'playbyplay' && (
+                <div className="text-center text-slate-400 py-8">
+                  📈 Vue Play-by-Play — À venir dans PROMPT 2E
+                </div>
+              )}
+              {rightTab === 'distribution' && (
+                <div className="text-center text-slate-400 py-8">
+                  🏐 Distribution passeuse — À venir dans PROMPT 2F
+                </div>
+              )}
+            </div>
           </div>
         );
-
-      // Futurs panneaux (2D-2H) :
-      // case 'playbyplay': return <PlayByPlayChart ... />;
-      // case 'distribution': return <SetterDistribution ... />;
-      // case 'rotation': return <RotationView ... />;
 
       default:
         return <div className="p-4 text-slate-400">Panneau inconnu: {panelId}</div>;
