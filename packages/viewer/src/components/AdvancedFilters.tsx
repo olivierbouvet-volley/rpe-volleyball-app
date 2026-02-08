@@ -277,6 +277,153 @@ function ZoneSelector({ selected, onChange }: ZoneSelectorProps) {
 }
 
 // ============================================================================
+// BlockerRangeSelector - Sélection du nombre de bloqueurs (min-max)
+// ============================================================================
+
+interface BlockerRangeSelectorProps {
+  minBlockers: number | null;
+  maxBlockers: number | null;
+  onChange: (min: number | null, max: number | null) => void;
+}
+
+function BlockerRangeSelector({ minBlockers, maxBlockers, onChange }: BlockerRangeSelectorProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-[10px] text-slate-400">Min:</label>
+      <select
+        value={minBlockers ?? ''}
+        onChange={e => onChange(e.target.value ? Number(e.target.value) : null, maxBlockers)}
+        className="flex-1 bg-slate-700 text-xs rounded px-1 py-0.5 text-slate-200"
+      >
+        <option value="">-</option>
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+      <label className="text-[10px] text-slate-400">Max:</label>
+      <select
+        value={maxBlockers ?? ''}
+        onChange={e => onChange(minBlockers, e.target.value ? Number(e.target.value) : null)}
+        className="flex-1 bg-slate-700 text-xs rounded px-1 py-0.5 text-slate-200"
+      >
+        <option value="">-</option>
+        <option value="0">0</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </div>
+  );
+}
+
+// ============================================================================
+// ServingTeamToggle - Sélection de l'équipe au service
+// ============================================================================
+
+interface ServingTeamToggleProps {
+  homeTeam: string;
+  awayTeam: string;
+  value: 'home' | 'away' | null;
+  onChange: (side: 'home' | 'away' | null) => void;
+}
+
+function ServingTeamToggle({ homeTeam, awayTeam, value, onChange }: ServingTeamToggleProps) {
+  return (
+    <div className="flex gap-0.5">
+      <button
+        onClick={() => onChange(value === 'home' ? null : 'home')}
+        className={`flex-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors truncate ${
+          value === 'home'
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+        }`}
+        title={`${homeTeam} sert`}
+      >
+        {homeTeam}
+      </button>
+      <button
+        onClick={() => onChange(null)}
+        className={`flex-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+          value === null
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+        }`}
+      >
+        Les 2
+      </button>
+      <button
+        onClick={() => onChange(value === 'away' ? null : 'away')}
+        className={`flex-1 px-2 py-0.5 rounded text-[10px] font-medium transition-colors truncate ${
+          value === 'away'
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+        }`}
+        title={`${awayTeam} sert`}
+      >
+        {awayTeam}
+      </button>
+    </div>
+  );
+}
+
+// ============================================================================
+// MultiSelectDropdown - Sélection multiple avec liste déroulante
+// ============================================================================
+
+interface MultiSelectDropdownProps {
+  options: { value: string; label: string }[];
+  selected: string[];
+  onChange: (values: string[]) => void;
+  placeholder?: string;
+}
+
+function MultiSelectDropdown({ options, selected, onChange, placeholder = 'Tous' }: MultiSelectDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleOption = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter(v => v !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  };
+
+  const displayText = selected.length === 0
+    ? placeholder
+    : selected.length === 1
+    ? options.find(o => o.value === selected[0])?.label || selected[0]
+    : `${selected.length} sélectionné(s)`;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-2 py-0.5 bg-slate-700 text-xs rounded text-left flex items-center justify-between hover:bg-slate-600 transition-colors"
+      >
+        <span className="truncate text-slate-200">{displayText}</span>
+        <span className="ml-1 text-slate-400">{isOpen ? '▲' : '▼'}</span>
+      </button>
+      {isOpen && (
+        <div className="absolute z-10 mt-1 w-full bg-slate-700 border border-slate-600 rounded shadow-lg max-h-32 overflow-y-auto">
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => toggleOption(opt.value)}
+              className={`w-full px-2 py-1 text-xs text-left hover:bg-slate-600 transition-colors ${
+                selected.includes(opt.value) ? 'bg-primary-blue text-white' : 'text-slate-200'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // AdvancedFilters - Composant principal
 // ============================================================================
 
@@ -426,6 +573,46 @@ export function AdvancedFilters({ match, resultCount, className = '' }: Advanced
               />
             </FilterGroup>
 
+            {/* Équipe au service */}
+            <FilterGroup label="Équipe au service">
+              <ServingTeamToggle
+                homeTeam={match.homeTeam.name}
+                awayTeam={match.awayTeam.name}
+                value={criteria.servingTeam}
+                onChange={side => setCriteria({ servingTeam: side })}
+              />
+            </FilterGroup>
+
+            {/* Combo d'attaque (seulement si skill=attack ou vide) */}
+            {(criteria.skills.length === 0 || criteria.skills.includes('attack')) && (
+              <FilterGroup label="Combo d'attaque">
+                <MultiSelectDropdown
+                  options={match.dvwMetadata?.attackCombinations.map(c => ({
+                    value: c.code,
+                    label: `${c.code} — ${c.description}`
+                  })) ?? []}
+                  selected={criteria.attackCombos}
+                  onChange={combos => setCriteria({ attackCombos: combos })}
+                  placeholder="Tous les combos"
+                />
+              </FilterGroup>
+            )}
+
+            {/* Appels passeur (setter calls) */}
+            {match.dvwMetadata?.setterCalls && match.dvwMetadata.setterCalls.length > 0 && (
+              <FilterGroup label="Appel passeur">
+                <MultiSelectDropdown
+                  options={match.dvwMetadata.setterCalls.map(call => ({
+                    value: call.code,
+                    label: `${call.code} — ${call.description}`
+                  }))}
+                  selected={criteria.setterCalls}
+                  onChange={calls => setCriteria({ setterCalls: calls })}
+                  placeholder="Tous les appels"
+                />
+              </FilterGroup>
+            )}
+
             {/* Zone de départ */}
             <FilterGroup label="Zone départ">
               <ZoneSelector
@@ -433,6 +620,25 @@ export function AdvancedFilters({ match, resultCount, className = '' }: Advanced
                 onChange={zones => setCriteria({ startZones: zones })}
               />
             </FilterGroup>
+
+            {/* Zone d'arrivée */}
+            <FilterGroup label="Zone d'arrivée">
+              <ZoneSelector
+                selected={criteria.endZones}
+                onChange={zones => setCriteria({ endZones: zones })}
+              />
+            </FilterGroup>
+
+            {/* Nombre de bloqueurs (pour les attaques) */}
+            {(criteria.skills.length === 0 || criteria.skills.includes('attack')) && (
+              <FilterGroup label="Nombre de bloqueurs">
+                <BlockerRangeSelector
+                  minBlockers={criteria.minBlockers}
+                  maxBlockers={criteria.maxBlockers}
+                  onChange={(min, max) => setCriteria({ minBlockers: min, maxBlockers: max })}
+                />
+              </FilterGroup>
+            )}
           </div>
         </div>
       )}
