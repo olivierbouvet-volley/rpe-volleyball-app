@@ -113,11 +113,11 @@ const RallyRow = memo(
           <span>Rally #{rally.rallyNumber}</span>
           <span className="text-slate-600">•</span>
           <span className={`font-mono ${rally.servingTeam === 'home' ? 'text-yellow-400' : 'text-slate-400'}`} title={rally.servingTeam === 'home' ? 'Home team serving' : 'Home team receiving'}>
-            *{rally.servingTeam === 'home' ? 'S' : 'R'}{rally.rotation.home}
+            *{rally.servingTeam === 'home' ? 'S' : 'R'}{rally.rotation?.home}
           </span>
           <span className="text-slate-600">/</span>
           <span className={`font-mono ${rally.servingTeam === 'away' ? 'text-yellow-400' : 'text-slate-400'}`} title={rally.servingTeam === 'away' ? 'Away team serving' : 'Away team receiving'}>
-            a{rally.servingTeam === 'away' ? 'S' : 'R'}{rally.rotation.away}
+            a{rally.servingTeam === 'away' ? 'S' : 'R'}{rally.rotation?.away}
           </span>
           {rally.videoTimestamp != null && (
             <>
@@ -246,32 +246,10 @@ export function ActionTimeline({
   }, []);
 
   // Auto-scroll to active rally (DISABLED - too intrusive)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   useEffect(() => {
     // Disabled to prevent unwanted scrolling
     return;
-
-    // eslint-disable-next-line no-unreachable
-    if (userScrolling || !timelineRef.current) return;
-
-    const activeRally = rallies.find((r) =>
-      isRallyInTimeRange(r, currentTime, offset)
-    );
-
-    if (activeRally && activeRally.id !== lastActiveRallyRef.current) {
-      lastActiveRallyRef.current = activeRally.id;
-
-      // Find the rally element
-      const rallyIndex = rallies.indexOf(activeRally);
-      const rallyElements = timelineRef.current.querySelectorAll('[data-rally-id]');
-      const rallyElement = rallyElements[rallyIndex] as HTMLElement;
-
-      if (rallyElement) {
-        timelineRef.current.scrollTo({
-          top: rallyElement.offsetTop - 100,
-          behavior: 'smooth',
-        });
-      }
-    }
   }, [rallies, currentTime, offset, userScrolling]);
 
   // Cleanup scroll timeout

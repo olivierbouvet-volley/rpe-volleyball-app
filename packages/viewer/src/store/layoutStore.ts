@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Layout } from 'react-grid-layout';
+import type { LayoutItem } from 'react-grid-layout';
 
 interface PanelConfig {
   id: string;
@@ -17,12 +17,12 @@ interface PanelConfig {
 
 interface LayoutState {
   // Layouts par breakpoint (lg, md, sm)
-  layouts: { lg: Layout[]; md: Layout[]; sm: Layout[] };
+  layouts: { lg: LayoutItem[]; md: LayoutItem[]; sm: LayoutItem[] };
   panels: PanelConfig[];
   isVideoDetached: boolean; // true = vidéo dans fenêtre séparée
 
   // Actions
-  setLayouts: (layouts: { lg: Layout[]; md: Layout[]; sm: Layout[] }) => void;
+  setLayouts: (layouts: { lg: LayoutItem[]; md: LayoutItem[]; sm: LayoutItem[] }) => void;
   togglePanelVisibility: (panelId: string) => void;
   togglePanelCollapsed: (panelId: string) => void;
   setVideoDetached: (detached: boolean) => void;
@@ -90,7 +90,7 @@ const createLayoutStore = () => ({
   isVideoDetached: false,
 
   // Actions
-  setLayouts: (layouts: { lg: Layout[]; md: Layout[]; sm: Layout[] }) => {
+  setLayouts: (layouts: { lg: LayoutItem[]; md: LayoutItem[]; sm: LayoutItem[] }) => {
     useLayoutStore.setState({ layouts });
   },
 

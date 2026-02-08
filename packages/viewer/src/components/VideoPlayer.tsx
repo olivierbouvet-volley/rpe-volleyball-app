@@ -186,11 +186,10 @@ export function VideoPlayer() {
     setCurrentTime(newTime);
   }, [setCurrentTime]);
 
-  const handleSeekEnd = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = parseFloat(e.target.value);
-    seekTo(newTime);
+  const handleSeekEnd = useCallback(() => {
+    seekTo(currentTime);
     setIsSeeking(false);
-  }, [seekTo]);
+  }, [seekTo, currentTime]);
 
   // Keyboard shortcuts for video navigation
   useEffect(() => {

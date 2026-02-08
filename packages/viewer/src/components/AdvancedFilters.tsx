@@ -145,7 +145,7 @@ function QualityToggleGroup({ selected, onChange }: QualityToggleGroupProps) {
           key={quality}
           onClick={() => toggleQuality(quality)}
           className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
-            getQualityColorClass(quality)
+            getQualityColorClass(quality as Quality)
           } ${
             selected.length === 0 || selected.includes(quality)
               ? 'opacity-100'

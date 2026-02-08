@@ -4,7 +4,8 @@
  */
 
 import { ReactNode, useRef, useState, useEffect } from 'react';
-import { ResponsiveGridLayout, Layout as RGLLayout } from 'react-grid-layout';
+import { ResponsiveGridLayout } from 'react-grid-layout';
+import type { LayoutItem } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import { useLayoutStore } from '../../store/layoutStore';
 import { PanelWrapper } from './PanelWrapper';
@@ -56,7 +57,7 @@ export function DashboardLayout({
     return () => window.removeEventListener('resize', measureWidth);
   }, []);
 
-  const handleLayoutChange = (_currentLayout: RGLLayout[], allLayouts: any) => {
+  const handleLayoutChange = (_currentLayout: readonly LayoutItem[], allLayouts: any) => {
     setLayouts(allLayouts);
   };
 
@@ -98,12 +99,12 @@ export function DashboardLayout({
       <div ref={containerRef}>
         <ResponsiveGridLayout
           width={width}
-          layouts={layouts}
+          layouts={layouts as any}
           breakpoints={{ lg: 1200, md: 996, sm: 0 }}
           cols={{ lg: 12, md: 10, sm: 6 }}
           rowHeight={40}
-          onLayoutChange={handleLayoutChange}
-          draggableHandle=".panel-drag-handle"
+          onLayoutChange={handleLayoutChange as any}
+          {...{ draggableHandle: '.panel-drag-handle' } as any}
           compactType={null}
           isResizable={true}
           isDraggable={true}

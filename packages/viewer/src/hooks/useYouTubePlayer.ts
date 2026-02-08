@@ -16,7 +16,7 @@ interface UseYouTubePlayerOptions {
 }
 
 interface YouTubePlayerControls {
-  player: YT.Player | null;
+  player: any;
   isReady: boolean;
   play: () => void;
   pause: () => void;
@@ -85,7 +85,7 @@ export function useYouTubePlayer({
   onStateChange,
   onError,
 }: UseYouTubePlayerOptions): YouTubePlayerControls {
-  const playerRef = useRef<YT.Player | null>(null);
+  const playerRef = useRef<any>(null);
   const [isReady, setIsReady] = useState(false);
   const [apiLoaded, setApiLoaded] = useState(false);
 
