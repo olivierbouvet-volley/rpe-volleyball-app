@@ -1273,38 +1273,34 @@ async function calculateCyclePhaseWithRealData(cycleStartDate, cycleLength = 28,
     if (!cycleStartDate || !playerId) {
         return { phase: 'Données manquantes', dayOfCycle: 0, isExtended: false };
     }
-    
+
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        // Utiliser cycleStartDate (mis à jour par les boutons J1-J8)
+
+        // Utiliser cycleStartDate tel quel (mis à jour UNIQUEMENT par les boutons J1-J8)
+        // PAS de recalcul automatique - seule la joueuse peut déclarer un nouveau J1
         let lastJ1 = new Date(cycleStartDate);
         lastJ1.setHours(0, 0, 0, 0);
-        
-        // Si le J1 est dans le futur, reculer d'un cycle
+
+        // Si le J1 est dans le futur (erreur de saisie), on le garde tel quel
+        // La joueuse pourra corriger via "Corriger mon J1"
         if (lastJ1 > today) {
-            while (lastJ1 > today) {
-                lastJ1.setDate(lastJ1.getDate() - cycleLength);
-            }
-        } else if (lastJ1 <= today) {
-            // Calculer combien de cycles complets se sont écoulés
-            const daysDiff = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
-            const cyclesElapsed = Math.floor(daysDiff / cycleLength);
-            lastJ1 = new Date(cycleStartDate);
-            lastJ1.setHours(0, 0, 0, 0);
-            lastJ1.setDate(lastJ1.getDate() + (cyclesElapsed * cycleLength));
+            return { phase: 'J1 futur', dayOfCycle: 0, isExtended: false };
         }
-        
-        // Calculer le jour dans le cycle actuel
+
+        // Calculer le jour dans le cycle depuis le dernier J1 déclaré
+        // SANS créer automatiquement de nouveau cycle
         const diffTime = today - lastJ1;
         const daysSinceJ1 = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         let dayOfCycle = daysSinceJ1 + 1;
         if (dayOfCycle <= 0) dayOfCycle = 1;
-        if (dayOfCycle > cycleLength) dayOfCycle = cycleLength;
-        
+
+        // Cycle prolongé si on dépasse la durée théorique
+        // On NE reset PAS à J1 automatiquement - on continue à compter (J34, J45, etc.)
         const isExtended = dayOfCycle > cycleLength;
-        
+
+        // Déterminer la phase
         let phase = 'Lutéale';
         if (dayOfCycle >= 1 && dayOfCycle <= 5) {
             phase = 'Menstruelle';
@@ -1312,10 +1308,13 @@ async function calculateCyclePhaseWithRealData(cycleStartDate, cycleLength = 28,
             phase = 'Folliculaire';
         } else if (dayOfCycle >= 15 && dayOfCycle <= 16) {
             phase = 'Ovulatoire';
+        } else if (isExtended) {
+            // Cycle prolongé - possible aménorrhée, on reste en phase "Prolongé"
+            phase = 'Cycle prolongé';
         }
-        
+
         return { phase, dayOfCycle, isExtended };
-        
+
     } catch (error) {
         console.error('Erreur calcul phase cycle:', error);
         return calculateCyclePhase(cycleStartDate, cycleLength);
@@ -1334,29 +1333,39 @@ function calculateCyclePhase(cycleStartDate, cycleLength = 28) {
     if (!cycleStartDate) {
         return { phase: 'Données manquantes', dayOfCycle: 0 };
     }
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const startDate = new Date(cycleStartDate);
     startDate.setHours(0, 0, 0, 0);
-    
+
+    // Si J1 dans le futur, erreur de saisie
+    if (startDate > today) {
+        return { phase: 'J1 futur', dayOfCycle: 0 };
+    }
+
     const diffTime = today - startDate;
     const daysSinceStart = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Calculer le jour dans le cycle actuel (avec gestion des cycles qui se répètent)
-    let dayOfCycle = (daysSinceStart % cycleLength) + 1;
+
+    // Calculer le jour depuis J1 SANS modulo - pas de reset automatique
+    // Seule la joueuse peut déclarer un nouveau J1 via check-in
+    let dayOfCycle = daysSinceStart + 1;
     if (dayOfCycle <= 0) dayOfCycle = 1;
-    
+
+    const isExtended = dayOfCycle > cycleLength;
+
     let phase = 'Lutéale';
-    
+
     if (dayOfCycle >= 1 && dayOfCycle <= 5) {
         phase = 'Menstruelle';
     } else if (dayOfCycle >= 6 && dayOfCycle <= 14) {
         phase = 'Folliculaire';
     } else if (dayOfCycle >= 15 && dayOfCycle <= 16) {
         phase = 'Ovulatoire';
+    } else if (isExtended) {
+        phase = 'Cycle prolongé';
     }
-    // Si JdC > 16, la phase reste 'Lutéale'
+    // Si JdC > 16 et pas extended, la phase reste 'Lutéale'
     
     return { phase, dayOfCycle };
 }

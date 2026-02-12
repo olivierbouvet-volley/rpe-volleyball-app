@@ -655,18 +655,9 @@ async function loadPopupCycleChart(playerId) {
         let lastJ1 = new Date(cycleData.cycleStartDate);
         lastJ1.setHours(0, 0, 0, 0);
         
-        // Si le J1 initial est dans le futur, reculer pour trouver le cycle actuel
-        if (lastJ1 > today) {
-            while (lastJ1 > today) {
-                lastJ1.setDate(lastJ1.getDate() - cycleLength);
-            }
-        } else if (lastJ1 <= today) {
-            const daysDiff = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
-            const cyclesElapsed = Math.floor(daysDiff / cycleLength);
-            lastJ1 = new Date(cycleData.cycleStartDate);
-            lastJ1.setHours(0, 0, 0, 0);
-            lastJ1.setDate(lastJ1.getDate() + (cyclesElapsed * cycleLength));
-        }
+        // Si le J1 initial est dans le futur (erreur de saisie), on le garde tel quel
+        // La joueuse pourra corriger via "Corriger mon J1"
+        // PAS de recalcul automatique - seule la joueuse peut déclarer un nouveau J1
         
         // Dates clés
         const cycleEndDate = new Date(lastJ1);

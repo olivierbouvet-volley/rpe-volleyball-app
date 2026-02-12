@@ -165,21 +165,18 @@ function getPhaseForDate(cycleConfig, date) {
     
     const cycleLength = cycleConfig.cycleLength || 28;
     
-    // Calculer combien de cycles se sont écoulés depuis lastJ1
-    if (lastJ1 <= targetDate) {
-        const daysDiff = Math.floor((targetDate - lastJ1) / (1000 * 60 * 60 * 24));
-        const cyclesElapsed = Math.floor(daysDiff / cycleLength);
-        // Avancer lastJ1 au début du cycle actuel
-        lastJ1 = new Date(periodDateField.toDate ? periodDateField.toDate() : periodDateField);
-        lastJ1.setHours(0, 0, 0, 0);
-        lastJ1.setDate(lastJ1.getDate() + (cyclesElapsed * cycleLength));
+    // Si J1 dans le futur, erreur de saisie
+    if (lastJ1 > targetDate) {
+        return { phase: 'unknown', day: 0 };
     }
-    
+
+    // Calcul SANS recalcul automatique - pas de reset de cycle
     const daysSinceJ1 = Math.floor((targetDate - lastJ1) / (1000 * 60 * 60 * 24));
     let cycleDay = daysSinceJ1 + 1;
     if (cycleDay <= 0) cycleDay = 1;
-    if (cycleDay > cycleLength) cycleDay = cycleLength;
-    
+
+    const isExtended = cycleDay > cycleLength;
+
     // Déterminer la phase
     let phase;
     if (cycleDay <= 5) {
@@ -188,11 +185,13 @@ function getPhaseForDate(cycleConfig, date) {
         phase = 'follicular';
     } else if (cycleDay <= 16) {
         phase = 'ovulatory';
+    } else if (isExtended) {
+        phase = 'extended';
     } else {
         phase = 'luteal';
     }
-    
-    return { phase, day: cycleDay };
+
+    return { phase, day: cycleDay, isExtended };
 }
 
 /**

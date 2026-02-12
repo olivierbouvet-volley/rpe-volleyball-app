@@ -1286,28 +1286,22 @@ async function getPlayerCyclePhase(playerId) {
         
         const cycleLength = config.cycleLength || 28;
         
-        // Si le J1 est dans le futur, reculer d'un cycle
+        // Si le J1 est dans le futur (erreur de saisie), retourner unknown
         if (lastJ1 > today) {
-            while (lastJ1 > today) {
-                lastJ1.setDate(lastJ1.getDate() - cycleLength);
-            }
-        } else if (lastJ1 <= today) {
-            // Calculer combien de cycles complets se sont écoulés
-            const daysDiff = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
-            const cyclesElapsed = Math.floor(daysDiff / cycleLength);
-            // Recréer lastJ1 pour éviter les mutations
-            lastJ1 = periodDateField.toDate ? periodDateField.toDate() : new Date(periodDateField);
-            lastJ1.setHours(0, 0, 0, 0);
-            lastJ1.setDate(lastJ1.getDate() + (cyclesElapsed * cycleLength));
+            window.playersPhaseCache[playerId] = { phase: 'unknown', day: 0 };
+            return window.playersPhaseCache[playerId];
         }
-        
-        // Calculer le jour dans le cycle actuel
+
+        // Calculer le jour depuis J1 SANS recalcul automatique
+        // Seule la joueuse peut déclarer un nouveau J1 via check-in (boutons J1-J8)
         const diffTime = today - lastJ1;
         const daysSinceJ1 = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         let cycleDay = daysSinceJ1 + 1;
         if (cycleDay <= 0) cycleDay = 1;
-        if (cycleDay > cycleLength) cycleDay = cycleLength;
-        
+
+        // Cycle prolongé si on dépasse la durée théorique (pas de reset auto)
+        const isExtended = cycleDay > cycleLength;
+
         // Déterminer la phase
         let phase;
         if (cycleDay <= 5) {
@@ -1316,6 +1310,8 @@ async function getPlayerCyclePhase(playerId) {
             phase = 'follicular';
         } else if (cycleDay <= 16) {
             phase = 'ovulatory';
+        } else if (isExtended) {
+            phase = 'extended'; // Cycle prolongé - possible aménorrhée
         } else {
             phase = 'luteal';
         }

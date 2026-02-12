@@ -315,23 +315,25 @@ async function calculateCycleDayInfo(playerId) {
             lastPeriod = new Date(lastPeriodDate);
         }
         
-        // Calculer le jour du cycle
+        // Calculer le jour du cycle SANS modulo - pas de reset automatique
         const today = new Date();
         const diffTime = today - lastPeriod;
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        // Ajuster pour les cycles de longueur variable
-        let cycleDay = (diffDays % cycleLength) + 1;
+
+        // Pas de modulo - on continue à compter (J34, J45, etc.)
+        let cycleDay = diffDays + 1;
         if (cycleDay <= 0) cycleDay = 1;
-        if (cycleDay > cycleLength) cycleDay = cycleLength;
-        
+
+        const isExtended = cycleDay > cycleLength;
+
         return {
             playerId,
             cycleDay,
             cycleLength,
             lastPeriodDate: lastPeriod,
             daysInCurrentCycle: diffDays,
-            isIrregular: cycleData.isIrregular || false
+            isIrregular: cycleData.isIrregular || false,
+            isExtended
         };
         
     } catch (error) {

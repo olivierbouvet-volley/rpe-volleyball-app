@@ -208,19 +208,28 @@ function calculatePhaseForDate(cycleConfig, date) {
     if (!cycleConfig || !cycleConfig.lastPeriodDate) {
         return { phase: 'unknown', day: 0 };
     }
-    
-    const lastJ1 = cycleConfig.lastPeriodDate.toDate 
-        ? cycleConfig.lastPeriodDate.toDate() 
+
+    const lastJ1 = cycleConfig.lastPeriodDate.toDate
+        ? cycleConfig.lastPeriodDate.toDate()
         : new Date(cycleConfig.lastPeriodDate);
-    
+
     const targetDate = new Date(date);
     targetDate.setHours(0, 0, 0, 0);
     lastJ1.setHours(0, 0, 0, 0);
-    
+
+    // Si J1 dans le futur, erreur
+    if (lastJ1 > targetDate) {
+        return { phase: 'unknown', day: 0 };
+    }
+
+    // Calcul SANS modulo - pas de reset automatique de cycle
     const daysSinceJ1 = Math.floor((targetDate - lastJ1) / (1000 * 60 * 60 * 24));
     const cycleLength = cycleConfig.cycleLength || 28;
-    const cycleDay = ((daysSinceJ1 % cycleLength) + cycleLength) % cycleLength + 1;
-    
+    let cycleDay = daysSinceJ1 + 1;
+    if (cycleDay <= 0) cycleDay = 1;
+
+    const isExtended = cycleDay > cycleLength;
+
     let phase;
     if (cycleDay <= 5) {
         phase = 'menstrual';
@@ -228,11 +237,13 @@ function calculatePhaseForDate(cycleConfig, date) {
         phase = 'follicular';
     } else if (cycleDay <= 16) {
         phase = 'ovulatory';
+    } else if (isExtended) {
+        phase = 'extended';
     } else {
         phase = 'luteal';
     }
-    
-    return { phase, day: cycleDay };
+
+    return { phase, day: cycleDay, isExtended };
 }
 
 // ============================================
