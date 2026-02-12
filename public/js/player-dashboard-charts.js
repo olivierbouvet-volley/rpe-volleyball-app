@@ -745,29 +745,12 @@ async function loadCycleChart(cycleOffset = 0) {
         let lastJ1 = new Date(cycleData.cycleStartDate);
         lastJ1.setHours(0, 0, 0, 0);
         
-        // Si le J1 initial est dans le futur, reculer pour trouver le cycle actuel
+        // PAS de recalcul automatique - on utilise le J1 déclaré par la joueuse tel quel
+        // Si le J1 est dans le futur (erreur de saisie), on affiche quand même
         if (lastJ1 > today) {
-            // Reculer jusqu'à trouver un J1 qui est dans le passé ou aujourd'hui
-            while (lastJ1 > today) {
-                lastJ1.setDate(lastJ1.getDate() - cycleLength);
-            }
-            console.log(`Dashboard Charts: J1 initial était dans le futur, reculé à: ${lastJ1.toISOString().split('T')[0]}`);
-        } else {
-            // Si le J1 initial est dans le passé, avancer pour trouver le cycle actuel
-            // Avancer tant que le PROCHAIN cycle commence AVANT aujourd'hui
-            while (true) {
-                const nextCycleStart = new Date(lastJ1);
-                nextCycleStart.setDate(nextCycleStart.getDate() + cycleLength);
-                
-                // Si le prochain cycle commence APRÈS aujourd'hui, on reste sur le cycle actuel
-                if (nextCycleStart > today) {
-                    break;
-                }
-                
-                // Sinon on avance au cycle suivant
-                lastJ1 = nextCycleStart;
-            }
+            console.log(`Dashboard Charts: J1 dans le futur (${lastJ1.toISOString().split('T')[0]}), possible erreur de saisie`);
         }
+        // Sinon on garde lastJ1 tel quel - pas d'avancement automatique au cycle suivant
 
         // Appliquer l'offset du cycle (pour C-1, C-2, etc.)
         lastJ1.setDate(lastJ1.getDate() + (cycleOffset * cycleLength));
