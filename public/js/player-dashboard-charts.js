@@ -755,17 +755,25 @@ async function loadCycleChart(cycleOffset = 0) {
         // Appliquer l'offset du cycle (pour C-1, C-2, etc.)
         lastJ1.setDate(lastJ1.getDate() + (cycleOffset * cycleLength));
 
+        // Calculer le vrai jour du cycle (peut dépasser cycleLength pour cycles prolongés)
+        const daysSinceJ1 = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
+        const actualDayOfCycle = daysSinceJ1 + 1;
+        const isExtendedCycle = actualDayOfCycle > cycleLength;
+
+        // Pour les cycles prolongés, étendre la durée affichée
+        const displayLength = isExtendedCycle ? actualDayOfCycle : cycleLength;
+
         // Dates clés
         const cycleEndDate = new Date(lastJ1);
-        cycleEndDate.setDate(cycleEndDate.getDate() + cycleLength - 1);
-        
-        // Ovulation environ à J14 (ou selon la durée du cycle)
+        cycleEndDate.setDate(cycleEndDate.getDate() + displayLength - 1);
+
+        // Ovulation environ à J14 (ou selon la durée du cycle théorique)
         const ovulationDay = Math.round(cycleLength * 0.5);
         const ovulationDate = new Date(lastJ1);
         ovulationDate.setDate(ovulationDate.getDate() + ovulationDay - 1);
-        
-        console.log(`Dashboard Charts: Cycle ${cycleLength}j - J1: ${lastJ1.toISOString().split('T')[0]}, Ovulation: ${ovulationDate.toISOString().split('T')[0]}, Fin: ${cycleEndDate.toISOString().split('T')[0]}`);
-        
+
+        console.log(`Dashboard Charts: Cycle ${cycleLength}j - J1: ${lastJ1.toISOString().split('T')[0]}, Aujourd'hui: J${actualDayOfCycle}, Prolongé: ${isExtendedCycle}`);
+
         // Créer les données pour le cycle complet
         const data = [];
         const labels = [];
@@ -773,40 +781,31 @@ async function loadCycleChart(cycleOffset = 0) {
             'menstrual': '#ef4444',
             'follicular': '#3b82f6',
             'ovulation': '#fbbf24',
-            'luteal': '#a855f7'
+            'luteal': '#a855f7',
+            'extended': '#f97316' // Orange pour cycle prolongé
         };
-        
-        // Générer les jours du cycle - AVEC possibilité d'inclure le cycle précédent
-        let todayDayOfCycle = null;
-        
-        // Première passe : trouver quel jour du cycle est aujourd'hui
-        for (let i = 0; i < cycleLength; i++) {
-            const date = new Date(lastJ1);
-            date.setDate(date.getDate() + i);
-            if (date.toDateString() === today.toDateString()) {
-                todayDayOfCycle = i + 1;
-                break;
-            }
-        }
-        
-        // Afficher une fenêtre autour de "Today" : 7 jours avant + today + 14 jours après
+
+        // Générer les jours du cycle - AVEC gestion des cycles prolongés
+        let todayDayOfCycle = actualDayOfCycle > 0 ? actualDayOfCycle : null;
+
+        // Afficher une fenêtre autour de "Today" : 7 jours avant + today + quelques jours après
         const daysBeforeToday = 7;
-        const daysAfterToday = 14;
-        
+        const daysAfterToday = isExtendedCycle ? 3 : 14; // Moins de jours après si cycle prolongé
+
         let startDayIndex = 0;  // Par défaut, commencer à J1
-        let endDayIndex = cycleLength - 1;  // Par défaut, finir à la fin du cycle
-        
+        let endDayIndex = displayLength - 1;  // Fin du cycle (prolongé ou non)
+
         if (todayDayOfCycle) {
             // Calculer l'index de début (peut être négatif pour inclure le cycle précédent)
             startDayIndex = (todayDayOfCycle - 1) - daysBeforeToday;
             endDayIndex = (todayDayOfCycle - 1) + daysAfterToday;
-            
-            // Si on dépasse la fin du cycle, limiter
-            if (endDayIndex >= cycleLength) {
-                endDayIndex = cycleLength - 1;
+
+            // Si on dépasse la fin du cycle affiché, limiter
+            if (endDayIndex >= displayLength) {
+                endDayIndex = displayLength - 1;
             }
         }
-        
+
         console.log(`Dashboard Charts: Today=J${todayDayOfCycle}, Affichage de index ${startDayIndex} à ${endDayIndex}`);
         
         // Générer les données pour la plage calculée
@@ -841,9 +840,12 @@ async function loadCycleChart(cycleOffset = 0) {
             const menstrualEnd = Math.round(cycleLength * 0.18); // ~5 jours sur 28
             const ovulationStart = Math.round(cycleLength * 0.42); // ~12 jours sur 28
             const ovulationEnd = Math.round(cycleLength * 0.58); // ~16 jours sur 28
-            
+
             let phase = 'follicular';
-            if (actualDayOfCycle <= menstrualEnd) {
+            if (actualDayOfCycle > cycleLength) {
+                // Cycle prolongé - au-delà de la durée théorique
+                phase = 'extended';
+            } else if (actualDayOfCycle <= menstrualEnd) {
                 phase = 'menstrual';
             } else if (actualDayOfCycle >= ovulationStart && actualDayOfCycle <= ovulationEnd) {
                 phase = 'ovulation';
@@ -1287,16 +1289,24 @@ async function loadCycleChart(cycleOffset = 0) {
             chartContainer.appendChild(annotationDiv);
         }
         
+        // Affichage adapté pour cycles prolongés
+        const cycleStatusHtml = isExtendedCycle
+            ? `<div style="margin-bottom: 12px; padding: 10px 12px; background-color: rgba(249, 115, 22, 0.15); border-left: 4px solid #f97316; border-radius: 4px;">
+                <strong>⚠️ Cycle prolongé</strong> - Jour ${todayDayOfCycle} sur ${cycleLength} théoriques<br>
+                <span style="font-size: 12px; color: #9a3412;">Pas de règles déclarées depuis ${todayDayOfCycle} jours. Utilise les boutons J1-J8 dans ton check-in quand tes règles arrivent.</span>
+               </div>`
+            : (todayDayOfCycle ? `<div style="margin-bottom: 12px; padding: 8px 12px; background-color: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; font-weight: 600; border-radius: 4px;">📍 Aujourd'hui: Jour ${todayDayOfCycle} sur ${cycleLength}</div>` : '');
+
         annotationDiv.innerHTML = `
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 13px; margin-bottom: 12px;">
                 <div><strong>📅 Début du cycle</strong><br>${lastJ1.toLocaleDateString('fr-FR')}</div>
-                <div><strong>🔴 Ovulation</strong><br>${ovulationDate.toLocaleDateString('fr-FR')}</div>
-                <div><strong>📆 Fin du cycle</strong><br>${cycleEndDate.toLocaleDateString('fr-FR')}</div>
+                <div><strong>🔴 Ovulation</strong><br>${ovulationDate.toLocaleDateString('fr-FR')}${isExtendedCycle ? ' (théorique)' : ''}</div>
+                <div><strong>📆 Fin théorique</strong><br>${new Date(lastJ1.getTime() + (cycleLength - 1) * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')}</div>
             </div>
-            ${todayDayOfCycle ? `<div style="margin-bottom: 12px; padding: 8px 12px; background-color: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; font-weight: 600; border-radius: 4px;">📍 Aujourd'hui: Jour ${todayDayOfCycle} (J${todayDayOfCycle})</div>` : ''}
+            ${cycleStatusHtml}
             <div style="font-size: 12px; color: #6b7280; line-height: 1.6;">
-                <strong>Cycle: ${cycleLength} jours</strong><br>
-                💝 Œstrogène (rose) | 💜 Progestérone (violet) | 🟢 Énergie (vert) | 🟡 Symptômes (orange pointillé)
+                <strong>Cycle théorique: ${cycleLength} jours</strong>${isExtendedCycle ? ` | <span style="color: #f97316;">Durée actuelle: ${todayDayOfCycle} jours</span>` : ''}<br>
+                💝 Œstrogène (rose) | 💜 Progestérone (violet) | 🟢 Énergie (vert) | 🟡 Symptômes (orange pointillé)${isExtendedCycle ? ' | 🟠 Zone prolongée (orange)' : ''}
             </div>
         `;
         
