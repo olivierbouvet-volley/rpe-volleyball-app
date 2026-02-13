@@ -631,17 +631,17 @@ async function loadPopupCycleChart(playerId) {
             return;
         }
         
-        // Récupérer tous les checkins avec données de cycle
+        // Récupérer tous les checkins avec données de cycle (les 100 plus RÉCENTS, comme le dashboard)
         const checkinsSnapshot = await db.collection('checkins')
             .where('playerId', '==', playerId)
-            .orderBy('date', 'asc')
+            .orderBy('date', 'desc')
             .limit(100)
             .get();
-        
-        // Récupérer tous les RPE de la joueuse
+
+        // Récupérer tous les RPE de la joueuse (les 100 plus RÉCENTS)
         const rpeSnapshot = await db.collection('rpe')
             .where('playerId', '==', playerId)
-            .orderBy('date', 'asc')
+            .orderBy('date', 'desc')
             .limit(100)
             .get();
         
