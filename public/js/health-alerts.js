@@ -59,24 +59,28 @@ const HEALTH_ALERT_CONFIG = {
  */
 async function checkAmenorrhea(playerId) {
     try {
-        // Récupérer le profil de cycle
-        const cycleProfileDoc = await db.collection('cycleProfiles').doc(playerId).get();
-        
-        if (!cycleProfileDoc.exists) {
-            console.log(`ℹ️ Pas de profil cycle pour ${playerId}`);
-            return null;
+        // Récupérer les données de cycle depuis menstrualCycle (prioritaire) ou cycleProfiles (fallback)
+        let cycleStartDate = null;
+
+        // Essayer d'abord menstrualCycle (données mises à jour par check-in)
+        const menstrualCycleDoc = await db.collection('menstrualCycle').doc(playerId).get();
+        if (menstrualCycleDoc.exists && menstrualCycleDoc.data().cycleStartDate) {
+            cycleStartDate = menstrualCycleDoc.data().cycleStartDate;
+        } else {
+            // Fallback sur cycleProfiles
+            const cycleProfileDoc = await db.collection('cycleProfiles').doc(playerId).get();
+            if (cycleProfileDoc.exists) {
+                cycleStartDate = cycleProfileDoc.data().cycleStartDate || cycleProfileDoc.data().lastPeriodDate;
+            }
         }
-        
-        const cycleData = cycleProfileDoc.data();
-        const lastPeriodDate = cycleData.lastPeriodDate;
-        
-        if (!lastPeriodDate) {
+
+        if (!cycleStartDate) {
             console.log(`ℹ️ Pas de date J1 enregistrée pour ${playerId}`);
             return null;
         }
-        
+
         // Calculer le nombre de jours depuis le dernier J1
-        const lastPeriod = new Date(lastPeriodDate);
+        const lastPeriod = new Date(cycleStartDate);
         const today = new Date();
         const daysSinceLastPeriod = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
         
