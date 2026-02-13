@@ -1473,51 +1473,61 @@ function getWeekNumberPopup(date) {
 }
 
 // ============================================
-// NAVIGATION CYCLES (C-1, C-2, C-3)
+// NAVIGATION CYCLES (flèches ◀ ▶)
 // ============================================
 
 /**
- * Met à jour l'apparence des boutons de navigation du cycle
+ * Met à jour le label et les boutons de navigation du cycle
  */
 function updatePopupCycleNavButtons(activeOffset) {
-    const buttons = document.querySelectorAll('.popup-cycle-nav-btn');
-    buttons.forEach(btn => {
-        const offset = parseInt(btn.dataset.popupCycleOffset);
-        if (offset === activeOffset) {
-            btn.style.background = '#667eea';
-            btn.style.color = 'white';
-            btn.style.borderColor = '#667eea';
-        } else {
-            btn.style.background = 'white';
-            btn.style.color = '#374151';
-            btn.style.borderColor = '#e5e7eb';
-        }
-    });
-}
+    const label = document.getElementById('popupCycleLabel');
+    const prevBtn = document.getElementById('popupCyclePrev');
+    const nextBtn = document.getElementById('popupCycleNext');
 
-/**
- * Gère le clic sur un bouton de navigation du cycle
- */
-function handlePopupCycleNavClick(event) {
-    const offset = parseInt(event.target.dataset.popupCycleOffset);
-    if (window.currentPopupPlayerId) {
-        loadPopupCycleChart(window.currentPopupPlayerId, offset);
+    if (label) {
+        if (activeOffset === 0) {
+            label.textContent = 'Cycle Actuel';
+        } else {
+            label.textContent = `C${activeOffset}`; // C-1, C-2, etc.
+        }
+    }
+
+    // Désactiver le bouton ▶ si on est au cycle actuel
+    if (nextBtn) {
+        if (activeOffset >= 0) {
+            nextBtn.disabled = true;
+            nextBtn.style.opacity = '0.3';
+            nextBtn.style.cursor = 'not-allowed';
+        } else {
+            nextBtn.disabled = false;
+            nextBtn.style.opacity = '1';
+            nextBtn.style.cursor = 'pointer';
+        }
+    }
+
+    // Le bouton ◀ est toujours actif (on peut toujours remonter)
+    if (prevBtn) {
+        prevBtn.style.opacity = '1';
+        prevBtn.style.cursor = 'pointer';
     }
 }
 
 /**
- * Initialise les event listeners pour la navigation des cycles
+ * Navigue vers le cycle précédent (-1) ou suivant (+1)
  */
-function initPopupCycleNavigation() {
-    const buttons = document.querySelectorAll('.popup-cycle-nav-btn');
-    buttons.forEach(btn => {
-        btn.removeEventListener('click', handlePopupCycleNavClick);
-        btn.addEventListener('click', handlePopupCycleNavClick);
-    });
+function navigatePopupCycle(direction) {
+    const newOffset = currentPopupCycleOffset + direction;
+
+    // Ne pas aller au-delà du cycle actuel (offset 0)
+    if (newOffset > 0) return;
+
+    if (window.currentPopupPlayerId) {
+        loadPopupCycleChart(window.currentPopupPlayerId, newOffset);
+    }
 }
 
-// Initialiser la navigation au chargement
-document.addEventListener('DOMContentLoaded', initPopupCycleNavigation);
+// Export global pour les onclick dans le HTML
+window.navigatePopupCycle = navigatePopupCycle;
 
 // Exports globaux
 window.showPlayerDetail = showPlayerDetail;
