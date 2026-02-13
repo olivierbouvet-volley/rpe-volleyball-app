@@ -3596,7 +3596,14 @@
 
                 <!-- GRAPHIQUE CYCLE MENSTRUEL -->
                 <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
-                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 16px;">🌸 Cycle Menstruel</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 12px;">🌸 Cycle Menstruel</div>
+                    <!-- Navigation cycles C-1, C-2, C-3 -->
+                    <div id="popupCycleNavigation" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button class="popup-cycle-nav-btn" data-popup-cycle-offset="0" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: #667eea; color: white; cursor: pointer; font-size: 12px; font-weight: 500;">Cycle Actuel</button>
+                        <button class="popup-cycle-nav-btn" data-popup-cycle-offset="-1" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #374151; cursor: pointer; font-size: 12px; font-weight: 500;">C-1</button>
+                        <button class="popup-cycle-nav-btn" data-popup-cycle-offset="-2" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #374151; cursor: pointer; font-size: 12px; font-weight: 500;">C-2</button>
+                        <button class="popup-cycle-nav-btn" data-popup-cycle-offset="-3" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #374151; cursor: pointer; font-size: 12px; font-weight: 500;">C-3</button>
+                    </div>
                     <div id="popupCycleChartContainer" style="position: relative; height: 300px;">
                         <canvas id="popupCycleChart"></canvas>
                     </div>

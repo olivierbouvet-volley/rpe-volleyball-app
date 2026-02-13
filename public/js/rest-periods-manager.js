@@ -21,6 +21,7 @@ function openNewRestPeriodModal() {
         }
         
         modal.style.display = 'flex';
+        modal.style.pointerEvents = 'auto'; // Fix: permettre les clics
         console.log('Manager: Modal ouvert');
     }
 }
@@ -203,8 +204,11 @@ async function editRestPeriod(periodId) {
         if (titleField) titleField.textContent = 'Modifier la Periode de Repos';
         
         const modal = document.getElementById('restPeriodModal');
-        if (modal) modal.style.display = 'flex';
-        
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.style.pointerEvents = 'auto'; // Fix: permettre les clics
+        }
+
         console.log('Manager: Periode chargee:', period.type);
         
     } catch (error) {

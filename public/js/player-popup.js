@@ -607,30 +607,39 @@ async function updatePopupLastCheckin(playerId) {
 /**
  * Charge le graphique du cycle menstruel dans le popup
  * Code complet copié depuis player-dashboard-charts.js
+ * @param {string} playerId - ID de la joueuse
+ * @param {number} cycleOffset - Décalage du cycle (0 = actuel, -1 = précédent, etc.)
  */
 let popupCycleChartInstance = null;
+let currentPopupCycleOffset = 0;
 
-async function loadPopupCycleChart(playerId) {
+async function loadPopupCycleChart(playerId, cycleOffset = 0) {
     const canvas = document.getElementById('popupCycleChart');
     const emptyDiv = document.getElementById('popupCycleChartEmpty');
-    
+
     if (!canvas) {
         console.log('Popup: Canvas popupCycleChart non trouvé');
         return;
     }
-    
+
+    // Stocker l'offset actuel
+    currentPopupCycleOffset = cycleOffset;
+
+    // Mettre à jour les boutons de navigation
+    updatePopupCycleNavButtons(cycleOffset);
+
     try {
         // Récupérer les données du cycle
         const cycleDoc = await db.collection('menstrualCycle').doc(playerId).get();
         const cycleData = cycleDoc.data();
-        
+
         if (!cycleData || !cycleData.cycleStartDate) {
             console.log('Popup: Pas de données de cycle disponibles');
             canvas.style.display = 'none';
             emptyDiv.style.display = 'block';
             return;
         }
-        
+
         // Récupérer tous les checkins avec données de cycle (les 100 plus RÉCENTS, comme le dashboard)
         const checkinsSnapshot = await db.collection('checkins')
             .where('playerId', '==', playerId)
@@ -644,26 +653,28 @@ async function loadPopupCycleChart(playerId) {
             .orderBy('date', 'desc')
             .limit(100)
             .get();
-        
-        console.log(`Popup: ${checkinsSnapshot.docs.length} check-ins, ${rpeSnapshot.docs.length} RPE`);
-        
+
+        console.log(`Popup: ${checkinsSnapshot.docs.length} check-ins, ${rpeSnapshot.docs.length} RPE, cycleOffset=${cycleOffset}`);
+
         const cycleLength = cycleData.cycleLength || 28;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Calculer le J1 le plus proche d'aujourd'hui
+        // Calculer le J1 du cycle actuel
         let lastJ1 = new Date(cycleData.cycleStartDate);
         lastJ1.setHours(0, 0, 0, 0);
 
-        // PAS de recalcul automatique - seule la joueuse peut déclarer un nouveau J1
+        // Appliquer l'offset du cycle (pour C-1, C-2, etc.)
+        lastJ1.setDate(lastJ1.getDate() + (cycleOffset * cycleLength));
 
         // Calculer le jour actuel du cycle (peut dépasser cycleLength)
         const daysSinceJ1 = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
         const actualTodayDayOfCycle = daysSinceJ1 + 1;
-        const isExtendedCycle = actualTodayDayOfCycle > cycleLength;
+        const isExtendedCycle = cycleOffset === 0 && actualTodayDayOfCycle > cycleLength;
 
-        // Pour les cycles prolongés, étendre la durée affichée
-        const displayLength = isExtendedCycle ? actualTodayDayOfCycle + 3 : cycleLength;
+        // Pour les cycles prolongés (cycle actuel uniquement), étendre la durée affichée
+        // Pour les cycles passés, afficher le cycle complet théorique
+        const displayLength = (cycleOffset < 0) ? cycleLength : (isExtendedCycle ? actualTodayDayOfCycle + 3 : cycleLength);
 
         // Dates clés
         const cycleEndDate = new Date(lastJ1);
@@ -681,7 +692,12 @@ async function loadPopupCycleChart(playerId) {
         const ovulationStart = Math.round(cycleLength * 0.42);
         const ovulationEnd = Math.round(cycleLength * 0.58);
 
-        let todayDayOfCycle = actualTodayDayOfCycle > 0 ? actualTodayDayOfCycle : null;
+        // Pour les cycles passés, "aujourd'hui" n'est pas dans le cycle affiché
+        // Pour le cycle actuel, montrer "today" seulement si on est dans le cycle
+        let todayDayOfCycle = null;
+        if (cycleOffset === 0 && actualTodayDayOfCycle > 0) {
+            todayDayOfCycle = actualTodayDayOfCycle;
+        }
 
         // Boucle sur TOUT le cycle (y compris les jours prolongés)
         for (let i = 0; i < displayLength; i++) {
@@ -1456,8 +1472,56 @@ function getWeekNumberPopup(date) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
+// ============================================
+// NAVIGATION CYCLES (C-1, C-2, C-3)
+// ============================================
+
+/**
+ * Met à jour l'apparence des boutons de navigation du cycle
+ */
+function updatePopupCycleNavButtons(activeOffset) {
+    const buttons = document.querySelectorAll('.popup-cycle-nav-btn');
+    buttons.forEach(btn => {
+        const offset = parseInt(btn.dataset.popupCycleOffset);
+        if (offset === activeOffset) {
+            btn.style.background = '#667eea';
+            btn.style.color = 'white';
+            btn.style.borderColor = '#667eea';
+        } else {
+            btn.style.background = 'white';
+            btn.style.color = '#374151';
+            btn.style.borderColor = '#e5e7eb';
+        }
+    });
+}
+
+/**
+ * Gère le clic sur un bouton de navigation du cycle
+ */
+function handlePopupCycleNavClick(event) {
+    const offset = parseInt(event.target.dataset.popupCycleOffset);
+    if (window.currentPopupPlayerId) {
+        loadPopupCycleChart(window.currentPopupPlayerId, offset);
+    }
+}
+
+/**
+ * Initialise les event listeners pour la navigation des cycles
+ */
+function initPopupCycleNavigation() {
+    const buttons = document.querySelectorAll('.popup-cycle-nav-btn');
+    buttons.forEach(btn => {
+        btn.removeEventListener('click', handlePopupCycleNavClick);
+        btn.addEventListener('click', handlePopupCycleNavClick);
+    });
+}
+
+// Initialiser la navigation au chargement
+document.addEventListener('DOMContentLoaded', initPopupCycleNavigation);
+
 // Exports globaux
 window.showPlayerDetail = showPlayerDetail;
 window.closePlayerDetailModal = closePlayerDetailModal;
+window.loadPopupCycleChart = loadPopupCycleChart;
 
 console.log('✅ Module Player Popup chargé - showPlayerDetail exporté:', typeof window.showPlayerDetail);
