@@ -788,25 +788,22 @@ async function loadCycleChart(cycleOffset = 0) {
         // Générer les jours du cycle - AVEC gestion des cycles prolongés
         let todayDayOfCycle = actualDayOfCycle > 0 ? actualDayOfCycle : null;
 
-        // Afficher une fenêtre autour de "Today" : 7 jours avant + today + quelques jours après
-        const daysBeforeToday = 7;
-        const daysAfterToday = isExtendedCycle ? 3 : 14; // Moins de jours après si cycle prolongé
+        // AFFICHER TOUT LE CYCLE : de J1 jusqu'à la fin (+ quelques jours pour cycles prolongés)
+        let startDayIndex = 0;  // Toujours commencer à J1
+        let endDayIndex;
 
-        let startDayIndex = 0;  // Par défaut, commencer à J1
-        let endDayIndex = displayLength - 1;  // Fin du cycle (prolongé ou non)
-
-        if (todayDayOfCycle) {
-            // Calculer l'index de début (peut être négatif pour inclure le cycle précédent)
-            startDayIndex = (todayDayOfCycle - 1) - daysBeforeToday;
-            endDayIndex = (todayDayOfCycle - 1) + daysAfterToday;
-
-            // Si on dépasse la fin du cycle affiché, limiter
-            if (endDayIndex >= displayLength) {
-                endDayIndex = displayLength - 1;
-            }
+        if (cycleOffset < 0) {
+            // Cycles passés (C-1, C-2, etc.) : afficher le cycle complet théorique
+            endDayIndex = cycleLength - 1;
+        } else if (isExtendedCycle) {
+            // Cycle actuel prolongé : afficher jusqu'à aujourd'hui + 3 jours
+            endDayIndex = (todayDayOfCycle - 1) + 3;
+        } else {
+            // Cycle actuel normal : afficher jusqu'à la fin théorique
+            endDayIndex = cycleLength - 1;
         }
 
-        console.log(`Dashboard Charts: Today=J${todayDayOfCycle}, Affichage de index ${startDayIndex} à ${endDayIndex}`);
+        console.log(`Dashboard Charts: Today=J${todayDayOfCycle}, Cycle prolongé=${isExtendedCycle}, Affichage J1 à J${endDayIndex + 1}`);
         
         // Générer les données pour la plage calculée
         let xValue = 1; // Valeur X continue pour le graphique
