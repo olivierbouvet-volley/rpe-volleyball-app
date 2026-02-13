@@ -1818,8 +1818,7 @@
                 <!-- Sous-onglets pour RPE -->
                 <div style="display: flex; gap: var(--space-8); margin-bottom: var(--space-24); border-bottom: 2px solid var(--color-border); padding-bottom: var(--space-8);">
                     <button class="btn btn-secondary" id="rpeTodayBtn" onclick="showRpeSubTab('today')" style="background: var(--color-primary); color: white;">Aujourd'hui</button>
-                    <button class="btn btn-secondary" id="rpeYesterdayBtn" onclick="showRpeSubTab('yesterday')">Veille (J-1)</button>
-                    <button class="btn btn-secondary" id="rpeDayBeforeBtn" onclick="showRpeSubTab('daybefore')">Avant-veille (J-2)</button>
+                    <button class="btn btn-secondary" id="rpeRattrapageBtn" onclick="showRpeSubTab('rattrapage')">📅 Rattrapage</button>
                     <button class="btn btn-secondary" id="rpeDeleteBtn" onclick="showRpeSubTab('delete')" style="margin-left: auto; background: #e74c3c; color: white;">🗑️ Supprimer un RPE</button>
                 </div>
                 
@@ -1899,158 +1898,92 @@
                     </form>
                 </div>
                 
-                <!-- RPE Veille (J-1) -->
-                <div class="card" id="rpeYesterdayCard" style="display: none;">
-                    <h3 class="card-title">Rattrapage RPE - Veille (J-1)</h3>
-                    <form id="rpeYesterdayForm">
+                <!-- RPE Rattrapage (avec calendrier) -->
+                <div class="card" id="rpeRattrapageCard" style="display: none;">
+                    <h3 class="card-title">Rattrapage RPE</h3>
+                    <p style="color: var(--color-text-secondary); margin-bottom: var(--space-16);">
+                        Sélectionnez la date de la séance que vous avez oubliée d'enregistrer
+                    </p>
+                    <form id="rpeRattrapageForm">
+                        <!-- Étape 0: Sélection de la date -->
+                        <div class="form-group" id="rpeRattrapageStep0">
+                            <label class="form-label">Date de la séance</label>
+                            <input type="date" id="rattrapageDate" class="form-control" style="padding: 12px; font-size: 16px; border-radius: 8px; border: 2px solid var(--color-border);" required>
+                            <p id="rattrapageDateLabel" style="margin-top: 8px; font-weight: 600; color: var(--color-primary); display: none;"></p>
+                        </div>
+
                         <!-- Étape 1: Type d'activité -->
-                        <div class="form-group" id="rpeYesterdayStep1">
+                        <div class="form-group" id="rpeRattrapageStep1" style="display: none;">
                             <label class="form-label">Type de session</label>
-                            <input type="hidden" id="sessionTypeYesterday" value="">
-                            <div class="activity-buttons-yesterday" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                                <button type="button" class="activity-btn-yesterday" data-value="Entrainement" style="background: #3b82f6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(59,130,246,0.3);">
+                            <input type="hidden" id="sessionTypeRattrapage" value="">
+                            <div class="activity-buttons-rattrapage" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Entrainement" style="background: #3b82f6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(59,130,246,0.3);">
                                     🏐 Entraînement
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Match" style="background: #ef4444; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239,68,68,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Match" style="background: #ef4444; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239,68,68,0.3);">
                                     🏆 Match
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Preparation Physique" style="background: #10b981; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Preparation Physique" style="background: #10b981; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
                                     💪 Prépa Physique
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Muscu+Volley" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Muscu+Volley" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
                                     💪🏐 Muscu + Volley
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Recuperation Active" style="background: #8b5cf6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Recuperation Active" style="background: #8b5cf6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
                                     🧘 Récupération
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Activite Physique Annexe" style="background: #f59e0b; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Activite Physique Annexe" style="background: #f59e0b; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
                                     🚴 Activité Annexe
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Étape 2: Effort ressenti -->
-                        <div class="form-group" id="rpeYesterdayStep2" style="display: none;">
+                        <div class="form-group" id="rpeRattrapageStep2" style="display: none;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <span id="selectedActivityBadgeYesterday" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;"></span>
-                                <button type="button" onclick="resetRpeFormYesterday()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px;">✏️ Modifier</button>
+                                <span id="selectedActivityBadgeRattrapage" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;"></span>
+                                <button type="button" onclick="resetRpeFormRattrapage()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px;">✏️ Modifier</button>
                             </div>
                             <label class="form-label">Effort ressenti (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="rpeValueYesterday" style="display:none;">
-                            <div style="display:none;"><span id="rpeValueDisplayYesterday">5</span>/10</div>
+                            <input type="range" min="0" max="10" value="0" class="form-control" id="rpeValueRattrapage" style="display:none;">
+                            <div style="display:none;"><span id="rpeValueDisplayRattrapage">5</span>/10</div>
                         </div>
-                        
+
                         <!-- Étape 3: Durée -->
-                        <div class="form-group" id="rpeYesterdayStep3" style="display: none;">
+                        <div class="form-group" id="rpeRattrapageStep3" style="display: none;">
                             <label class="form-label">Durée de la session</label>
-                            <input type="hidden" id="durationYesterday" value="">
-                            <div class="duration-wheel-yesterday" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
-                                <button type="button" class="duration-btn-yesterday" data-minutes="30" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">30'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="45" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">45'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="60" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">60'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="75" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">75'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="90" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">90'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="105" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">105'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="120" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">120'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="150" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">150'</button>
+                            <input type="hidden" id="durationRattrapage" value="">
+                            <div class="duration-wheel-rattrapage" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="30" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">30'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="45" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">45'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="60" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">60'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="75" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">75'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="90" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">90'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="105" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">105'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="120" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">120'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="150" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">150'</button>
                             </div>
                         </div>
-                        
+
                         <!-- Étape 4: Performance -->
-                        <div class="form-group" id="rpeYesterdayStep4" style="display: none;">
+                        <div class="form-group" id="rpeRattrapageStep4" style="display: none;">
                             <label class="form-label">Comment je note ma performance (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="performanceYesterday" style="display:none;">
-                            <div style="display:none;"><span id="performanceValueYesterday">5</span>/10</div>
+                            <input type="range" min="0" max="10" value="0" class="form-control" id="performanceRattrapage" style="display:none;">
+                            <div style="display:none;"><span id="performanceValueRattrapage">5</span>/10</div>
                         </div>
-                        
+
                         <!-- Étape 5: Commentaire et soumission -->
-                        <div id="rpeYesterdayStep5" style="display: none;">
+                        <div id="rpeRattrapageStep5" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Commentaire (optionnel, 150 caractères max)</label>
-                                <textarea class="form-control" id="rpeCommentYesterday" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur la session de la veille..."></textarea>
-                                <div style="text-align: right; margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary);"><span id="rpeCommentCountYesterday">0</span>/150</div>
+                                <textarea class="form-control" id="rpeCommentRattrapage" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur cette session..."></textarea>
+                                <div style="text-align: right; margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary);"><span id="rpeCommentCountRattrapage">0</span>/150</div>
                             </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">✅ Enregistrer le RPE (J-1)</button>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">✅ Enregistrer le RPE</button>
                         </div>
                     </form>
                 </div>
-                
-                <!-- RPE Avant-veille (J-2) -->
-                <div class="card" id="rpeDayBeforeCard" style="display: none;">
-                    <h3 class="card-title">Rattrapage RPE - Avant-veille (J-2)</h3>
-                    <form id="rpeDayBeforeForm">
-                        <!-- Étape 1: Type d'activité -->
-                        <div class="form-group" id="rpeDayBeforeStep1">
-                            <label class="form-label">Type de session</label>
-                            <input type="hidden" id="sessionTypeDayBefore" value="">
-                            <div class="activity-buttons-daybefore" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                                <button type="button" class="activity-btn-daybefore" data-value="Entrainement" style="background: #3b82f6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(59,130,246,0.3);">
-                                    🏐 Entraînement
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Match" style="background: #ef4444; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239,68,68,0.3);">
-                                    🏆 Match
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Preparation Physique" style="background: #10b981; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
-                                    💪 Prépa Physique
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Muscu+Volley" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
-                                    💪🏐 Muscu + Volley
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Recuperation Active" style="background: #8b5cf6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
-                                    🧘 Récupération
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Activite Physique Annexe" style="background: #f59e0b; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
-                                    🚴 Activité Annexe
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Étape 2: Effort ressenti -->
-                        <div class="form-group" id="rpeDayBeforeStep2" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <span id="selectedActivityBadgeDayBefore" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;"></span>
-                                <button type="button" onclick="resetRpeFormDayBefore()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px;">✏️ Modifier</button>
-                            </div>
-                            <label class="form-label">Effort ressenti (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="rpeValueDayBefore" style="display:none;">
-                            <div style="display:none;"><span id="rpeValueDisplayDayBefore">5</span>/10</div>
-                        </div>
-                        
-                        <!-- Étape 3: Durée -->
-                        <div class="form-group" id="rpeDayBeforeStep3" style="display: none;">
-                            <label class="form-label">Durée de la session</label>
-                            <input type="hidden" id="durationDayBefore" value="">
-                            <div class="duration-wheel-daybefore" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
-                                <button type="button" class="duration-btn-daybefore" data-minutes="30" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">30'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="45" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">45'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="60" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">60'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="75" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">75'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="90" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">90'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="105" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">105'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="120" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">120'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="150" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">150'</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Étape 4: Performance -->
-                        <div class="form-group" id="rpeDayBeforeStep4" style="display: none;">
-                            <label class="form-label">Comment je note ma performance (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="performanceDayBefore" style="display:none;">
-                            <div style="display:none;"><span id="performanceValueDayBefore">5</span>/10</div>
-                        </div>
-                        
-                        <!-- Étape 5: Commentaire et soumission -->
-                        <div id="rpeDayBeforeStep5" style="display: none;">
-                            <div class="form-group">
-                                <label class="form-label">Commentaire (optionnel, 150 caractères max)</label>
-                                <textarea class="form-control" id="rpeCommentDayBefore" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur la session de l'avant-veille..."></textarea>
-                                <div style="text-align: right; margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary);"><span id="rpeCommentCountDayBefore">0</span>/150</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">✅ Enregistrer le RPE (J-2)</button>
-                        </div>
-                    </form>
-                </div>
-                
+
                 <!-- Supprimer un RPE -->
                 <div class="card" id="rpeDeleteCard" style="display: none;">
                     <h3 class="card-title">🗑️ Supprimer un RPE</h3>
