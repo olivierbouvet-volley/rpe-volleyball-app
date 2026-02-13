@@ -784,21 +784,67 @@ async function loadPopupCycleChart(playerId) {
             });
         }
         
-        // Interpolation simple pour les gaps
+        // Interpolation avancée pour les gaps (même logique que dashboard joueuse)
         function interpolateEnergyGaps(dataArray, maxDay) {
-            return dataArray.map((d, i) => {
-                if (d.x > maxDay) {
-                    d.energy = null;
-                    d.symptoms = null;
-                    d.performance = null;
+            // Trouver tous les jours avec énergie > 0, jusqu'à maxDay (aujourd'hui)
+            const daysWithEnergy = dataArray.filter(d => d.energy > 0 && d.x <= maxDay);
+
+            if (daysWithEnergy.length >= 2) {
+                // Pour chaque gap de 1-2 jours, interpoler linéairement
+                for (let i = 0; i < daysWithEnergy.length - 1; i++) {
+                    const current = daysWithEnergy[i];
+                    const next = daysWithEnergy[i + 1];
+                    const dayGap = next.x - current.x;
+
+                    // Si gap de 1-2 jours seulement, interpoler
+                    if (dayGap > 1 && dayGap <= 3) {
+                        const energyDiff = next.energy - current.energy;
+                        const daysDiff = dayGap;
+
+                        for (let d = current.x + 1; d < next.x; d++) {
+                            if (d > maxDay) break;
+                            const progress = (d - current.x) / daysDiff;
+                            const interpolatedEnergy = current.energy + (energyDiff * progress);
+                            const dayIndex = dataArray.findIndex(item => item.x === d);
+                            if (dayIndex !== -1) {
+                                dataArray[dayIndex].energy = Math.round(interpolatedEnergy * 10) / 10;
+                            }
+                        }
+                    }
                 }
-                return d;
-            });
+            }
+
+            // Interpoler aussi la performance
+            const daysWithPerformance = dataArray.filter(d => d.performance > 0 && d.x <= maxDay);
+            if (daysWithPerformance.length >= 2) {
+                for (let i = 0; i < daysWithPerformance.length - 1; i++) {
+                    const current = daysWithPerformance[i];
+                    const next = daysWithPerformance[i + 1];
+                    const dayGap = next.x - current.x;
+
+                    if (dayGap > 1 && dayGap <= 3) {
+                        const performanceDiff = next.performance - current.performance;
+                        const daysDiff = dayGap;
+
+                        for (let d = current.x + 1; d < next.x; d++) {
+                            if (d > maxDay) break;
+                            const progress = (d - current.x) / daysDiff;
+                            const interpolatedPerformance = current.performance + (performanceDiff * progress);
+                            const dayIndex = dataArray.findIndex(item => item.x === d);
+                            if (dayIndex !== -1) {
+                                dataArray[dayIndex].performance = Math.round(interpolatedPerformance * 10) / 10;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return dataArray;
         }
-        
-        const interpolatedData = interpolateEnergyGaps(data, todayDayOfCycle || cycleLength);
-        
-        // Mettre à null les énergies après aujourd'hui
+
+        const interpolatedData = interpolateEnergyGaps(data, todayDayOfCycle || displayLength);
+
+        // Mettre à null les énergies après aujourd'hui (pour ne pas les afficher)
         if (todayDayOfCycle) {
             interpolatedData.forEach(d => {
                 if (d.x > todayDayOfCycle) {
@@ -808,6 +854,11 @@ async function loadPopupCycleChart(playerId) {
                 }
             });
         }
+
+        // Logs de debug (même que dashboard)
+        const energyWithData = interpolatedData.filter(d => d.energy !== null && d.energy > 0);
+        const performanceWithData = interpolatedData.filter(d => d.performance !== null && d.performance > 0);
+        console.log(`Popup: ${energyWithData.length} jours avec énergie, ${performanceWithData.length} jours avec performance`);
         
         // Datasets
         const datasets = [
@@ -848,19 +899,20 @@ async function loadPopupCycleChart(playerId) {
                 pointBackgroundColor: '#10b981',
                 yAxisID: 'y1'
             },
-            // Symptômes
+            // Symptômes (même style que dashboard)
             {
                 label: 'Symptômes (0-10)',
                 data: interpolatedData.map(d => ({ x: d.x, y: d.symptoms })),
                 borderColor: '#f59e0b',
                 backgroundColor: 'transparent',
-                borderWidth: 2,
+                borderWidth: 3,
                 fill: false,
                 tension: 0.3,
                 spanGaps: true,
-                pointRadius: 2,
+                pointRadius: 5,
                 pointBackgroundColor: '#f59e0b',
-                borderDash: [5, 5],
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
                 yAxisID: 'y1'
             },
             // Performance
