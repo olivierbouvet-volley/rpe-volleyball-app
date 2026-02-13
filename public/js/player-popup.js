@@ -650,44 +650,52 @@ async function loadPopupCycleChart(playerId) {
         const cycleLength = cycleData.cycleLength || 28;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         // Calculer le J1 le plus proche d'aujourd'hui
         let lastJ1 = new Date(cycleData.cycleStartDate);
         lastJ1.setHours(0, 0, 0, 0);
-        
-        // Si le J1 initial est dans le futur (erreur de saisie), on le garde tel quel
-        // La joueuse pourra corriger via "Corriger mon J1"
+
         // PAS de recalcul automatique - seule la joueuse peut déclarer un nouveau J1
-        
+
+        // Calculer le jour actuel du cycle (peut dépasser cycleLength)
+        const daysSinceJ1 = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
+        const actualTodayDayOfCycle = daysSinceJ1 + 1;
+        const isExtendedCycle = actualTodayDayOfCycle > cycleLength;
+
+        // Pour les cycles prolongés, étendre la durée affichée
+        const displayLength = isExtendedCycle ? actualTodayDayOfCycle + 3 : cycleLength;
+
         // Dates clés
         const cycleEndDate = new Date(lastJ1);
         cycleEndDate.setDate(cycleEndDate.getDate() + cycleLength - 1);
-        
+
         const ovulationDay = Math.round(cycleLength * 0.5);
         const ovulationDate = new Date(lastJ1);
         ovulationDate.setDate(ovulationDate.getDate() + ovulationDay - 1);
-        
-        // Créer les données pour le cycle complet
+
+        console.log(`Popup: Cycle J1=${lastJ1.toISOString().split('T')[0]}, Aujourd'hui=J${actualTodayDayOfCycle}, Prolongé=${isExtendedCycle}`);
+
+        // Créer les données pour le cycle complet (y compris prolongé)
         const data = [];
         const menstrualEnd = Math.round(cycleLength * 0.18);
         const ovulationStart = Math.round(cycleLength * 0.42);
         const ovulationEnd = Math.round(cycleLength * 0.58);
-        
-        let todayDayOfCycle = null;
-        for (let i = 0; i < cycleLength; i++) {
+
+        let todayDayOfCycle = actualTodayDayOfCycle > 0 ? actualTodayDayOfCycle : null;
+
+        // Boucle sur TOUT le cycle (y compris les jours prolongés)
+        for (let i = 0; i < displayLength; i++) {
             const date = new Date(lastJ1);
             date.setDate(date.getDate() + i);
-            
-            if (date.toDateString() === today.toDateString()) {
-                todayDayOfCycle = i + 1;
-            }
-            
+
             const dayOfCycle = i + 1;
             const dateStr = date.toISOString().split('T')[0];
-            
+
             // Déterminer la phase
             let phase = 'follicular';
-            if (dayOfCycle <= menstrualEnd) {
+            if (dayOfCycle > cycleLength) {
+                phase = 'extended'; // Cycle prolongé
+            } else if (dayOfCycle <= menstrualEnd) {
                 phase = 'menstrual';
             } else if (dayOfCycle >= ovulationStart && dayOfCycle <= ovulationEnd) {
                 phase = 'ovulation';
@@ -940,9 +948,9 @@ async function loadPopupCycleChart(playerId) {
                         type: 'linear',
                         position: 'bottom',
                         min: 1,
-                        max: cycleLength,
+                        max: displayLength,
                         ticks: {
-                            stepSize: Math.max(1, Math.floor(cycleLength / 10)),
+                            stepSize: Math.max(1, Math.floor(displayLength / 10)),
                             callback: (value) => 'J' + Math.round(value)
                         },
                         title: { display: true, text: 'Jour du Cycle' }
@@ -967,16 +975,23 @@ async function loadPopupCycleChart(playerId) {
             }
         });
         
-        // Ajouter les annotations
+        // Ajouter les annotations (avec support cycle prolongé)
         const annotationDiv = document.getElementById('popupCycleAnnotations');
         if (annotationDiv) {
+            const cycleStatusHtml = isExtendedCycle
+                ? `<div style="margin-top: 12px; padding: 10px 12px; background-color: rgba(249, 115, 22, 0.15); border-left: 4px solid #f97316; font-size: 13px;">
+                    <strong>⚠️ Cycle prolongé</strong> - Jour ${todayDayOfCycle} sur ${cycleLength} théoriques<br>
+                    <span style="font-size: 11px; color: #9a3412;">Pas de règles déclarées depuis ${todayDayOfCycle} jours</span>
+                   </div>`
+                : (todayDayOfCycle ? `<div style="margin-top: 12px; padding: 8px 12px; background-color: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; font-weight: 600; font-size: 13px;">📍 Aujourd'hui: Jour ${todayDayOfCycle} sur ${cycleLength}</div>` : '');
+
             annotationDiv.innerHTML = `
-                <div style=\"display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #667eea;\">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 4px solid ${isExtendedCycle ? '#f97316' : '#667eea'};">
                     <div><strong>📅 Début du cycle</strong><br>${lastJ1.toLocaleDateString('fr-FR')}</div>
-                    <div><strong>🔴 Ovulation</strong><br>${ovulationDate.toLocaleDateString('fr-FR')}</div>
-                    <div><strong>📆 Fin du cycle</strong><br>${cycleEndDate.toLocaleDateString('fr-FR')}</div>
+                    <div><strong>🔴 Ovulation</strong><br>${ovulationDate.toLocaleDateString('fr-FR')}${isExtendedCycle ? ' (théo.)' : ''}</div>
+                    <div><strong>📆 Fin théorique</strong><br>${cycleEndDate.toLocaleDateString('fr-FR')}</div>
                 </div>
-                ${todayDayOfCycle ? `<div style=\"margin-top: 12px; padding: 8px 12px; background-color: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; font-weight: 600; font-size: 13px;\">📍 Aujourd'hui: Jour ${todayDayOfCycle} (J${todayDayOfCycle})</div>` : ''}
+                ${cycleStatusHtml}
             `;
         }
         
