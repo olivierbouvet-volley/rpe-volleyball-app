@@ -2355,12 +2355,6 @@
                 <button class="tab-btn" onclick="switchCoachTab('restPeriods')" data-tab="restPeriods" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
                     ⏸️ Périodes de Repos
                 </button>
-                <button class="tab-btn" onclick="switchCoachTab('weekPlanner')" data-tab="weekPlanner" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    📅 Planificateur
-                </button>
-                <button class="tab-btn" onclick="switchCoachTab('teamPlanner')" data-tab="teamPlanner" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    🎬 Planning Avancé
-                </button>
                 <button class="tab-btn" onclick="switchCoachTab('physicalPrep')" data-tab="physicalPrep" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
                     💪 Prépa Physique
                 </button>
@@ -2387,29 +2381,6 @@
                 </button>
                 <button class="filter-btn critical" data-filter="critical" onclick="filterPlayers('critical')">
                     🚨 Critique (<span id="countCritical">0</span>)
-                </button>
-            </div>
-            
-            <!-- Filtres par Phase du Cycle -->
-            <div class="filter-buttons" style="margin-top: var(--space-12);">
-                <span style="font-weight: 600; color: var(--color-text-secondary); margin-right: var(--space-8); align-self: center;">🌸 Phase:</span>
-                <button class="cycle-filter-btn active" data-cycle-filter="all" onclick="filterByPhase('all')">
-                    Toutes (<span id="countPhaseAll">0</span>)
-                </button>
-                <button class="cycle-filter-btn menstrual" data-cycle-filter="menstrual" onclick="filterByPhase('menstrual')">
-                    🩸 Menstruelle (<span id="countMenstrual">0</span>)
-                </button>
-                <button class="cycle-filter-btn follicular" data-cycle-filter="follicular" onclick="filterByPhase('follicular')">
-                    🌱 Folliculaire (<span id="countFollicular">0</span>)
-                </button>
-                <button class="cycle-filter-btn ovulatory" data-cycle-filter="ovulatory" onclick="filterByPhase('ovulatory')">
-                    ⚡ Ovulatoire (<span id="countOvulatory">0</span>)
-                </button>
-                <button class="cycle-filter-btn luteal" data-cycle-filter="luteal" onclick="filterByPhase('luteal')">
-                    🍂 Lutéale (<span id="countLuteal">0</span>)
-                </button>
-                <button class="cycle-filter-btn unknown" data-cycle-filter="unknown" onclick="filterByPhase('unknown')">
-                    ❓ Non configuré (<span id="countUnknown">0</span>)
                 </button>
             </div>
 
