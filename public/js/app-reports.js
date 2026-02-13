@@ -176,7 +176,8 @@ function switchEngagementSubTab(subTab) {
     // Vérifier que les éléments existent
     const statsContent = document.getElementById('engagementStatsContent');
     const stickersContent = document.getElementById('engagementStickersContent');
-    
+    const maintenanceContent = document.getElementById('engagementMaintenanceContent');
+
     if (!statsContent || !stickersContent) {
         console.warn('Sous-onglets Engagement non trouvés dans le DOM');
         // Fallback : charger seulement les stats d'engagement
@@ -185,25 +186,26 @@ function switchEngagementSubTab(subTab) {
         }
         return;
     }
-    
+
     // Gérer les boutons
     document.querySelectorAll('.engagement-sub-tab').forEach(btn => {
         btn.classList.remove('active');
         btn.style.borderBottom = '3px solid transparent';
         btn.style.color = '#666';
     });
-    
+
     const activeBtn = document.querySelector(`[data-subtab="${subTab}"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
         activeBtn.style.borderBottom = '3px solid #f97316';
         activeBtn.style.color = 'white';
     }
-    
-    // Gérer le contenu
+
+    // Gérer le contenu - masquer tous les onglets
     statsContent.style.display = 'none';
     stickersContent.style.display = 'none';
-    
+    if (maintenanceContent) maintenanceContent.style.display = 'none';
+
     if (subTab === 'stats') {
         statsContent.style.display = 'block';
         // Charger les rapports et graphiques d'engagement
@@ -218,7 +220,7 @@ function switchEngagementSubTab(subTab) {
         stickersContent.style.setProperty('max-height', 'none', 'important');
         stickersContent.style.setProperty('overflow', 'visible', 'important');
         stickersContent.style.setProperty('height', 'auto', 'important');
-        
+
         // Forcer aussi sur le parent .card
         const parentCard = stickersContent.closest('.card');
         if (parentCard) {
@@ -226,9 +228,13 @@ function switchEngagementSubTab(subTab) {
             parentCard.style.setProperty('overflow', 'visible', 'important');
             parentCard.style.setProperty('height', 'auto', 'important');
         }
-        
+
         // Charger la grille de stickers
         loadCoachStickersVerification();
+    } else if (subTab === 'maintenance') {
+        if (maintenanceContent) {
+            maintenanceContent.style.display = 'block';
+        }
     }
 }
 
