@@ -436,80 +436,9 @@ async function repairAllPlayersStickers() {
     }
 }
 
-/**
- * Répare spécifiquement Nélia et Lilou
- */
-async function repairNeliaAndLilou() {
-    console.log('\n🔧 Réparation spécifique Nélia et Lilou...\n');
-
-    try {
-        // Trouver les IDs par nom
-        const playersSnapshot = await db.collection('players').get();
-
-        let neliaId = null;
-        let lilouId = null;
-
-        playersSnapshot.forEach(doc => {
-            const name = (doc.data().name || '').toLowerCase();
-            if (name.includes('nelia') || name.includes('nélia')) {
-                neliaId = doc.id;
-            }
-            if (name.includes('lilou')) {
-                lilouId = doc.id;
-            }
-        });
-
-        const results = [];
-
-        if (neliaId) {
-            console.log('🔧 Réparation Nélia...');
-            const result = await repairPlayerStickers(neliaId, 'Nélia');
-            if (result) results.push(result);
-        } else {
-            console.warn('⚠️ Nélia non trouvée');
-        }
-
-        if (lilouId) {
-            console.log('\n🔧 Réparation Lilou...');
-            const result = await repairPlayerStickers(lilouId, 'Lilou');
-            if (result) results.push(result);
-        } else {
-            console.warn('⚠️ Lilou non trouvée');
-        }
-
-        // Afficher le résumé
-        console.log('\n📊 RÉSUMÉ:');
-        results.forEach(r => {
-            console.log(`\n${r.playerName}:`);
-            console.log(`   Check-in streak actuel: ${r.stats.checkinStreak} jours`);
-            console.log(`   Check-in streak max historique: ${r.stats.maxCheckinStreak} jours`);
-            console.log(`   Total check-ins: ${r.stats.totalCheckins}`);
-            console.log(`   Total RPE: ${r.stats.totalRpe}`);
-            console.log(`   Semaines complètes: ${r.stats.weeksCompleteCount}`);
-            console.log(`   Stickers: ${r.existingCount} → ${r.finalCount}`);
-            if (r.restored.length > 0) {
-                console.log(`   Restaurés: ${r.restored.join(', ')}`);
-            }
-        });
-
-        alert(`✅ Réparation terminée !\n\n` + results.map(r =>
-            `${r.playerName}: ${r.finalCount} stickers (${r.restored.length > 0 ? '+' + r.restored.length + ' restaurés' : 'OK'})`
-        ).join('\n'));
-
-        return results;
-
-    } catch (error) {
-        console.error('❌ Erreur:', error);
-        alert('Erreur. Voir la console.');
-        return null;
-    }
-}
-
 // Exposer les fonctions globalement
 window.repairPlayerStickers = repairPlayerStickers;
 window.repairAllPlayersStickers = repairAllPlayersStickers;
-window.repairNeliaAndLilou = repairNeliaAndLilou;
 
 console.log('✅ Admin stickers repair chargé');
-console.log('   → repairNeliaAndLilou() : Répare Nélia et Lilou');
 console.log('   → repairAllPlayersStickers() : Répare toutes les joueuses');

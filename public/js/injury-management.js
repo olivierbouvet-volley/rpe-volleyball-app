@@ -39,11 +39,11 @@ async function initInjuryTracking() {
 async function loadInjuries() {
   try {
     const teamCode = appState.currentUser;
+    // Query sans orderBy pour éviter de créer un index composite
     const snapshot = await injuriesCollection
       .where('teamCode', '==', teamCode)
-      .orderBy('injuryDate', 'desc')
       .get();
-    
+
     allInjuries = [];
     snapshot.forEach(doc => {
       allInjuries.push({
@@ -51,7 +51,14 @@ async function loadInjuries() {
         ...doc.data()
       });
     });
-    
+
+    // Trier côté client par date décroissante
+    allInjuries.sort((a, b) => {
+      const dateA = a.injuryDate?.toDate?.() || new Date(a.injuryDate);
+      const dateB = b.injuryDate?.toDate?.() || new Date(b.injuryDate);
+      return dateB - dateA;
+    });
+
     console.log(`${allInjuries.length} blessures chargées`);
   } catch (error) {
     console.error('Erreur lors du chargement des blessures:', error);
@@ -248,15 +255,15 @@ function displayInjuryTypeDistribution() {
 async function openNewInjuryModal() {
   const modal = document.getElementById('newInjuryModal');
   if (!modal) return;
-  
+
   // Réinitialiser le formulaire
   document.getElementById('newInjuryForm').reset();
-  
+
   // Remplir la liste des joueuses
   await populatePlayerSelect();
-  
-  // Afficher le modal
-  modal.style.display = 'flex';
+
+  // Afficher le modal avec la classe active (pour pointer-events)
+  modal.classList.add('active');
 }
 
 /**
@@ -265,7 +272,7 @@ async function openNewInjuryModal() {
 function closeNewInjuryModal() {
   const modal = document.getElementById('newInjuryModal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.classList.remove('active');
   }
 }
 
@@ -556,16 +563,24 @@ function showNotification(message, type = 'info') {
  */
 async function loadPains() {
   try {
-    const snapshot = await painsCollection.orderBy('painDate', 'desc').get();
+    // Query sans orderBy pour éviter problème d'index
+    const snapshot = await painsCollection.get();
     allPains = [];
-    
+
     snapshot.forEach(doc => {
       allPains.push({
         id: doc.id,
         ...doc.data()
       });
     });
-    
+
+    // Trier côté client par date décroissante
+    allPains.sort((a, b) => {
+      const dateA = a.painDate?.toDate?.() || new Date(a.painDate);
+      const dateB = b.painDate?.toDate?.() || new Date(b.painDate);
+      return dateB - dateA;
+    });
+
     console.log(`${allPains.length} douleurs chargées`);
   } catch (error) {
     console.error('Erreur lors du chargement des douleurs:', error);

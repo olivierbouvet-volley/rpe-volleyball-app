@@ -67,15 +67,6 @@ function switchCoachTab(tabName) {
         if (typeof loadWeekendMatchRecap === 'function') {
             loadWeekendMatchRecap();
         }
-    } else if (tabName === 'reports') {
-        document.getElementById('reportsTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="reports"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger les rapports
-        loadReports();
     } else if (tabName === 'injuries') {
         document.getElementById('injuriesTab').style.display = 'block';
         const btn = document.querySelector('[data-tab="injuries"]');
@@ -161,8 +152,8 @@ function switchCoachTab(tabName) {
         btn.style.borderBottom = '3px solid #f97316';
         btn.style.color = 'var(--color-text)';
         
-        // Charger le dashboard d'engagement (onglet stats par défaut)
-        switchEngagementSubTab('stats');
+        // Charger le dashboard d'engagement (onglet stickers par défaut)
+        switchEngagementSubTab('stickers');
         
         // Mettre à jour l'indicateur de remplissage
         if (typeof updateFillIndicator === 'function') {
@@ -174,16 +165,11 @@ function switchCoachTab(tabName) {
 // Fonction pour gérer les sous-onglets d'Engagement
 function switchEngagementSubTab(subTab) {
     // Vérifier que les éléments existent
-    const statsContent = document.getElementById('engagementStatsContent');
     const stickersContent = document.getElementById('engagementStickersContent');
     const maintenanceContent = document.getElementById('engagementMaintenanceContent');
 
-    if (!statsContent || !stickersContent) {
+    if (!stickersContent) {
         console.warn('Sous-onglets Engagement non trouvés dans le DOM');
-        // Fallback : charger seulement les stats d'engagement
-        if (typeof loadEngagementDashboard === 'function') {
-            loadEngagementDashboard();
-        }
         return;
     }
 
@@ -202,19 +188,10 @@ function switchEngagementSubTab(subTab) {
     }
 
     // Gérer le contenu - masquer tous les onglets
-    statsContent.style.display = 'none';
     stickersContent.style.display = 'none';
     if (maintenanceContent) maintenanceContent.style.display = 'none';
 
-    if (subTab === 'stats') {
-        statsContent.style.display = 'block';
-        // Charger les rapports et graphiques d'engagement
-        if (typeof loadReports === 'function') {
-            loadReports();
-        } else {
-            console.error('La fonction loadReports() n\'est pas définie.');
-        }
-    } else if (subTab === 'stickers') {
+    if (subTab === 'stickers') {
         stickersContent.style.display = 'block';
         // Forcer les styles avec !important pour permettre l'affichage complet
         stickersContent.style.setProperty('max-height', 'none', 'important');

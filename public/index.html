@@ -2276,9 +2276,6 @@
                 <button class="tab-btn" onclick="switchCoachTab('weekend')" data-tab="weekend" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
                     🏐 Matchs Week-end
                 </button>
-                <button class="tab-btn" onclick="switchCoachTab('reports')" data-tab="reports" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    📊 Rapports
-                </button>
                 <button class="tab-btn" onclick="switchCoachTab('injuries')" data-tab="injuries" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
                     🏥 Blessures
                 </button>
@@ -2372,47 +2369,6 @@
             <div id="weekendTab" class="coach-tab-content" style="display: none;">
                 <div id="weekendMatchRecap">
                     <!-- Le récap sera généré ici -->
-                </div>
-            </div>
-
-            <!-- Onglet Rapports -->
-            <div id="reportsTab" class="coach-tab-content" style="display: none;">
-                <!-- Bouton Export PDF -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-24);">
-                    <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin: 0;">📊 Rapports &amp; Analyses</h2>
-                    <button id="btnExportPDF" onclick="exportTeamReportPDF()" class="btn-export-pdf">📄 Exporter PDF</button>
-                </div>
-                <div class="card" style="margin-bottom: var(--space-24);">
-                    <h3 class="card-title">📊 Évolution équipe (7 jours)</h3>
-                    <canvas id="teamEvolutionChart" style="max-height: 300px;"></canvas>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-24); margin-bottom: var(--space-24);">
-                    <div class="card">
-                        <h3 class="card-title">🏋️ Distribution de charge</h3>
-                        <canvas id="loadDistributionChart" style="max-height: 250px;"></canvas>
-                    </div>
-                    
-                    <div class="card">
-                        <h3 class="card-title">⚡ TSB Moyen de l'équipe</h3>
-                        <div style="text-align: center; padding: var(--space-32);">
-                            <div style="font-size: 48px; font-weight: var(--font-weight-bold); color: var(--color-primary);" id="avgTSB">--</div>
-                            <div style="margin-top: var(--space-8); color: var(--color-text-secondary);">Training Stress Balance</div>
-                            <div style="margin-top: var(--space-16); padding: var(--space-16); background: var(--color-background); border-radius: var(--radius-base);" id="tsbInterpretation">
-                                <strong>Interprétation :</strong> <span id="tsbText">En attente de données...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3 class="card-title">📝 Résumé de l'équipe</h3>
-                    <div id="teamSummary" style="line-height: 1.8;">
-                        <p><strong>Joueuses actives :</strong> <span id="activePlayers">--</span></p>
-                        <p><strong>Check-ins aujourd'hui :</strong> <span id="todayCheckins">--</span></p>
-                        <p><strong>Score moyen de l'équipe :</strong> <span id="avgTeamScore">--</span>/10</p>
-                        <p><strong>Charge moyenne (7 jours) :</strong> <span id="avgLoad7days">--</span></p>
-                    </div>
                 </div>
             </div>
 
@@ -2928,47 +2884,16 @@
                     
                     <!-- Sous-onglets Engagement -->
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1);">
-                        <button class="engagement-sub-tab active" onclick="switchEngagementSubTab('stats')" data-subtab="stats" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
-                            📊 Statistiques
-                        </button>
-                        <button class="engagement-sub-tab" onclick="switchEngagementSubTab('stickers')" data-subtab="stickers" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
+                        <button class="engagement-sub-tab active" onclick="switchEngagementSubTab('stickers')" data-subtab="stickers" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
                             🏆 Stickers
                         </button>
                         <button class="engagement-sub-tab" onclick="switchEngagementSubTab('maintenance')" data-subtab="maintenance" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
                             🔧 Maintenance
                         </button>
                     </div>
-                    
-                    <!-- Contenu Stats -->
-                    <div id="engagementStatsContent" class="engagement-sub-content">
-                        <div id="engagementContent">
-                            <p style="text-align: center; color: #666;">Chargement des statistiques...</p>
-                            
-                            <!-- Graphique d'évolution de l'équipe -->
-                            <div class="card" style="margin-top: 20px; padding: 20px;">
-                                <h3 class="card-title">📈 Évolution de l'État de Forme de l'Équipe (7 derniers jours)</h3>
-                                <canvas id="teamEvolutionChart" width="400" height="200"></canvas>
-                            </div>
 
-                            <!-- Graphique de distribution de charge -->
-                            <div class="card" style="margin-top: 20px; padding: 20px;">
-                                <h3 class="card-title">📊 Distribution de la Charge d'Entraînement</h3>
-                                <canvas id="loadDistributionChart" width="400" height="200"></canvas>
-                            </div>
-
-                            <!-- Résumé de l'équipe -->
-                            <div class="card" style="margin-top: 20px; padding: 20px;">
-                                <h3 class="card-title">📝 Résumé Général de l'Équipe</h3>
-                                <div id="teamSummaryContent">
-                                    <p style="text-align: center; color: #666;">Chargement du résumé...</p>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    
                     <!-- Contenu Stickers -->
-                    <div id="engagementStickersContent" class="engagement-sub-content" style="display: none; max-height: none; overflow: visible;">
+                    <div id="engagementStickersContent" class="engagement-sub-content" style="max-height: none; overflow: visible;">
                         <div id="coachStickersVerification" style="max-height: none; overflow: visible;">
                             <p style="text-align: center; color: #666;">Chargement des stickers...</p>
                         </div>
@@ -2984,17 +2909,6 @@
                             </p>
 
                             <div style="display: grid; gap: 20px; max-width: 600px;">
-                                <!-- Bouton Réparer Nélia et Lilou -->
-                                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px;">
-                                    <h4 style="margin: 0 0 10px 0; color: #92400e;">🎯 Réparer Nélia et Lilou</h4>
-                                    <p style="color: #78350f; font-size: 14px; margin-bottom: 15px;">
-                                        Recalcule les streaks et restaure les stickers manquants pour Nélia et Lilou uniquement.
-                                    </p>
-                                    <button onclick="repairNeliaAndLilou()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
-                                        🔧 Réparer Nélia & Lilou
-                                    </button>
-                                </div>
-
                                 <!-- Bouton Recalculer toutes les joueuses -->
                                 <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
                                     <h4 style="margin: 0 0 10px 0; color: #1e40af;">🔄 Recalculer toutes les joueuses</h4>
