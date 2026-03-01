@@ -4,6 +4,17 @@
     "dev": "rpe-gen2-eeaee",
     "prod": "rpe-volleyball-sable"
   },
-  "targets": {},
+  "targets": {
+    "rpe-gen2-eeaee": {
+      "hosting": {
+        "rpe": [
+          "rpe-volleyball-sable"
+        ],
+        "volleyvision": [
+          "volleyvision-pole"
+        ]
+      }
+    }
+  },
   "etags": {}
 }
