@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Écosystème Numérique — Pôle Espoir Volleyball</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d1a;
+    --bg2: #1a1a2e;
+    --indigo: #6366f1;
+    --indigo-light: #818cf8;
+    --indigo-dark: #4338ca;
+    --amber: #f59e0b;
+    --amber-light: #fcd34d;
+    --green: #10b981;
+    --cyan: #06b6d4;
+    --red: #ef4444;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.1);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .slides-container { width: 100%; height: 100%; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3.5rem 6rem;
+    background: linear-gradient(135deg, var(--bg2) 0%, var(--bg) 100%);
+    opacity: 0; transform: translateY(24px);
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .slide.active { opacity: 1; transform: translateY(0); pointer-events: all; }
+
+  /* ── NAVIGATION ── */
+  #progress {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 10px; z-index: 100;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.active { background: var(--cyan); transform: scale(1.4); }
+  #slide-num {
+    position: fixed; bottom: 22px; right: 28px;
+    font-size: 0.85rem; color: var(--muted); z-index: 100;
+    font-variant-numeric: tabular-nums;
+  }
+  #nav-hint {
+    position: fixed; bottom: 22px; left: 28px;
+    font-size: 0.8rem; color: rgba(255,255,255,0.2); z-index: 100;
+  }
+
+  /* ── COMPOSANTS ── */
+  .slide-label {
+    font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 1rem;
+  }
+  h1 { font-size: clamp(2.8rem,5vw,5rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; text-align: center; }
+  h2 { font-size: clamp(1.8rem,3vw,2.8rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; text-align: center; margin-bottom: 2.2rem; }
+  .subtitle { font-size: clamp(1rem,1.8vw,1.4rem); color: var(--muted); text-align: center; margin-top: 0.8rem; line-height: 1.5; }
+  .accent { color: var(--indigo-light); }
+  .cyan   { color: var(--cyan); }
+  .amber  { color: var(--amber); }
+  .green  { color: var(--green); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 1.5rem 1.8rem;
+  }
+  .pill {
+    display: inline-block;
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.35);
+    color: var(--cyan); border-radius: 999px;
+    padding: 0.25rem 0.9rem; font-size: 0.82rem; font-weight: 600;
+  }
+
+  /* ═══ SLIDE 1 — TITRE ═══ */
+  #s1 { background: linear-gradient(135deg, #0a1a2e 0%, #0d0d1a 60%, #0a1a1a 100%); }
+  #s1 h1 {
+    background: linear-gradient(135deg, #fff 0%, var(--cyan) 50%, var(--amber) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .s1-chips { margin-top: 2rem; display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+  .s1-chip {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 999px; padding: 0.4rem 1.2rem; font-size: 0.95rem; color: var(--muted);
+  }
+  .part-badge {
+    display: inline-block; margin-bottom: 0.6rem;
+    background: rgba(6,182,212,0.2); border: 1px solid rgba(6,182,212,0.4);
+    color: var(--cyan); border-radius: 8px; padding: 0.2rem 0.8rem;
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  /* ═══ SLIDE 2 — CONTEXTE ═══ */
+  .context-cols {
+    display: flex; gap: 2rem;
+    width: 100%; max-width: 1100px;
+    align-items: flex-start;
+  }
+  .context-col { flex: 1; }
+  .context-col-title {
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 1rem; color: var(--cyan);
+  }
+  .context-item {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  .context-bullet {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+  }
+  .context-text strong { display: block; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .context-text span { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+  .vision-block {
+    background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(99,102,241,0.1));
+    border: 1px solid rgba(6,182,212,0.25);
+    border-radius: 14px; padding: 1.4rem 1.8rem;
+    font-size: 0.95rem; line-height: 1.7;
+  }
+  .vision-block strong { color: var(--cyan); }
+
+  /* ═══ SLIDE 3 — ÉCOSYSTÈME ═══ */
+  .eco-cols {
+    display: flex; gap: 2rem;
+    width: 100%; max-width: 1100px;
+  }
+  .eco-card {
+    flex: 1; border-radius: 18px;
+    border: 2px solid;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .eco-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+  }
+  .eco-card.rpe   { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.06); }
+  .eco-card.rpe::before { background: var(--indigo); }
+  .eco-card.live  { border-color: rgba(6,182,212,0.3); background: rgba(6,182,212,0.06); }
+  .eco-card.live::before { background: var(--cyan); }
+  .eco-card.vv    { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+  .eco-card.vv::before { background: var(--amber); }
+
+  .eco-icon { font-size: 2.8rem; margin-bottom: 0.8rem; display: block; }
+  .eco-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.6rem; }
+  .eco-body  { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .eco-tag   {
+    margin-top: 0.8rem; display: inline-block;
+    font-size: 0.72rem; font-weight: 700;
+    border-radius: 999px; padding: 0.2rem 0.8rem;
+    letter-spacing: 0.06em;
+  }
+  .eco-tag.rpe-t  { background: rgba(99,102,241,0.2); color: var(--indigo-light); }
+  .eco-tag.live-t { background: rgba(6,182,212,0.2); color: var(--cyan); }
+  .eco-tag.vv-t   { background: rgba(245,158,11,0.2); color: var(--amber); }
+
+  .eco-arrow {
+    font-size: 1.4rem; color: rgba(255,255,255,0.2);
+    align-self: center; flex-shrink: 0;
+  }
+
+  /* ═══ SLIDE 4 — CHAÎNE PÔLE VUE D'ENSEMBLE ═══ */
+  .live-layout {
+    display: flex; gap: 3rem;
+    width: 100%; max-width: 1100px;
+    align-items: flex-start;
+  }
+  .live-arch {
+    flex: 1; display: flex; flex-direction: column; gap: 1rem;
+  }
+  .arch-row {
+    display: flex; gap: 1rem; align-items: stretch;
+  }
+  .arch-node {
+    flex: 1; border-radius: 14px; padding: 1rem 1.2rem;
+    border: 1px solid; text-align: center;
+  }
+  .arch-node.animateur { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+  .arch-node.parents   { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.08); }
+  .arch-node.viewer    { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.08); }
+  .arch-node.firebase  { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
+  .arch-node-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .arch-node-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .arch-node-body { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+  .arch-arrow-down { text-align: center; font-size: 1.2rem; color: rgba(255,255,255,0.2); margin: 0.2rem 0; }
+
+  .live-features { flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+  .lf-item {
+    display: flex; gap: 0.9rem;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 12px; padding: 1rem 1.2rem;
+  }
+  .lf-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .lf-text strong { display: block; font-size: 0.92rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .lf-text span { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+
+  /* ═══ SLIDE 5 — CHAÎNE PÔLE FONCTIONNALITÉS ═══ */
+  .live-demo-layout {
+    display: flex; gap: 3rem;
+    width: 100%; max-width: 1150px;
+    align-items: flex-start;
+  }
+
+  /* Mockup score live */
+  .score-mockup {
+    width: 300px; flex-shrink: 0;
+    background: #0a0a18; border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  }
+  .sm-header {
+    background: #111827; padding: 8px 14px;
+    font-size: 0.72rem; color: var(--muted);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sm-badge-live {
+    background: rgba(239,68,68,0.9); color: white;
+    border-radius: 4px; padding: 1px 6px; font-size: 0.65rem; font-weight: 700;
+    animation: pulse-live 1s ease-in-out infinite;
+  }
+  @keyframes pulse-live { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .sm-scoreboard {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 10px;
+    padding: 20px 16px 10px;
+    background: linear-gradient(180deg, #111827, #0a0a18);
+  }
+  .sm-team { text-align: center; }
+  .sm-jersey {
+    width: 32px; height: 32px; border-radius: 6px;
+    margin: 0 auto 6px;
+    clip-path: polygon(18% 0%,38% 0%,42% 16%,58% 16%,62% 0%,82% 0%,100% 24%,80% 38%,80% 100%,20% 100%,20% 38%,0% 24%);
+  }
+  .sm-team-name { font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; }
+  .sm-score-big { font-size: 2.8rem; font-weight: 900; line-height: 1; }
+  .sm-sets { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .sm-sep { font-size: 1.4rem; color: rgba(255,255,255,0.2); font-weight: 300; }
+  .sm-set-bar {
+    padding: 6px 16px;
+    background: rgba(255,255,255,0.03);
+    display: flex; gap: 8px; justify-content: center;
+    font-size: 0.68rem; color: var(--muted);
+  }
+  .sm-set-chip {
+    background: rgba(255,255,255,0.06); border-radius: 4px;
+    padding: 2px 8px;
+  }
+  .sm-set-chip.win { color: var(--amber); background: rgba(245,158,11,0.15); font-weight: 700; }
+
+  /* Overlay stats mini */
+  .sm-stats-overlay {
+    margin: 10px 12px;
+    background: #1e293b; border-radius: 10px; overflow: hidden;
+    font-size: 0.68rem;
+  }
+  .sm-stats-title {
+    background: rgba(255,255,255,0.06); padding: 6px 10px;
+    font-weight: 700; letter-spacing: 0.1em;
+    text-align: center; color: rgba(255,255,255,0.7);
+  }
+  .sm-stats-row {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    padding: 5px 10px; border-top: 1px solid rgba(255,255,255,0.05);
+    align-items: center;
+  }
+  .sm-stats-val { text-align: center; font-weight: 700; font-size: 0.8rem; }
+  .sm-stats-lbl { text-align: center; color: var(--muted); font-size: 0.62rem; }
+
+  /* Parent actions mockup */
+  .parent-mockup {
+    flex: 1; display: flex; flex-direction: column; gap: 1rem;
+  }
+  .pm-title {
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.5rem;
+  }
+  .pm-actions-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  }
+  .pm-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 10px 12px;
+    font-size: 0.78rem; font-weight: 600; color: var(--text); text-align: center;
+  }
+  .pm-btn.kill  { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); color: var(--green); }
+  .pm-btn.ace   { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.1); color: var(--amber); }
+  .pm-btn.bloc  { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.1); color: var(--indigo-light); }
+  .pm-btn.faute { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); color: #fca5a5; }
+
+  .qr-row { display: flex; gap: 8px; }
+  .qr-chip {
+    flex: 1; border-radius: 8px; padding: 8px;
+    font-size: 0.7rem; text-align: center;
+    border: 1px dashed rgba(255,255,255,0.15); color: var(--muted);
+  }
+  .qr-chip strong { display: block; margin-bottom: 2px; }
+
+  .value-points {
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .vp-item {
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: 0.8rem 1rem;
+  }
+  .vp-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .vp-text { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+  .vp-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+  /* ═══ SLIDE 6 — VOLLEYVISION PRÉSENTATION ═══ */
+  .vv-layout {
+    display: flex; gap: 3.5rem;
+    width: 100%; max-width: 1100px;
+    align-items: flex-start;
+  }
+  .vv-left { flex: 1; display: flex; flex-direction: column; gap: 1.2rem; }
+  .vv-right { flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+  .vv-context-card {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 12px 12px 0;
+    padding: 1.1rem 1.3rem;
+    font-size: 0.9rem; line-height: 1.6;
+    color: var(--muted);
+  }
+  .vv-context-card strong { color: var(--amber-light); }
+
+  .dvw-explain {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 1.3rem;
+  }
+  .dvw-title {
+    font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 0.8rem;
+  }
+  .dvw-row {
+    display: flex; gap: 0.8rem; align-items: center;
+    margin-bottom: 0.6rem; font-size: 0.85rem;
+  }
+  .dvw-arrow { color: var(--amber); font-size: 0.9rem; }
+
+  .vv-features { display: flex; flex-direction: column; gap: 0.9rem; }
+  .vv-feat {
+    display: flex; gap: 0.8rem;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 12px; padding: 0.9rem 1.1rem;
+  }
+  .vv-feat-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .vv-feat-text strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.15rem; }
+  .vv-feat-text span { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+  /* ═══ SLIDE 7 — VOLLEYVISION INTERFACE ═══ */
+  .vv-ui-layout {
+    display: flex; gap: 3rem;
+    width: 100%; max-width: 1150px;
+    align-items: flex-start;
+  }
+
+  /* Mockup interface VolleyVision */
+  .vv-mockup {
+    width: 440px; flex-shrink: 0;
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+  }
+  .vv-topbar {
+    background: #1e293b; padding: 8px 14px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .vv-topbar-logo { font-size: 0.85rem; font-weight: 900; color: var(--amber); letter-spacing: -0.02em; }
+  .vv-topbar-file { font-size: 0.7rem; color: var(--muted); }
+  .vv-panels-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1px; background: rgba(255,255,255,0.05);
+  }
+  .vv-panel {
+    background: #0f172a; padding: 10px 12px;
+  }
+  .vv-panel.video-panel { grid-column: 1 / 2; grid-row: 1 / 2; }
+  .vv-panel.stats-panel { grid-column: 2 / 3; grid-row: 1 / 2; }
+  .vv-panel.timeline-panel { grid-column: 1 / 3; grid-row: 2 / 3; }
+  .vv-panel-title {
+    font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+
+  /* Fausse vidéo */
+  .vv-video-area {
+    background: #000; border-radius: 6px;
+    aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .vv-video-area::after {
+    content: '▶';
+    font-size: 1.8rem; color: rgba(255,255,255,0.4);
+  }
+  .vv-video-progress {
+    height: 3px; background: rgba(255,255,255,0.1);
+    border-radius: 999px; margin-top: 6px; overflow: hidden;
+  }
+  .vv-video-cursor { height: 100%; width: 35%; background: var(--amber); border-radius: 999px; }
+
+  /* Stats mini */
+  .vv-stats-mini {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6px; font-size: 0.68rem;
+  }
+  .vv-stat-cell {
+    background: rgba(255,255,255,0.04); border-radius: 6px;
+    padding: 5px 8px; text-align: center;
+  }
+  .vv-stat-cell .val { font-size: 1rem; font-weight: 900; color: var(--amber); display: block; }
+  .vv-stat-cell .lbl { color: var(--muted); font-size: 0.6rem; }
+
+  /* Timeline */
+  .vv-timeline-events {
+    display: flex; gap: 4px; overflow: hidden; position: relative;
+  }
+  .vv-event {
+    flex-shrink: 0; border-radius: 4px; padding: 3px 7px;
+    font-size: 0.6rem; font-weight: 600; cursor: default;
+  }
+  .vv-event.kill  { background: rgba(16,185,129,0.25); color: #6ee7b7; }
+  .vv-event.error { background: rgba(239,68,68,0.2); color: #fca5a5; }
+  .vv-event.serve { background: rgba(245,158,11,0.2); color: var(--amber-light); }
+  .vv-event.recv  { background: rgba(99,102,241,0.2); color: var(--indigo-light); }
+  .vv-event.active { outline: 2px solid var(--amber); }
+
+  .vv-ui-features {
+    flex: 1; display: flex; flex-direction: column; gap: 1rem;
+  }
+  .vv-uf {
+    display: flex; gap: 0.9rem;
+    border-left: 3px solid;
+    padding: 0.9rem 1.1rem;
+    border-radius: 0 12px 12px 0;
+    background: rgba(255,255,255,0.04);
+  }
+  .vv-uf:nth-child(1) { border-color: var(--amber); }
+  .vv-uf:nth-child(2) { border-color: var(--indigo); }
+  .vv-uf:nth-child(3) { border-color: var(--green); }
+  .vv-uf:nth-child(4) { border-color: var(--cyan); }
+  .vv-uf:nth-child(5) { border-color: rgba(255,255,255,0.2); }
+  .vv-uf-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .vv-uf-text strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 0.15rem; }
+  .vv-uf-text span { font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
+
+  /* ═══ SLIDE 8 — VISION COMMUNE ═══ */
+  .vision-cols {
+    display: flex; gap: 2rem;
+    width: 100%; max-width: 1100px; margin-bottom: 2rem;
+  }
+  .vis-card {
+    flex: 1; background: var(--card);
+    border: 1px solid var(--card-border); border-radius: 16px;
+    padding: 1.6rem; text-align: center;
+  }
+  .vis-icon { font-size: 2.4rem; margin-bottom: 0.8rem; display: block; }
+  .vis-title { font-size: 1rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .vis-body  { font-size: 0.83rem; color: var(--muted); line-height: 1.55; }
+
+  .final-quote {
+    max-width: 850px;
+    background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(99,102,241,0.1));
+    border: 1px solid rgba(6,182,212,0.25);
+    border-radius: 16px; padding: 1.6rem 2.5rem;
+    font-size: 1.1rem; font-style: italic;
+    text-align: center; line-height: 1.7;
+    color: rgba(255,255,255,0.85);
+  }
+  .final-quote strong { color: var(--cyan); }
+
+  /* ═══ SLIDE 9 — CONCLUSION ═══ */
+  #s9 { background: linear-gradient(135deg, #0a1a2e 0%, #0d0d1a 100%); }
+
+  .conclu-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem; width: 100%; max-width: 1000px; margin-bottom: 2rem;
+  }
+  .cg-card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 1.3rem 1.5rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .cg-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .cg-text strong { display: block; font-size: 0.95rem; font-weight: 800; margin-bottom: 0.3rem; }
+  .cg-text span { font-size: 0.83rem; color: var(--muted); line-height: 1.5; }
+
+  .cta-block {
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--indigo) 100%);
+    border-radius: 16px; padding: 1.5rem 3rem;
+    text-align: center; max-width: 750px;
+  }
+  .cta-block h3 { font-size: 1.3rem; font-weight: 900; margin-bottom: 0.5rem; }
+  .cta-block p  { font-size: 0.9rem; opacity: 0.85; }
+
+  @media (max-width: 900px) {
+    .slide { padding: 2rem 2.5rem; }
+    .context-cols, .eco-cols, .live-layout, .live-demo-layout,
+    .vv-layout, .vv-ui-layout, .vision-cols, .conclu-grid { flex-direction: column; }
+    .eco-arrow { display: none; }
+    .vv-mockup { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="slides-container">
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 1 — TITRE
+  ═══════════════════════════════════════ -->
+  <section class="slide active" id="s1">
+    <div class="part-badge">Partie 2 / 2</div>
+    <div class="slide-label">Pôle Espoir Volleyball · Sablé-sur-Sarthe</div>
+    <h1>L'Écosystème<br>Numérique du Pôle</h1>
+    <p class="subtitle" style="font-size:clamp(1.1rem,2vw,1.5rem); color:var(--cyan); margin-top:0.6rem;">
+      Diffusion live · Analyse vidéo · Visibilité du volleyball
+    </p>
+    <p class="subtitle">Complémentaire à RPE Gen2 — Saison 2024–2025</p>
+
+    <div class="s1-chips">
+      <span class="s1-chip">📡 Interface Chaîne Pôle</span>
+      <span class="s1-chip">📊 VolleyVision</span>
+      <span class="s1-chip">🏐 Pôle Espoir FFVB</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 2 — CONTEXTE & VISION STRATÉGIQUE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s2">
+    <div class="slide-label">Contexte & Vision</div>
+    <h2>Pourquoi créer ces outils ?</h2>
+
+    <div class="context-cols">
+      <div class="context-col">
+        <div class="context-col-title">Le point de départ</div>
+
+        <div class="context-item">
+          <div class="context-bullet">📋</div>
+          <div class="context-text">
+            <strong>Manque de données individuelles</strong>
+            <span>Pas d'outils accessibles et adaptés au Pôle pour suivre réellement chaque joueuse → création de RPE Gen2 pour pallier ce manque.</span>
+          </div>
+        </div>
+
+        <div class="context-item">
+          <div class="context-bullet">💸</div>
+          <div class="context-text">
+            <strong>Coût prohibitif des logiciels pro</strong>
+            <span>DataVolley, VolleyMetrics… plusieurs milliers d'euros par an. Inaccessible pour un Pôle Espoir. La réponse : créer des alternatives fonctionnelles et souveraines.</span>
+          </div>
+        </div>
+
+        <div class="context-item">
+          <div class="context-bullet">👁</div>
+          <div class="context-text">
+            <strong>Invisibilité du volleyball</strong>
+            <span>Notre sport manque d'outils modernes de diffusion et de partage accessibles aux clubs et aux Pôles, contrairement à d'autres sports collectifs.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="context-col">
+        <div class="context-col-title">La vision</div>
+        <div class="vision-block">
+          Créer un <strong>écosystème numérique propriétaire</strong> pour rendre le volleyball plus <strong>attractif</strong>, plus <strong>facile d'accès</strong> et surtout plus <strong>visible</strong>.<br><br>
+          Permettre aux <strong>joueuses de filmer leurs matchs</strong> le week-end avec score et animations. Donner aux <strong>parents</strong> la possibilité de saisir le score et des actions. Offrir aux <strong>coachs</strong> des statistiques simples et exploitables.<br><br>
+          Et surtout : que chaque athlète puisse <strong>voir ses actions, les analyser et les partager</strong>.
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+          <span class="pill">Autonomie · Souveraineté · Accessibilité</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 3 — L'ÉCOSYSTÈME EN 3 OUTILS
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s3">
+    <div class="slide-label">Vue d'ensemble</div>
+    <h2>3 outils. Un seul écosystème.</h2>
+
+    <div class="eco-cols">
+
+      <div class="eco-card rpe">
+        <span class="eco-icon">💪</span>
+        <div class="eco-title accent">RPE Gen2</div>
+        <div class="eco-body">
+          Suivi condition physique, bien-être quotidien et cycle menstruel des 14 joueuses. Prévention blessures et RED-S.
+        </div>
+        <div><span class="eco-tag rpe-t">Santé · Performance</span></div>
+      </div>
+
+      <div class="eco-arrow">→</div>
+
+      <div class="eco-card live">
+        <span class="eco-icon">📡</span>
+        <div class="eco-title cyan">Interface Chaîne Pôle</div>
+        <div class="eco-body">
+          Diffusion live des matchs avec score, actions des joueuses et statistiques en temps réel. Parents et coachs connectés.
+        </div>
+        <div><span class="eco-tag live-t">Live · Diffusion · Partage</span></div>
+      </div>
+
+      <div class="eco-arrow">→</div>
+
+      <div class="eco-card vv">
+        <span class="eco-icon">🎬</span>
+        <div class="eco-title amber">VolleyVision</div>
+        <div class="eco-body">
+          Parseur de fichiers DVW (DataVolley). Analyse tactique avancée avec vidéo synchronisée, filtres multi-critères et statistiques.
+        </div>
+        <div><span class="eco-tag vv-t">Analyse · Tactique · Stats</span></div>
+      </div>
+
+    </div>
+
+    <p style="margin-top:2rem; font-size:0.88rem; color:var(--muted); text-align:center; max-width:750px;">
+      Chaque outil répond à un besoin distinct mais ils partagent la même philosophie :<br>
+      <strong style="color:var(--text);">des données propriétaires, accessibles sans dépendance commerciale.</strong>
+    </p>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 4 — INTERFACE CHAÎNE PÔLE : ARCHITECTURE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s4">
+    <div class="slide-label">Interface Chaîne Pôle</div>
+    <h2>Score live · Actions · Stats<br><span class="cyan">4 interfaces connectées</span></h2>
+
+    <div class="live-layout">
+
+      <!-- Architecture -->
+      <div class="live-arch">
+        <div class="arch-row">
+          <div class="arch-node animateur">
+            <div class="arch-node-icon">🎙</div>
+            <div class="arch-node-title">Animateur / Coach</div>
+            <div class="arch-node-body">Saisie score + Service<br>Déclenche les stats live<br>QR code pour inviter</div>
+          </div>
+        </div>
+        <div class="arch-arrow-down">↓</div>
+        <div class="arch-row">
+          <div class="arch-node firebase" style="text-align:center; padding: 0.7rem;">
+            <div class="arch-node-icon">🔥</div>
+            <div class="arch-node-title" style="font-size:0.78rem;">Firebase Realtime DB</div>
+            <div class="arch-node-body">Synchronisation temps réel<br>Tous appareils simultanément</div>
+          </div>
+        </div>
+        <div class="arch-arrow-down">↙ ↓ ↘</div>
+        <div class="arch-row" style="gap:0.6rem;">
+          <div class="arch-node parents">
+            <div class="arch-node-icon">👨‍👩‍👧</div>
+            <div class="arch-node-title">Parents</div>
+            <div class="arch-node-body">Actions DVW<br>(8 types)</div>
+          </div>
+          <div class="arch-node viewer" style="border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.08);">
+            <div class="arch-node-icon">📺</div>
+            <div class="arch-node-title">Viewer Live</div>
+            <div class="arch-node-body">Score + Stats<br>overlay broadcast</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fonctionnalités -->
+      <div class="live-features">
+        <div class="lf-item">
+          <span class="lf-icon">⚡</span>
+          <div class="lf-text">
+            <strong>Temps réel sur tous les appareils</strong>
+            <span>Un point marqué sur le téléphone de l'animateur → visible 0,1 seconde après sur tous les viewers connectés (Firebase Realtime Database)</span>
+          </div>
+        </div>
+        <div class="lf-item">
+          <span class="lf-icon">📱</span>
+          <div class="lf-text">
+            <strong>Accès par QR code — aucune installation</strong>
+            <span>L'animateur génère 2 QR codes : un pour les parents (saisie d'actions), un pour les viewers (lecture seule). Ouvre directement dans le navigateur.</span>
+          </div>
+        </div>
+        <div class="lf-item">
+          <span class="lf-icon">📊</span>
+          <div class="lf-text">
+            <strong>Stats live façon broadcast TV</strong>
+            <span>Overlay centré flottant : ACES, ATTAQUES, BLOCKS, FAUTES — par set et total. Animation automatique fin de match.</span>
+          </div>
+        </div>
+        <div class="lf-item">
+          <span class="lf-icon">🔄</span>
+          <div class="lf-text">
+            <strong>Export DVW pour VolleyVision</strong>
+            <span>Toutes les actions saisies pendant le match sont convertibles en fichier .dvw standard → analyse approfondie dans VolleyVision.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 5 — CHAÎNE PÔLE : DÉMO VISUELLE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s5">
+    <div class="slide-label">Interface Chaîne Pôle · En action</div>
+    <h2>Du match filmé aux stats partagées</h2>
+
+    <div class="live-demo-layout">
+
+      <!-- Mockup viewer -->
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted);">Viewer live (public)</div>
+        <div class="score-mockup">
+          <div class="sm-header">
+            <span>🏐 Pôle Espoir — Set 2</span>
+            <span class="sm-badge-live">● LIVE</span>
+          </div>
+          <div class="sm-scoreboard">
+            <div class="sm-team">
+              <div class="sm-jersey" style="background:#6366f1;"></div>
+              <div class="sm-team-name">SABLÉ</div>
+              <div class="sm-score-big accent">21</div>
+              <div class="sm-sets">Sets : 1</div>
+            </div>
+            <div class="sm-sep">—</div>
+            <div class="sm-team">
+              <div class="sm-jersey" style="background:#06b6d4;"></div>
+              <div class="sm-team-name">RENNES</div>
+              <div class="sm-score-big cyan">18</div>
+              <div class="sm-sets">Sets : 0</div>
+            </div>
+          </div>
+          <div class="sm-set-bar">
+            <span class="sm-set-chip win">Set 1 : 25–22 ✓</span>
+            <span class="sm-set-chip">Set 2 : en cours</span>
+          </div>
+          <!-- Stats overlay -->
+          <div class="sm-stats-overlay">
+            <div class="sm-stats-title">STATISTIQUES SET 2</div>
+            <div class="sm-stats-row">
+              <div class="sm-stats-val accent">4</div>
+              <div class="sm-stats-lbl">ACES</div>
+              <div class="sm-stats-val cyan">2</div>
+            </div>
+            <div class="sm-stats-row">
+              <div class="sm-stats-val accent">12</div>
+              <div class="sm-stats-lbl">ATTAQUES</div>
+              <div class="sm-stats-val cyan">9</div>
+            </div>
+            <div class="sm-stats-row">
+              <div class="sm-stats-val accent">3</div>
+              <div class="sm-stats-lbl">BLOCKS</div>
+              <div class="sm-stats-val cyan">1</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interface parents -->
+        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-top:0.3rem;">Interface parents (saisie)</div>
+        <div class="parent-mockup">
+          <div class="pm-actions-grid">
+            <div class="pm-btn kill">⚡ ATTAQUE<br><span style="font-size:0.65rem; opacity:0.7;">Point gagné</span></div>
+            <div class="pm-btn ace">🎯 ACE<br><span style="font-size:0.65rem; opacity:0.7;">Service direct</span></div>
+            <div class="pm-btn bloc">🧱 BLOC<br><span style="font-size:0.65rem; opacity:0.7;">Contre</span></div>
+            <div class="pm-btn faute">✗ FAUTE<br><span style="font-size:0.65rem; opacity:0.7;">Erreur directe</span></div>
+          </div>
+          <div class="qr-row">
+            <div class="qr-chip"><strong>QR Animateur</strong>Accès saisie</div>
+            <div class="qr-chip"><strong>QR Parents</strong>Accès stats</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Valeur ajoutée -->
+      <div class="value-points">
+        <div class="vp-item">
+          <span class="vp-icon">🎥</span>
+          <div class="vp-text">
+            <strong>Les joueuses filment leur propre match</strong>
+            Un smartphone suffit. Le score s'affiche en overlay. Les parents dans les tribunes peuvent suivre l'action en temps réel.
+          </div>
+        </div>
+        <div class="vp-item">
+          <span class="vp-icon">👨‍👩‍👧</span>
+          <div class="vp-text">
+            <strong>Les parents deviennent acteurs</strong>
+            Via leur smartphone, ils saisissent les actions clés (aces, attaques, blocs). Des statistiques simples, sans formation requise.
+          </div>
+        </div>
+        <div class="vp-item">
+          <span class="vp-icon">📺</span>
+          <div class="vp-text">
+            <strong>Stats live façon broadcast</strong>
+            Overlay TV avec statistiques par set, transitions automatiques, badge STAT LIVE pour alerter les viewers.
+          </div>
+        </div>
+        <div class="vp-item">
+          <span class="vp-icon">🔗</span>
+          <div class="vp-text">
+            <strong>Chaîne complète : terrain → analyse</strong>
+            Les données du match sont exportées en .dvw pour être analysées dans VolleyVision le lendemain avec la vidéo synchronisée.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 6 — VOLLEYVISION : LE PARSEUR DVW
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s6">
+    <div class="slide-label">VolleyVision</div>
+    <h2>Analyser ce que DataVolley<br><span class="amber">coûte 3 000 €/an</span></h2>
+
+    <div class="vv-layout">
+
+      <div class="vv-left">
+        <div class="vv-context-card">
+          <strong>DataVolley & VolleyMetrics</strong> sont les standards du volleyball professionnel mondial. Mais leur prix est inaccessible pour un Pôle Espoir.<br><br>
+          VolleyVision parse les fichiers <strong>.dvw</strong> (format DataVolley standard) et offre une analyse tactique complète — gratuitement, en open source.
+        </div>
+
+        <div class="dvw-explain">
+          <div class="dvw-title">Le fichier .dvw — Format universel volleyball</div>
+          <div class="dvw-row"><span class="dvw-arrow">→</span><span>Contient chaque action de chaque rally</span></div>
+          <div class="dvw-row"><span class="dvw-arrow">→</span><span>Joueur · Action · Qualité · Zone · Rotation</span></div>
+          <div class="dvw-row"><span class="dvw-arrow">→</span><span>Compatible tous logiciels d'analyse</span></div>
+          <div class="dvw-row"><span class="dvw-arrow">→</span><span>Généré par l'Interface Chaîne Pôle</span></div>
+        </div>
+      </div>
+
+      <div class="vv-right">
+        <div class="vv-features">
+          <div class="vv-feat">
+            <span class="vv-feat-icon">📂</span>
+            <div class="vv-feat-text">
+              <strong>Import drag & drop</strong>
+              <span>Glisser-déposer le fichier .dvw → analyse immédiate. Compatible avec tous les exports DataVolley existants.</span>
+            </div>
+          </div>
+          <div class="vv-feat">
+            <span class="vv-feat-icon">📊</span>
+            <div class="vv-feat-text">
+              <strong>Statistiques avancées automatiques</strong>
+              <span>Efficacité attaque, service, réception · Par joueuse · Par rotation · Par combinaison de passe · Graphiques interactifs</span>
+            </div>
+          </div>
+          <div class="vv-feat">
+            <span class="vv-feat-icon">🎬</span>
+            <div class="vv-feat-text">
+              <strong>Vidéo synchronisée</strong>
+              <span>Lier une vidéo YouTube au fichier DVW. Cliquer sur une action → la vidéo saute automatiquement au bon moment.</span>
+            </div>
+          </div>
+          <div class="vv-feat">
+            <span class="vv-feat-icon">🔍</span>
+            <div class="vv-feat-text">
+              <strong>Filtres multi-critères</strong>
+              <span>Filtrer par joueuse, par type d'action, par qualité (! # + - /), par équipe, par set → analyse ciblée en temps réel.</span>
+            </div>
+          </div>
+          <div class="vv-feat">
+            <span class="vv-feat-icon">🧪</span>
+            <div class="vv-feat-text">
+              <strong>90+ tests automatisés</strong>
+              <span>Le parseur DVW est couvert par une suite de tests unitaires → fiabilité de l'analyse garantie sur tous les fichiers.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 7 — VOLLEYVISION : INTERFACE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s7">
+    <div class="slide-label">VolleyVision · Interface</div>
+    <h2>5 panneaux modulaires<br><span class="amber">vidéo synchronisée</span></h2>
+
+    <div class="vv-ui-layout">
+
+      <!-- Mockup interface -->
+      <div class="vv-mockup">
+        <div class="vv-topbar">
+          <span class="vv-topbar-logo">VolleyVision</span>
+          <span class="vv-topbar-file">match_poleespoir_vs_rennes.dvw</span>
+        </div>
+        <div class="vv-panels-grid">
+
+          <!-- Vidéo -->
+          <div class="vv-panel video-panel">
+            <div class="vv-panel-title">Vidéo</div>
+            <div class="vv-video-area"></div>
+            <div class="vv-video-progress"><div class="vv-video-cursor"></div></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="vv-panel stats-panel">
+            <div class="vv-panel-title">Stats — Léa M.</div>
+            <div class="vv-stats-mini">
+              <div class="vv-stat-cell"><span class="val">78%</span><span class="lbl">Attaque</span></div>
+              <div class="vv-stat-cell"><span class="val">62%</span><span class="lbl">Service</span></div>
+              <div class="vv-stat-cell"><span class="val">5</span><span class="lbl">Kills</span></div>
+              <div class="vv-stat-cell"><span class="val">2</span><span class="lbl">Aces</span></div>
+            </div>
+            <div style="margin-top:8px; display:flex; gap:4px; flex-wrap:wrap;">
+              <span style="background:rgba(16,185,129,0.2); color:#6ee7b7; border-radius:4px; padding:2px 6px; font-size:0.6rem;">Rot. 1 : 3 kills</span>
+              <span style="background:rgba(245,158,11,0.2); color:var(--amber); border-radius:4px; padding:2px 6px; font-size:0.6rem;">Back-row : 45%</span>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="vv-panel timeline-panel">
+            <div class="vv-panel-title">Timeline · Rally 12 · Filtres actifs : Attaque + Kill</div>
+            <div class="vv-timeline-events">
+              <div class="vv-event serve">S#</div>
+              <div class="vv-event recv">R+</div>
+              <div class="vv-event recv">P!</div>
+              <div class="vv-event kill active">A#</div>
+              <div class="vv-event serve">S+</div>
+              <div class="vv-event error">R-</div>
+              <div class="vv-event kill">A#</div>
+              <div class="vv-event serve">S!</div>
+              <div class="vv-event kill">A+</div>
+              <div class="vv-event error">A=</div>
+              <div class="vv-event serve">S#</div>
+              <div class="vv-event recv">R!</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Fonctionnalités -->
+      <div class="vv-ui-features">
+        <div class="vv-uf">
+          <span class="vv-uf-icon">🎬</span>
+          <div class="vv-uf-text">
+            <strong>Vidéo synchronisée avec le DVW</strong>
+            <span>Calibration once → toutes les actions du fichier sont liées aux timestamps vidéo. Clic sur un rally = jump automatique.</span>
+          </div>
+        </div>
+        <div class="vv-uf">
+          <span class="vv-uf-icon">📐</span>
+          <div class="vv-uf-text">
+            <strong>Panneaux drag & drop</strong>
+            <span>Interface modulaire react-grid-layout. Le coach réorganise les panneaux selon ses besoins d'analyse.</span>
+          </div>
+        </div>
+        <div class="vv-uf">
+          <span class="vv-uf-icon">📈</span>
+          <div class="vv-uf-text">
+            <strong>Stats par rotation & par combinaison</strong>
+            <span>Efficacité par rotation (K1→K6), par tempo d'attaque (rapide/mi-hauteur), par combinaison passeuse (KO, K1…)</span>
+          </div>
+        </div>
+        <div class="vv-uf">
+          <span class="vv-uf-icon">🎯</span>
+          <div class="vv-uf-text">
+            <strong>Analyse individuelle profonde</strong>
+            <span>Sélectionner une joueuse → toutes ses actions mises en avant sur la timeline, stats personnelles, graphiques d'évolution.</span>
+          </div>
+        </div>
+        <div class="vv-uf">
+          <span class="vv-uf-icon">🔓</span>
+          <div class="vv-uf-text">
+            <strong>Gratuit · Open source · Sans abonnement</strong>
+            <span>Zéro coût de licence. Les joueuses et entraîneurs accèdent à leurs propres données sans intermédiaire commercial.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 8 — VISION COMMUNE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s8">
+    <div class="slide-label">Vision commune</div>
+    <h2>Un sport plus visible,<br><span class="cyan">plus accessible, plus attractif</span></h2>
+
+    <div class="vision-cols">
+      <div class="vis-card">
+        <span class="vis-icon">🔓</span>
+        <div class="vis-title">Autonomie</div>
+        <div class="vis-body">Plus de dépendance à des éditeurs commerciaux. Le Pôle possède ses outils, ses données, sa stack technologique.</div>
+      </div>
+      <div class="vis-card">
+        <span class="vis-icon">👁</span>
+        <div class="vis-title">Visibilité</div>
+        <div class="vis-body">Diffuser les matchs en live. Partager les stats. Donner envie de suivre le volleyball féminin de haut niveau. Chaque joueuse peut montrer ses actions.</div>
+      </div>
+      <div class="vis-card">
+        <span class="vis-icon">🤝</span>
+        <div class="vis-title">Participation</div>
+        <div class="vis-body">Parents acteurs du suivi sportif. Joueuses actrices de leur développement. Le Pôle crée du lien avec son environnement.</div>
+      </div>
+      <div class="vis-card">
+        <span class="vis-icon">🚀</span>
+        <div class="vis-title">Réplicabilité</div>
+        <div class="vis-body">Ces outils peuvent être déployés dans d'autres Pôles Espoir ou clubs sans coût. Une infrastructure numérique nationale pour le volleyball.</div>
+      </div>
+    </div>
+
+    <div class="final-quote">
+      "Un Pôle Espoir qui filme ses matchs, analyse ses données et prédit la forme de ses joueuses — c'est un Pôle qui <strong>innove pour la performance</strong> et qui donne au volleyball français les outils qu'il mérite."
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 9 — CONCLUSION & APPEL À ACTION
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s9">
+    <div class="slide-label">Conclusion</div>
+    <h2>Ce qui a été construit.<br><span class="cyan">Ce qui est possible.</span></h2>
+
+    <div class="conclu-grid">
+      <div class="cg-card">
+        <span class="cg-icon">💪</span>
+        <div class="cg-text">
+          <strong>RPE Gen2 — En production</strong>
+          <span>14 joueuses · Données quotidiennes · Suivi cycle · Alertes RED-S · Toute une saison de données accumulées</span>
+        </div>
+      </div>
+      <div class="cg-card">
+        <span class="cg-icon">📡</span>
+        <div class="cg-text">
+          <strong>Interface Chaîne Pôle — Opérationnel</strong>
+          <span>Score live · Actions parents · Stats broadcast · Export DVW · Zéro coût d'infrastructure</span>
+        </div>
+      </div>
+      <div class="cg-card">
+        <span class="cg-icon">🎬</span>
+        <div class="cg-text">
+          <strong>VolleyVision — Fonctionnel</strong>
+          <span>Parseur DVW complet · 90+ tests · Vidéo sync · Stats avancées · Alternative aux logiciels à 3 000 €/an</span>
+        </div>
+      </div>
+      <div class="cg-card">
+        <span class="cg-icon">🤖</span>
+        <div class="cg-text">
+          <strong>Phase IA — En conception</strong>
+          <span>Prédiction de forme J+3→J+7 · Corrélations RPE × Cycle × Bien-être · Coach IA personnel</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-block">
+      <h3>Soutenir l'écosystème numérique du Pôle Espoir</h3>
+      <p>Financement Phase 2 & 3 · Extension à d'autres Pôles FFVB · Partenariat Insep / recherche appliquée</p>
+    </div>
+
+    <div style="margin-top:1.5rem; display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap;">
+      <span class="s1-chip" style="font-size:0.85rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13); border-radius:999px; padding:0.4rem 1.2rem; color:var(--muted);">👤 Olivier Bouvet — Entraîneur Pôle Espoir</span>
+      <span class="s1-chip" style="font-size:0.85rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13); border-radius:999px; padding:0.4rem 1.2rem; color:var(--muted);">🏐 Pôle Espoir Volleyball · Sablé-sur-Sarthe</span>
+    </div>
+  </section>
+
+</div><!-- /slides-container -->
+
+<div id="progress"></div>
+<div id="slide-num">1 / 9</div>
+<div id="nav-hint">← → Naviguer · Espace → Slide suivant</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let current  = 0;
+
+  const progressEl = document.getElementById('progress');
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    progressEl.appendChild(dot);
+  }
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    progressEl.children[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    progressEl.children[current].classList.add('active');
+    document.getElementById('slide-num').textContent = (current + 1) + ' / ' + total;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); goTo(current - 1);
+    } else if (e.key === 'Home') { goTo(0); }
+      else if (e.key === 'End')  { goTo(total - 1); }
+  });
+
+  let touchX = null;
+  document.addEventListener('touchstart', (e) => { touchX = e.changedTouches[0].screenX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].screenX - touchX;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+    touchX = null;
+  }, { passive: true });
+</script>
+</body>
+</html>

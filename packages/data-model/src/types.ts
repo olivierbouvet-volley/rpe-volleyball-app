@@ -348,8 +348,12 @@ export interface PlayerMatchStats {
   bySet: Record<number, SkillStats>;
   bySkill: Partial<Record<Skill, QualityDistribution>>;
   bySetAndSkill: Record<string, QualityDistribution>;
+  /** Stats globales par position de rotation P1-P6 (clé = 1 à 6) */
   byRotation?: Record<number, SkillStats>;
+  /** Attaque par code combo DVW (V5, C1, XC...) */
   attackByCombo?: Record<string, QualityDistribution>;
+  /** Attaque par tempo (Q=Rapide, H=Haute, T=Tempo, O=Overpass) */
+  attackByTempo?: Record<string, QualityDistribution>;
   serveByZone?: Record<number, QualityDistribution>;
   receiveByEffect?: Partial<Record<ReceiveEffect, number>>;
 }
