@@ -6,15 +6,19 @@ import { ScoreBoard } from '../components/ScoreBoard';
 import { SetSelector } from '../components/SetSelector';
 import { PlayerSelector } from '../components/PlayerSelector';
 import { StatsTable } from '../components/StatsTable';
+import PlayerPage from './PlayerPage';
 import { VideoPlayer } from '../components/VideoPlayer';
 import { OffsetCalibrator } from '../components/OffsetCalibrator';
 import { ActionTimeline } from '../components/ActionTimeline';
 import { AdvancedFilters } from '../components/AdvancedFilters';
 import { PlaylistPlayer } from '../components/PlaylistPlayer';
 import { RotationView } from '../components/RotationView';
+import { PlayByPlayChart } from '../components/PlayByPlayChart';
+import { SetterDistribution } from '../components/SetterDistribution';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { usePopOutWindow } from '../hooks/usePopOutWindow';
+import { useLayoutStore } from '../store/layoutStore';
 import { filterStats } from '../utils/statsFilter';
 import { applyFilters } from '../utils/filterEngine';
 import '../styles/grid-layout.css';
@@ -30,9 +34,10 @@ export default function AnalysisPage() {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'timeline' | 'playlist'>('timeline');
   const [rightTab, setRightTab] = useState<'stats' | 'rotation' | 'playbyplay' | 'distribution'>('stats');
+  const [playerView, setPlayerView] = useState<string | null>(null);
 
   // Pop-out window for video
-  const { popOutRef, popOut } = usePopOutWindow({
+  const { popOut } = usePopOutWindow({
     title: 'VolleyVision - Video Player',
     width: 1280,
     height: 720,
@@ -107,15 +112,23 @@ export default function AnalysisPage() {
     }
   };
 
+  // Handler pour ouvrir la fiche joueur
+  const handlePlayerClick = (playerId: string) => {
+    setPlayerView(playerId);
+
+    // Rendre le panneau player visible s'il ne l'est pas déjà
+    const { panels, togglePanelVisibility } = useLayoutStore.getState();
+    const playerPanel = panels.find(p => p.id === 'player');
+    if (playerPanel && !playerPanel.visible) {
+      togglePanelVisibility('player');
+    }
+  };
+
   // Render content for each panel
   const renderPanelContent = (panelId: string) => {
     switch (panelId) {
       case 'video':
-        return (
-          <div ref={popOutRef} className="h-full">
-            <VideoPlayer />
-          </div>
-        );
+        return <VideoPlayer />;
 
       case 'calibration':
         return <OffsetCalibrator />;
@@ -248,8 +261,6 @@ export default function AnalysisPage() {
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
                 type="button"
-                disabled
-                title="À venir dans PROMPT 2E"
               >
                 📈 Play-by-Play
               </button>
@@ -261,8 +272,6 @@ export default function AnalysisPage() {
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
                 type="button"
-                disabled
-                title="À venir dans PROMPT 2F"
               >
                 🏐 Passeuse
               </button>
@@ -273,18 +282,70 @@ export default function AnalysisPage() {
               {rightTab === 'stats' && (
                 <>
                   <h2 className="text-lg font-semibold mb-3">Statistiques des joueurs</h2>
-                  <StatsTable stats={filteredStats} match={match} />
+                  <StatsTable stats={filteredStats} match={match} onPlayerClick={handlePlayerClick} />
                 </>
               )}
               {rightTab === 'rotation' && <RotationView />}
               {rightTab === 'playbyplay' && (
-                <div className="text-center text-slate-400 py-8">
-                  📈 Vue Play-by-Play — À venir dans PROMPT 2E
-                </div>
+                <PlayByPlayChart
+                  match={match}
+                  selectedSet={selectedSet}
+                  onRallyClick={(rally) => {
+                    if (rally.videoTimestamp != null) {
+                      const { offset } = useVideoStore.getState();
+                      const ytTime = Math.max(0, rally.videoTimestamp + offset - 2);
+                      seekTo(ytTime);
+                    }
+                  }}
+                />
               )}
               {rightTab === 'distribution' && (
-                <div className="text-center text-slate-400 py-8">
-                  🏐 Distribution passeuse — À venir dans PROMPT 2F
+                <SetterDistribution />
+              )}
+            </div>
+          </div>
+        );
+
+      case 'player':
+        return (
+          <div className="flex flex-col h-full">
+            <div className="p-3 border-b border-slate-700 bg-slate-800 flex-shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-semibold">Fiche Joueur</h2>
+                {playerView && (
+                  <button
+                    onClick={() => setPlayerView(null)}
+                    className="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm transition-colors"
+                    type="button"
+                  >
+                    ✕ Fermer
+                  </button>
+                )}
+              </div>
+              {/* Sélecteur de joueur */}
+              <PlayerSelector
+                homePlayers={match.homeTeam.players}
+                awayPlayers={match.awayTeam.players}
+                selected={playerView}
+                onChange={(id) => {
+                  setPlayerView(id);
+                  // Rendre visible si on sélectionne un joueur
+                  if (id) {
+                    const { panels, togglePanelVisibility } = useLayoutStore.getState();
+                    const playerPanel = panels.find(p => p.id === 'player');
+                    if (playerPanel && !playerPanel.visible) {
+                      togglePanelVisibility('player');
+                    }
+                  }
+                }}
+              />
+            </div>
+            <div className="flex-1 overflow-auto">
+              {playerView ? (
+                <PlayerPage playerId={playerView} onBack={() => setPlayerView(null)} />
+              ) : (
+                <div className="p-4 text-slate-400 text-center">
+                  Sélectionnez un joueur ci-dessus pour voir sa fiche détaillée
                 </div>
               )}
             </div>
@@ -297,7 +358,7 @@ export default function AnalysisPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="px-4 py-4">
       {/* Header with app name */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">

@@ -6,6 +6,7 @@ import { formatEfficiency, getPlayerName, getPlayerNumber } from '../utils/forma
 interface StatsTableProps {
   stats: PlayerMatchStats[];
   match: Match;
+  onPlayerClick?: (playerId: string) => void;
 }
 
 const skills: Skill[] = ['serve', 'receive', 'set', 'attack', 'block', 'dig'];
@@ -23,7 +24,7 @@ const skillLabels: Record<Skill, string> = {
 /**
  * Display player statistics table with quality distributions
  */
-export const StatsTable = memo(function StatsTable({ stats, match }: StatsTableProps) {
+export const StatsTable = memo(function StatsTable({ stats, match, onPlayerClick }: StatsTableProps) {
   if (stats.length === 0) {
     return (
       <div className="text-center py-12 text-slate-400">
@@ -63,8 +64,23 @@ export const StatsTable = memo(function StatsTable({ stats, match }: StatsTableP
               >
                 {/* Player name column */}
                 <td className="sticky left-0 bg-slate-900 hover:bg-slate-800/50 px-4 py-3">
-                  <div className="font-medium">{playerName}</div>
-                  <div className="text-sm text-slate-400">#{playerNumber}</div>
+                  {onPlayerClick ? (
+                    <button
+                      onClick={() => onPlayerClick(playerStats.playerId)}
+                      className="text-left w-full hover:text-primary-blue transition-colors flex items-center gap-2 group"
+                    >
+                      <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity">👤</span>
+                      <div>
+                        <div className="font-medium">{playerName}</div>
+                        <div className="text-sm text-slate-400">#{playerNumber}</div>
+                      </div>
+                    </button>
+                  ) : (
+                    <div>
+                      <div className="font-medium">{playerName}</div>
+                      <div className="text-sm text-slate-400">#{playerNumber}</div>
+                    </div>
+                  )}
                 </td>
 
                 {/* Skill columns */}

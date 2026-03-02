@@ -32,6 +32,7 @@ interface FilterState {
   criteria: FilterCriteria;
   isPlaylistMode: boolean;
   playlistIndex: number;            // Index courant dans la playlist
+  selectedActionIds: Set<string>;   // IDs des actions sélectionnées pour la playlist
 
   // Playlist preferences (persisted)
   preRollSeconds: number;
@@ -47,6 +48,10 @@ interface FilterState {
   prevInPlaylist: () => void;
   setMargins: (pre: number, post: number) => void;
   toggleAutoAdvance: () => void;
+  toggleActionSelection: (actionId: string) => void;
+  selectAllActions: (actionIds: string[]) => void;
+  deselectAllActions: () => void;
+  setSelectedActions: (actionIds: Set<string>) => void;
 }
 
 export const DEFAULT_CRITERIA: FilterCriteria = {
@@ -72,6 +77,7 @@ export const useFilterStore = create<FilterState>()(
       criteria: DEFAULT_CRITERIA,
       isPlaylistMode: false,
       playlistIndex: 0,
+      selectedActionIds: new Set<string>(),
       preRollSeconds: 2,
       postRollSeconds: 3,
       autoAdvance: false,
@@ -121,6 +127,26 @@ export const useFilterStore = create<FilterState>()(
         set((state) => ({
           autoAdvance: !state.autoAdvance,
         })),
+
+      toggleActionSelection: (actionId) =>
+        set((state) => {
+          const newSet = new Set(state.selectedActionIds);
+          if (newSet.has(actionId)) {
+            newSet.delete(actionId);
+          } else {
+            newSet.add(actionId);
+          }
+          return { selectedActionIds: newSet };
+        }),
+
+      selectAllActions: (actionIds) =>
+        set({ selectedActionIds: new Set(actionIds) }),
+
+      deselectAllActions: () =>
+        set({ selectedActionIds: new Set() }),
+
+      setSelectedActions: (actionIds) =>
+        set({ selectedActionIds: actionIds }),
     }),
     {
       name: 'filter-storage',

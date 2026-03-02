@@ -1,10 +1,20 @@
 /**
  * @file usePopOutWindow.ts
- * @description Hook for detaching content into a separate window (e.g., second screen)
+ * @description Hook for detaching video into a separate same-origin window.
+ *
+ * Architecture:
+ * - Opens popup at the same Vite URL with ?popout=video (same origin → YouTube works)
+ * - The popup renders its own VideoPopout component with an independent YT player
+ * - State sync happens via BroadcastChannel ('volleyvision-video')
+ * - The main window registers a proxy seekTo so timeline/playlist still work
  */
 
 import { useRef, useCallback, useEffect } from 'react';
 import { useLayoutStore } from '../store/layoutStore';
+import { useVideoStore } from '../store/videoStore';
+
+/** Channel name shared between main window and popup */
+export const VIDEO_CHANNEL_NAME = 'volleyvision-video';
 
 interface UsePopOutWindowOptions {
   title?: string;
@@ -14,146 +24,136 @@ interface UsePopOutWindowOptions {
 }
 
 interface UsePopOutWindowReturn {
-  popOutRef: React.RefObject<HTMLDivElement>; // Ref du contenu à déplacer
   isPopOut: boolean;
   popOut: () => void;
   popIn: () => void;
 }
 
-/**
- * usePopOutWindow - Detach content into a separate browser window
- *
- * Use case: Display video on a second screen (projector/TV) while keeping
- * timeline and controls on the laptop screen.
- *
- * How it works:
- * 1. Opens a new browser window
- * 2. Copies CSS styles from parent window
- * 3. Moves the DOM node to the new window
- * 4. Automatically restores content when child window closes
- *
- * Communication between windows happens via Zustand stores (shared JS instance)
- * YouTube IFrame API continues to work after DOM move
- */
 export function usePopOutWindow({
   title = 'VolleyVision - Video Player',
   width = 1280,
   height = 720,
   onClose,
 }: UsePopOutWindowOptions = {}): UsePopOutWindowReturn {
-  const popOutRef = useRef<HTMLDivElement>(null);
   const popOutWindowRef = useRef<Window | null>(null);
-  const containerRef = useRef<HTMLElement | null>(null);
+  const channelRef = useRef<BroadcastChannel | null>(null);
   const { isVideoDetached, setVideoDetached } = useLayoutStore();
 
-  const popIn = useCallback(() => {
-    if (!popOutWindowRef.current || !popOutRef.current) return;
+  // ── BroadcastChannel setup ──────────────────────────────────
+  useEffect(() => {
+    const channel = new BroadcastChannel(VIDEO_CHANNEL_NAME);
+    channelRef.current = channel;
 
-    try {
-      // Récupérer le node depuis la fenêtre enfant
-      const node = popOutRef.current;
+    channel.onmessage = (event: MessageEvent) => {
+      const msg = event.data;
+      const vs = useVideoStore.getState();
 
-      // Le remettre dans le DOM parent (à sa position originale)
-      if (containerRef.current) {
-        containerRef.current.appendChild(node);
+      switch (msg.type) {
+        // Popup is loaded and ready — send it the current video state
+        case 'popupReady':
+          channel.postMessage({
+            type: 'init',
+            videoId: vs.videoId,
+            currentTime: vs.currentTime,
+            isPlaying: vs.isPlaying,
+            offset: vs.offset,
+          });
+          break;
+
+        // Popup sends periodic time updates → keep main store in sync
+        case 'timeUpdate':
+          vs.setCurrentTime(msg.time);
+          break;
+
+        // Popup play/pause changed
+        case 'stateChange':
+          vs.setIsPlaying(msg.isPlaying);
+          break;
+
+        // Popup resolved the video duration
+        case 'durationUpdate':
+          vs.setDuration(msg.duration);
+          break;
+
+        // Popup window is closing → re-attach
+        case 'closing':
+          popOutWindowRef.current = null;
+          setVideoDetached(false);
+          // Clear the proxy seekTo — VideoPlayer will re-register its own when it mounts
+          useVideoStore.getState().registerSeekFunction(() => {});
+          onClose?.();
+          break;
       }
+    };
 
-      // Fermer la fenêtre enfant
-      popOutWindowRef.current.close();
-      popOutWindowRef.current = null;
-
-      // Update store
-      setVideoDetached(false);
-
-      // Callback
-      onClose?.();
-    } catch (error) {
-      console.error('[usePopOutWindow] Error during popIn:', error);
-    }
+    return () => {
+      channel.close();
+      channelRef.current = null;
+    };
   }, [setVideoDetached, onClose]);
 
+  // ── Register proxy seekTo when detached ─────────────────────
+  useEffect(() => {
+    if (!isVideoDetached) return;
+
+    // Use setTimeout(0) to guarantee this runs AFTER VideoPlayer's cleanup effects
+    const timer = setTimeout(() => {
+      const channel = channelRef.current;
+      if (!channel) return;
+
+      // Replace the local seekTo with one that forwards via BroadcastChannel
+      useVideoStore.getState().registerSeekFunction((seconds: number) => {
+        channel.postMessage({ type: 'seekTo', time: seconds });
+        // Also tell the popup to play after seeking (playlist expects playback)
+        channel.postMessage({ type: 'play' });
+      });
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [isVideoDetached]);
+
+  // ── Pop out ─────────────────────────────────────────────────
   const popOut = useCallback(() => {
-    if (!popOutRef.current) {
-      console.warn('[usePopOutWindow] popOutRef.current is null');
+    // Build same-origin URL with popout marker
+    const popOutUrl = new URL(window.location.href);
+    popOutUrl.searchParams.set('popout', 'video');
+
+    const newWindow = window.open(
+      popOutUrl.toString(),
+      title,
+      `width=${width},height=${height},menubar=no,toolbar=no,location=no,status=no`,
+    );
+
+    if (!newWindow) {
+      console.error('[usePopOutWindow] Popup blocked by browser');
       return;
     }
 
-    try {
-      // Stocker le conteneur parent pour pouvoir y remettre le node plus tard
-      containerRef.current = popOutRef.current.parentElement;
+    popOutWindowRef.current = newWindow;
+    setVideoDetached(true);
+  }, [title, width, height, setVideoDetached]);
 
-      // Ouvrir une nouvelle fenêtre
-      const newWindow = window.open(
-        '',
-        title,
-        `width=${width},height=${height},menubar=no,toolbar=no,location=no,status=no`
-      );
-
-      if (!newWindow) {
-        console.error('[usePopOutWindow] Failed to open new window (popup blocked?)');
-        return;
-      }
-
-      popOutWindowRef.current = newWindow;
-
-      // Copier les styles CSS du document parent dans la fenêtre enfant
-      const parentDoc = document;
-      const childDoc = newWindow.document;
-
-      childDoc.title = title;
-
-      // Copier les <link> et <style> tags
-      Array.from(parentDoc.styleSheets).forEach((styleSheet) => {
-        try {
-          if (styleSheet.href) {
-            // External stylesheet
-            const link = childDoc.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = styleSheet.href;
-            childDoc.head.appendChild(link);
-          } else if (styleSheet.ownerNode) {
-            // Inline <style>
-            const style = styleSheet.ownerNode.cloneNode(true);
-            childDoc.head.appendChild(style);
-          }
-        } catch (e) {
-          // CORS errors pour certains stylesheets externes
-          console.warn('[usePopOutWindow] Could not copy stylesheet:', e);
-        }
-      });
-
-      // Créer un conteneur dans la nouvelle fenêtre
-      childDoc.body.style.margin = '0';
-      childDoc.body.style.padding = '0';
-      childDoc.body.style.overflow = 'hidden';
-      childDoc.body.style.backgroundColor = '#0f172a'; // slate-900
-
-      // Déplacer le DOM node dans la nouvelle fenêtre
-      childDoc.body.appendChild(popOutRef.current);
-
-      // Écouter la fermeture de la fenêtre pour auto popIn
-      newWindow.addEventListener('beforeunload', () => {
-        popIn();
-      });
-
-      // Update store
-      setVideoDetached(true);
-    } catch (error) {
-      console.error('[usePopOutWindow] Error during popOut:', error);
+  // ── Pop in ──────────────────────────────────────────────────
+  const popIn = useCallback(() => {
+    if (popOutWindowRef.current) {
+      popOutWindowRef.current.close();
+      popOutWindowRef.current = null;
     }
-  }, [title, width, height, popIn, setVideoDetached]);
+    setVideoDetached(false);
+    onClose?.();
+  }, [setVideoDetached, onClose]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (popOutWindowRef.current) {
-        popIn();
+        popOutWindowRef.current.close();
+        popOutWindowRef.current = null;
       }
     };
-  }, [popIn]);
+  }, []);
 
   return {
-    popOutRef,
     isPopOut: isVideoDetached,
     popOut,
     popIn,

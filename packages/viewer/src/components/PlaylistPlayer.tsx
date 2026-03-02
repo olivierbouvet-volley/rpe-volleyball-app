@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useVideoStore } from '../store/videoStore';
 import { useFilterStore } from '../store/filterStore';
+import { useMatchStore } from '../store/matchStore';
 import { getSkillIcon, getSkillLabel, getQualityColorClass } from '../utils/timelineHelpers';
 import type { FilteredAction } from '../utils/filterEngine';
+import { ExportDialog } from './ExportDialog';
+import { buildPlaylistExport } from '../utils/exportPlaylist';
 
 interface PlaylistPlayerProps {
   items: FilteredAction[];
@@ -22,18 +25,50 @@ export function PlaylistPlayer({
   onIndexChange,
   className = '',
 }: PlaylistPlayerProps) {
-  const { currentTime, offset, seekTo } = useVideoStore();
+  const { currentTime, offset, seekTo, videoId } = useVideoStore();
   const {
     preRollSeconds,
     postRollSeconds,
     autoAdvance,
+    selectedActionIds,
     setMargins,
     toggleAutoAdvance,
+    toggleActionSelection,
+    selectAllActions,
   } = useFilterStore();
+  const { match } = useMatchStore();
 
   const currentItem = items[currentIndex];
   const currentIndexRef = useRef(currentIndex);
   const hasAdvancedRef = useRef(false);
+
+  // Export dialog state
+  const [showExportDialog, setShowExportDialog] = useState(false);
+
+  // Sélectionner toutes les actions par défaut quand la liste change
+  useEffect(() => {
+    const allActionIds = items.map(item => item.action.id);
+    // Si aucune action n'est sélectionnée, tout sélectionner par défaut
+    const hasSelections = allActionIds.some(id => selectedActionIds.has(id));
+    if (!hasSelections && allActionIds.length > 0) {
+      selectAllActions(allActionIds);
+    }
+  }, [items, selectedActionIds, selectAllActions]);
+
+  // Filtrer seulement les actions sélectionnées
+  const selectedItems = useMemo(() => {
+    return items.filter(item => selectedActionIds.has(item.action.id));
+  }, [items, selectedActionIds]);
+
+  // Helper pour trouver le prochain index sélectionné
+  const findNextSelectedIndex = useCallback((fromIndex: number): number | null => {
+    for (let i = fromIndex + 1; i < items.length; i++) {
+      if (selectedActionIds.has(items[i].action.id)) {
+        return i;
+      }
+    }
+    return null; // Pas de prochain sélectionné
+  }, [items, selectedActionIds]);
 
   // Sync currentIndexRef with currentIndex
   useEffect(() => {
@@ -114,17 +149,19 @@ export function PlaylistPlayer({
 
     // Détection avec buffer de 0.5s pour éviter les transitions manquées
     if (currentTime >= clipEndTime - 0.5) {
-      if (currentIndexRef.current < items.length - 1) {
-        // Passer au clip suivant
+      // Trouver le prochain clip sélectionné
+      const nextIndex = findNextSelectedIndex(currentIndexRef.current);
+      if (nextIndex !== null) {
+        // Passer au clip suivant sélectionné
         hasAdvancedRef.current = true;
-        onIndexChange(currentIndexRef.current + 1);
+        onIndexChange(nextIndex);
       } else {
         // Fin de la playlist - arrêter l'auto-advance
         hasAdvancedRef.current = true;
         toggleAutoAdvance();
       }
     }
-  }, [currentTime, autoAdvance, items.length, offset, postRollSeconds, isActive, onIndexChange, toggleAutoAdvance, currentItem]);
+  }, [currentTime, autoAdvance, items.length, offset, postRollSeconds, isActive, onIndexChange, toggleAutoAdvance, currentItem, findNextSelectedIndex]);
 
   // ============================================================================
   // Seek Logic: Quand l'index change, chercher la vidéo au bon moment
@@ -187,11 +224,11 @@ export function PlaylistPlayer({
   }
 
   return (
-    <div className={`bg-slate-800 rounded-lg p-3 ${className}`}>
+    <div className={`bg-slate-800 rounded-lg p-3 flex flex-col h-full ${className}`}>
       {/* Contrôles playlist */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between gap-2 mb-2 flex-shrink-0">
         {/* Navigation */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={onPrev}
             disabled={currentIndex <= 0}
@@ -200,8 +237,8 @@ export function PlaylistPlayer({
           >
             ⏮
           </button>
-          <span className="text-sm font-mono tabular-nums text-slate-300 min-w-[60px] text-center">
-            {currentIndex + 1} / {items.length}
+          <span className="text-sm font-mono tabular-nums text-slate-300 min-w-[50px] text-center">
+            {currentIndex + 1}/{items.length}
           </span>
           <button
             onClick={onNext}
@@ -213,33 +250,40 @@ export function PlaylistPlayer({
           </button>
         </div>
 
-        {/* Marges et auto-advance */}
-        <div className="flex items-center gap-2 text-xs">
-          <label className="text-slate-400">Avant :</label>
-          <select
-            value={preRollSeconds}
-            onChange={e => setMargins(+e.target.value, postRollSeconds)}
-            className="bg-slate-700 text-slate-200 rounded px-1 py-0.5 cursor-pointer"
-          >
-            <option value={1}>1s</option>
-            <option value={2}>2s</option>
-            <option value={3}>3s</option>
-            <option value={5}>5s</option>
-          </select>
+        {/* Marges */}
+        <div className="flex items-center gap-1 text-xs">
+          <div className="flex flex-col items-center">
+            <label className="text-slate-500 text-[10px] leading-none mb-0.5">Avant</label>
+            <select
+              value={preRollSeconds}
+              onChange={e => setMargins(+e.target.value, postRollSeconds)}
+              className="bg-slate-700 text-slate-200 rounded px-1 py-0.5 cursor-pointer text-xs"
+            >
+              <option value={1}>1s</option>
+              <option value={2}>2s</option>
+              <option value={3}>3s</option>
+              <option value={5}>5s</option>
+            </select>
+          </div>
 
-          <label className="text-slate-400">Après :</label>
-          <select
-            value={postRollSeconds}
-            onChange={e => setMargins(preRollSeconds, +e.target.value)}
-            className="bg-slate-700 text-slate-200 rounded px-1 py-0.5 cursor-pointer"
-          >
-            <option value={2}>2s</option>
-            <option value={3}>3s</option>
-            <option value={5}>5s</option>
-            <option value={7}>7s</option>
-            <option value={10}>10s</option>
-          </select>
+          <div className="flex flex-col items-center">
+            <label className="text-slate-500 text-[10px] leading-none mb-0.5">Après</label>
+            <select
+              value={postRollSeconds}
+              onChange={e => setMargins(preRollSeconds, +e.target.value)}
+              className="bg-slate-700 text-slate-200 rounded px-1 py-0.5 cursor-pointer text-xs"
+            >
+              <option value={2}>2s</option>
+              <option value={3}>3s</option>
+              <option value={5}>5s</option>
+              <option value={7}>7s</option>
+              <option value={10}>10s</option>
+            </select>
+          </div>
+        </div>
 
+        {/* Auto-advance et export */}
+        <div className="flex items-center gap-1">
           <button
             onClick={toggleAutoAdvance}
             className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
@@ -251,11 +295,20 @@ export function PlaylistPlayer({
           >
             Auto ▶
           </button>
+
+          <button
+            onClick={() => setShowExportDialog(true)}
+            className="px-2 py-1 bg-blue-600 hover:bg-blue-500 rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={selectedItems.length === 0 || !videoId}
+            title={!videoId ? "Associez d'abord une vidéo YouTube" : `Exporter ${selectedItems.length} clips sélectionnés`}
+          >
+            🎬 Exporter ({selectedItems.length})
+          </button>
         </div>
       </div>
 
       {/* Info clip courant */}
-      <div className="text-xs text-slate-300 bg-slate-900 rounded p-2 mb-2">
+      <div className="text-xs text-slate-300 bg-slate-900 rounded p-2 mb-2 flex-shrink-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`${getQualityColorClass(currentItem.action.quality)} px-1.5 py-0.5 rounded font-bold`}>
             {currentItem.action.quality}
@@ -278,27 +331,63 @@ export function PlaylistPlayer({
       </div>
 
       {/* Mini-liste scrollable des clips */}
-      <div className="max-h-[150px] overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
-        {items.map((item, i) => (
-          <button
-            key={item.action.id}
-            onClick={() => onIndexChange(i)}
-            className={`w-full text-left px-2 py-1 rounded text-xs flex items-center gap-2 transition-colors ${
-              i === currentIndex
-                ? 'bg-primary-blue/20 text-white font-medium'
-                : 'text-slate-400 hover:bg-slate-700'
-            }`}
-          >
-            <span className="w-6 text-right font-mono text-slate-500">{i + 1}</span>
-            <span className={`${getQualityColorClass(item.action.quality)} px-1 rounded font-bold`}>
-              {item.action.quality}
-            </span>
-            <span>{getSkillIcon(item.action.skill)}</span>
-            <span>#{item.action.player.number}</span>
-            <span className="text-slate-500 ml-auto text-[10px]">{item.matchTime}</span>
-          </button>
-        ))}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-1 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+        {items.map((item, i) => {
+          const isSelected = selectedActionIds.has(item.action.id);
+          return (
+            <div
+              key={item.action.id}
+              className={`w-full px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors ${
+                i === currentIndex
+                  ? 'bg-primary-blue/20 text-white font-medium'
+                  : 'text-slate-400 hover:bg-slate-700'
+              }`}
+            >
+              {/* Checkbox pour sélection */}
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  toggleActionSelection(item.action.id);
+                }}
+                className="w-3 h-3 rounded border-slate-600 bg-slate-700 text-primary-blue focus:ring-1 focus:ring-primary-blue opacity-50 hover:opacity-100 cursor-pointer"
+                title={isSelected ? "Désélectionner" : "Sélectionner"}
+              />
+
+              {/* Bouton pour naviguer vers le clip */}
+              <button
+                onClick={() => onIndexChange(i)}
+                className="flex-1 flex items-center gap-1.5"
+              >
+                <span className="w-5 text-right font-mono text-slate-500">{i + 1}</span>
+                <span className={`${getQualityColorClass(item.action.quality)} px-1 rounded font-bold`}>
+                  {item.action.quality}
+                </span>
+                <span>{getSkillIcon(item.action.skill)}</span>
+                <span>#{item.action.player.number}</span>
+                <span className="text-slate-500 ml-auto text-[10px]">{item.matchTime}</span>
+              </button>
+            </div>
+          );
+        })}
       </div>
+
+      {/* Export dialog */}
+      {showExportDialog && match && videoId && (
+        <ExportDialog
+          isOpen={showExportDialog}
+          onClose={() => setShowExportDialog(false)}
+          playlist={buildPlaylistExport(
+            match,
+            selectedItems,
+            videoId,
+            offset,
+            preRollSeconds,
+            postRollSeconds
+          )}
+        />
+      )}
     </div>
   );
 }
