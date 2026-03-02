@@ -25,13 +25,13 @@ export const SKILL_LABELS: Record<Skill, string> = {
   freeball: 'Free ball',
 };
 
-export const SKILL_FILTERS: { skill: Skill; icon: string; label: string }[] = [
-  { skill: 'serve', icon: '🎯', label: 'Services' },
-  { skill: 'receive', icon: '🛡️', label: 'Réceptions' },
-  { skill: 'attack', icon: '💥', label: 'Attaques' },
-  { skill: 'block', icon: '🧱', label: 'Blocks' },
-  { skill: 'dig', icon: '⬇️', label: 'Défenses' },
-  { skill: 'set', icon: '🙌', label: 'Passes' },
+export const SKILL_FILTERS: { skill: Skill; icon: string; shortcut: string; label: string }[] = [
+  { skill: 'serve', icon: '🎯', shortcut: 'S', label: 'Services' },
+  { skill: 'receive', icon: '🛡️', shortcut: 'R', label: 'Réceptions' },
+  { skill: 'attack', icon: '💥', shortcut: 'A', label: 'Attaques' },
+  { skill: 'block', icon: '🧱', shortcut: 'B', label: 'Blocks' },
+  { skill: 'dig', icon: '⬇️', shortcut: 'D', label: 'Défenses' },
+  { skill: 'set', icon: '🙌', shortcut: 'P', label: 'Passes' },
 ];
 
 /**

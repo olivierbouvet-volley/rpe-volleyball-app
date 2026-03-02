@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect, useMemo, memo, useCallback } from 'react';
 import type { Match, Rally, Action, Skill } from '@volleyvision/data-model';
 import { useVideoStore } from '../store/videoStore';
+import { useTeamColorStore } from '../store/teamColorStore';
 import {
   SKILL_FILTERS,
   getSkillIcon,
@@ -32,6 +33,12 @@ interface RallyRowProps {
   offset: number;
   currentTime: number;
   onSeekToRally: (rally: Rally) => void;
+  homeTeamName: string;
+  awayTeamName: string;
+  homeTeamCode: string;
+  awayTeamCode: string;
+  homeColor: string;
+  awayColor: string;
 }
 
 interface ActionChipProps {
@@ -74,6 +81,12 @@ const RallyRow = memo(
     offset,
     currentTime,
     onSeekToRally,
+    homeTeamName,
+    awayTeamName,
+    homeTeamCode,
+    awayTeamCode,
+    homeColor,
+    awayColor,
   }: RallyRowProps) => {
     const filteredActions = useMemo(
       () => rally.actions.filter((a) => activeSkills.has(a.skill)),
@@ -108,15 +121,21 @@ const RallyRow = memo(
             {rally.homeScoreAfter}-{rally.awayScoreAfter}
           </span>
           <span className="text-slate-600">•</span>
-          <span>Set {rally.setNumber}</span>
-          <span className="text-slate-600">•</span>
-          <span>Rally #{rally.rallyNumber}</span>
-          <span className="text-slate-600">•</span>
-          <span className={`font-mono ${rally.servingTeam === 'home' ? 'text-yellow-400' : 'text-slate-400'}`} title={rally.servingTeam === 'home' ? 'Home team serving' : 'Home team receiving'}>
+          <span>S{rally.setNumber}</span>
+          <span className="inline-flex items-center gap-1 font-bold" title={rally.pointWinner === 'home' ? homeTeamName : awayTeamName}>
+            <span
+              className="inline-block w-3 h-3 rounded-sm border border-slate-500"
+              style={{ backgroundColor: rally.pointWinner === 'home' ? homeColor : awayColor }}
+            />
+            <span style={{ color: rally.pointWinner === 'home' ? homeColor : awayColor }}>
+              {rally.pointWinner === 'home' ? homeTeamCode : awayTeamCode}
+            </span>
+          </span>
+          <span className={`font-mono ${rally.servingTeam === 'home' ? 'text-yellow-400' : 'text-slate-400'}`} title={rally.servingTeam === 'home' ? 'Équipe domicile au service' : 'Équipe domicile en réception'}>
             *{rally.servingTeam === 'home' ? 'S' : 'R'}{rally.rotation?.home}
           </span>
           <span className="text-slate-600">/</span>
-          <span className={`font-mono ${rally.servingTeam === 'away' ? 'text-yellow-400' : 'text-slate-400'}`} title={rally.servingTeam === 'away' ? 'Away team serving' : 'Away team receiving'}>
+          <span className={`font-mono ${rally.servingTeam === 'away' ? 'text-yellow-400' : 'text-slate-400'}`} title={rally.servingTeam === 'away' ? 'Équipe adverse au service' : 'Équipe adverse en réception'}>
             a{rally.servingTeam === 'away' ? 'S' : 'R'}{rally.rotation?.away}
           </span>
           {rally.videoTimestamp != null && (
@@ -160,6 +179,7 @@ export function ActionTimeline({
   className = '',
 }: ActionTimelineProps) {
   const { currentTime, offset, seekTo } = useVideoStore();
+  const { homeColor, awayColor } = useTeamColorStore();
   const timelineRef = useRef<HTMLDivElement>(null);
   const [activeSkills, setActiveSkills] = useState<Set<Skill>>(
     new Set(SKILL_FILTERS.map((f) => f.skill))
@@ -278,7 +298,7 @@ export function ActionTimeline({
               }`}
               title={sf.label}
             >
-              {sf.icon}
+              {sf.icon}<span className="ml-0.5">{sf.shortcut}</span>
             </button>
           ))}
         </div>
@@ -305,6 +325,12 @@ export function ActionTimeline({
                 offset={offset}
                 currentTime={currentTime}
                 onSeekToRally={handleSeekToRally}
+                homeTeamName={match.homeTeam.name}
+                awayTeamName={match.awayTeam.name}
+                homeTeamCode={match.homeTeam.code || match.homeTeam.name.substring(0, 3).toUpperCase()}
+                awayTeamCode={match.awayTeam.code || match.awayTeam.name.substring(0, 3).toUpperCase()}
+                homeColor={homeColor}
+                awayColor={awayColor}
               />
             </div>
           ))

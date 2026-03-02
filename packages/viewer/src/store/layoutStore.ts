@@ -35,6 +35,7 @@ const DEFAULT_PANELS: PanelConfig[] = [
   { id: 'timeline', title: 'Timeline / Playlist', icon: '📋', visible: true, collapsed: false },
   { id: 'filters', title: 'Filtres avancés', icon: '🔍', visible: true, collapsed: false },
   { id: 'stats', title: 'Statistiques', icon: '📊', visible: true, collapsed: false },
+  { id: 'player', title: 'Fiche Joueur', icon: '👤', visible: false, collapsed: false },
   // Futurs panneaux (ajoutés par 2D-2H) :
   // { id: 'playbyplay', title: 'Play-by-Play', icon: '📈', visible: false, collapsed: false },
   // { id: 'distribution', title: 'Passeuse', icon: '🎯', visible: false, collapsed: false },
@@ -43,35 +44,41 @@ const DEFAULT_PANELS: PanelConfig[] = [
 
 const DEFAULT_LAYOUTS = {
   lg: [ // 12 colonnes, écran >= 1200px
-    // Vidéo plus grande par défaut (7 colonnes), peut s'étendre jusqu'à 12
-    { i: 'video', x: 0, y: 0, w: 7, h: 9, minW: 4, minH: 5 },
+    // Vidéo à gauche (4 colonnes) avec hauteur confortable
+    { i: 'video', x: 0, y: 0, w: 4, h: 10, minW: 4, minH: 8 },
     // Calibration en dessous de la vidéo, repliée par défaut (height=1 car collapsed)
-    { i: 'calibration', x: 0, y: 9, w: 7, h: 1, minW: 3, minH: 1 },
-    // Timeline/Playlist à droite de la vidéo (5 colonnes)
-    { i: 'timeline', x: 7, y: 0, w: 5, h: 12, minW: 3, minH: 6 },
-    // Filtres en dessous de la timeline
-    { i: 'filters', x: 7, y: 12, w: 5, h: 6, minW: 3, minH: 3 },
-    // Stats en bas, toute la largeur
-    { i: 'stats', x: 0, y: 18, w: 12, h: 7, minW: 6, minH: 4 },
+    { i: 'calibration', x: 0, y: 10, w: 4, h: 1, minW: 4, minH: 1 },
+    // Timeline/Playlist au milieu (4 colonnes) avec bonne hauteur
+    { i: 'timeline', x: 4, y: 0, w: 4, h: 14, minW: 4, minH: 10 },
+    // Filtres avancés à droite (4 colonnes) avec hauteur raisonnable
+    { i: 'filters', x: 8, y: 0, w: 4, h: 14, minW: 4, minH: 8 },
+    // Fiche Joueur à droite (4 colonnes), masquée par défaut mais avec bonne taille quand activée
+    { i: 'player', x: 8, y: 0, w: 4, h: 14, minW: 4, minH: 10 },
+    // Stats en bas, toute la largeur avec hauteur confortable
+    { i: 'stats', x: 0, y: 14, w: 12, h: 9, minW: 8, minH: 7 },
   ],
   md: [ // 10 colonnes, écran 996-1199px
-    // Vidéo occupe 6 colonnes sur 10
-    { i: 'video', x: 0, y: 0, w: 6, h: 8, minW: 4, minH: 5 },
-    { i: 'calibration', x: 0, y: 8, w: 6, h: 1, minW: 3, minH: 1 },
-    // Timeline à droite (4 colonnes)
-    { i: 'timeline', x: 6, y: 0, w: 4, h: 10, minW: 3, minH: 6 },
-    // Filtres en dessous de la timeline
-    { i: 'filters', x: 6, y: 10, w: 4, h: 5, minW: 3, minH: 3 },
-    // Stats en bas
-    { i: 'stats', x: 0, y: 15, w: 10, h: 7, minW: 6, minH: 4 },
+    // Vidéo occupe 5 colonnes avec hauteur confortable
+    { i: 'video', x: 0, y: 0, w: 5, h: 10, minW: 4, minH: 8 },
+    { i: 'calibration', x: 0, y: 10, w: 5, h: 1, minW: 4, minH: 1 },
+    // Timeline à droite (5 colonnes)
+    { i: 'timeline', x: 5, y: 0, w: 5, h: 12, minW: 4, minH: 10 },
+    // Filtres en dessous de la vidéo avec hauteur raisonnable
+    { i: 'filters', x: 0, y: 11, w: 5, h: 8, minW: 4, minH: 6 },
+    // Fiche Joueur à droite avec bonne taille
+    { i: 'player', x: 5, y: 0, w: 5, h: 12, minW: 4, minH: 10 },
+    // Stats en bas avec hauteur confortable
+    { i: 'stats', x: 0, y: 19, w: 10, h: 9, minW: 8, minH: 7 },
   ],
   sm: [ // 6 colonnes, écran < 996px (mobile/tablette)
     // Sur mobile, tout empilé verticalement, vidéo en premier
-    { i: 'video', x: 0, y: 0, w: 6, h: 7, minW: 6, minH: 5 },
-    { i: 'calibration', x: 0, y: 7, w: 6, h: 1, minW: 6, minH: 1 },
-    { i: 'timeline', x: 0, y: 8, w: 6, h: 10, minW: 6, minH: 6 },
-    { i: 'filters', x: 0, y: 18, w: 6, h: 6, minW: 6, minH: 3 },
-    { i: 'stats', x: 0, y: 24, w: 6, h: 7, minW: 6, minH: 4 },
+    { i: 'video', x: 0, y: 0, w: 6, h: 8, minW: 6, minH: 6 },
+    { i: 'calibration', x: 0, y: 8, w: 6, h: 1, minW: 6, minH: 1 },
+    { i: 'timeline', x: 0, y: 9, w: 6, h: 12, minW: 6, minH: 10 },
+    { i: 'filters', x: 0, y: 21, w: 6, h: 8, minW: 6, minH: 6 },
+    // Fiche Joueur empilée avec bonne hauteur
+    { i: 'player', x: 0, y: 29, w: 6, h: 12, minW: 6, minH: 10 },
+    { i: 'stats', x: 0, y: 41, w: 6, h: 9, minW: 6, minH: 7 },
   ],
 };
 
@@ -170,7 +177,7 @@ export const useLayoutStore = isTest
           },
         }),
         {
-          name: 'volleyvision-layout', // localStorage key
+          name: 'volleyvision-layout-v2', // localStorage key (v2 pour forcer reset avec nouveaux defaults)
         }
       )
     );

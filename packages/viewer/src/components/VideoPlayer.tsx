@@ -7,6 +7,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useYouTubePlayer } from '../hooks/useYouTubePlayer';
 import { useVideoStore } from '../store/videoStore';
 import { useMatchStore } from '../store/matchStore';
+import { useLayoutStore } from '../store/layoutStore';
+import { useTeamColorStore } from '../store/teamColorStore';
 import { formatVideoTime, isValidYouTubeUrl } from '../utils/videoHelpers';
 import { isRallyInTimeRange } from '../utils/timelineHelpers';
 
@@ -33,6 +35,8 @@ export function VideoPlayer() {
   } = useVideoStore();
 
   const { match } = useMatchStore();
+  const isVideoDetached = useLayoutStore((s) => s.isVideoDetached);
+  const { homeColor, awayColor } = useTeamColorStore();
 
   const [urlInput, setUrlInput] = useState(youtubeUrl || '');
   const [isSeeking, setIsSeeking] = useState(false);
@@ -41,7 +45,7 @@ export function VideoPlayer() {
   const timeUpdateIntervalRef = useRef<number | null>(null);
   const loadingTimeoutRef = useRef<number | null>(null);
 
-  // Initialize YouTube player
+  // Initialize YouTube player (pass empty videoId when detached to avoid creating it)
   const {
     isReady,
     play,
@@ -51,7 +55,7 @@ export function VideoPlayer() {
     getDuration,
     getPlayerState,
   } = useYouTubePlayer({
-    videoId: videoId || '',
+    videoId: isVideoDetached ? '' : (videoId || ''),
     containerId: PLAYER_CONTAINER_ID,
     autoplay: false,
     controls: false, // Use custom controls
@@ -120,14 +124,16 @@ export function VideoPlayer() {
 
   // Register seekTo function in videoStore when player is ready
   useEffect(() => {
-    if (isReady && seekTo) {
+    if (isReady && seekTo && !isVideoDetached) {
       registerSeekFunction(seekTo);
     }
     return () => {
-      // Clear on unmount
-      registerSeekFunction(() => {});
+      // Only clear if NOT detaching — the proxy seekTo from usePopOutWindow takes over
+      if (!useLayoutStore.getState().isVideoDetached) {
+        registerSeekFunction(() => {});
+      }
     };
-  }, [isReady, seekTo, registerSeekFunction]);
+  }, [isReady, seekTo, registerSeekFunction, isVideoDetached]);
 
   // Update current time periodically when playing
   useEffect(() => {
@@ -292,6 +298,22 @@ export function VideoPlayer() {
     };
   }, [match, currentTime, offset, isReady]);
 
+  if (isVideoDetached) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 p-8 bg-slate-800 rounded-lg min-h-[200px]">
+        <svg className="w-16 h-16 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+        <p className="text-slate-400 text-sm text-center">
+          Vidéo affichée dans une fenêtre séparée
+        </p>
+        <p className="text-slate-500 text-xs text-center">
+          Les contrôles timeline et playlist restent synchronisés.
+        </p>
+      </div>
+    );
+  }
+
   if (!videoId) {
     return (
       <div className="flex flex-col gap-4 p-6 bg-slate-800 rounded-lg">
@@ -383,11 +405,29 @@ export function VideoPlayer() {
         {isReady && currentScore && match && (
           <div className="absolute top-2 right-2 bg-slate-900/95 backdrop-blur-sm border border-slate-600 rounded px-2 py-1 shadow-lg">
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-slate-300 font-medium min-w-[30px]">{match.homeTeam.name.substring(0, 3).toUpperCase()}</span>
-              <span className="text-white font-bold tabular-nums">{currentScore.home}</span>
+              <div className="flex items-center gap-1">
+                <span
+                  className="inline-block w-3 h-3 rounded-sm border border-slate-500"
+                  style={{ backgroundColor: homeColor }}
+                  title={match.homeTeam.name}
+                />
+                <span className="text-slate-300 font-medium min-w-[30px]">
+                  {match.homeTeam.code || match.homeTeam.name.substring(0, 3).toUpperCase()}
+                </span>
+              </div>
+              <span className="font-bold tabular-nums" style={{ color: homeColor }}>{currentScore.home}</span>
               <span className="text-slate-500">-</span>
-              <span className="text-white font-bold tabular-nums">{currentScore.away}</span>
-              <span className="text-slate-300 font-medium min-w-[30px]">{match.awayTeam.name.substring(0, 3).toUpperCase()}</span>
+              <span className="font-bold tabular-nums" style={{ color: awayColor }}>{currentScore.away}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-slate-300 font-medium min-w-[30px]">
+                  {match.awayTeam.code || match.awayTeam.name.substring(0, 3).toUpperCase()}
+                </span>
+                <span
+                  className="inline-block w-3 h-3 rounded-sm border border-slate-500"
+                  style={{ backgroundColor: awayColor }}
+                  title={match.awayTeam.name}
+                />
+              </div>
               <span className="text-slate-500 ml-1">•</span>
               <span className="text-slate-400 text-[10px]">S{currentScore.setNumber}</span>
             </div>

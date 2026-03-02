@@ -21,6 +21,28 @@ const storage = firebase.storage();
 window.db = db;
 
 // ============================================================================
+// AUTHENTIFICATION ANONYME FIREBASE
+// ============================================================================
+// Connecte automatiquement un utilisateur anonyme pour satisfaire les règles Firestore
+// (request.auth != null) tout en gardant le système de mot de passe local "pole"
+(async function initAnonymousAuth() {
+    try {
+        // Vérifier si déjà connecté
+        if (auth.currentUser) {
+            console.log('🔐 Firebase Auth: Déjà connecté (UID:', auth.currentUser.uid.substring(0, 8) + '...)');
+            return;
+        }
+
+        // Connexion anonyme
+        const result = await auth.signInAnonymously();
+        console.log('🔐 Firebase Auth: Connexion anonyme réussie (UID:', result.user.uid.substring(0, 8) + '...)');
+    } catch (error) {
+        console.error('❌ Firebase Auth: Erreur connexion anonyme:', error.message);
+        // L'app peut quand même fonctionner si les règles Firestore sont ouvertes
+    }
+})();
+
+// ============================================================================
 // SUPPORT EMULATOR LOCAL - DÉSACTIVÉ
 // ============================================================================
 // Pour activer les émulateurs, décommenter et lancer: firebase emulators:start

@@ -1,124 +1,96 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Collection urgent_messages
-    match /urgent_messages/{messageId} {
-      allow read, write: if true;
+
+    // ========================================
+    // FONCTION HELPER - Vérifie si l'utilisateur est authentifié
+    // Utilise l'auth anonyme Firebase activée dans app.js
+    // ========================================
+    function isAuthenticated() {
+      return request.auth != null;
     }
-    
-    // Collection injuries
-    match /injuries/{injuryId} {
-      allow read, write: if true;
-    }
-    
-    // Collection pains (douleurs)
-    match /pains/{painId} {
-      allow read, write: if true;
-    }
-    
-    // Collection players
+
+    // ========================================
+    // RÈGLE TEMPORAIRE - En attendant activation Auth Anonyme
+    // TODO: Supprimer cette règle après avoir activé Auth Anonyme
+    // dans Firebase Console > Authentication > Sign-in method > Anonymous
+    // ========================================
+
+    // DONNÉES JOUEUSES
     match /players/{playerId} {
-      allow read, write: if true;
-      
-      // Sous-collection testSessions pour l'historique des tests
+      allow read, write: if true; // TEMPORAIRE - remplacer par: if isAuthenticated();
       match /testSessions/{sessionId} {
         allow read, write: if true;
       }
-      
-      // Sous-collection stats pour la gamification
       match /stats/{statType} {
         allow read, write: if true;
       }
     }
-    
-    // Collection checkins
+
+    // SUIVI QUOTIDIEN RPE
     match /checkins/{checkinId} {
       allow read, write: if true;
     }
-    
-    // Collection rpe
     match /rpe/{rpeId} {
       allow read, write: if true;
     }
-    
-    // Collection rpe_data
     match /rpe_data/{rpeDataId} {
       allow read, write: if true;
     }
-    
-    // Collection rest_periods
-    match /rest_periods/{periodId} {
-      allow read, write: if true;
-    }
-    
-    // Collection restPeriods (alternative)
-    match /restPeriods/{periodId} {
-      allow read, write: if true;
-    }
-    
-    // Collection rpeHistory
     match /rpeHistory/{rpeHistoryId} {
       allow read, write: if true;
     }
-    
-    // Collection notifications
-    match /notifications/{notificationId} {
+
+    // PÉRIODES DE REPOS
+    match /rest_periods/{periodId} {
       allow read, write: if true;
     }
-    
-    // Collection fcmTokens
-    match /fcmTokens/{tokenId} {
+    match /restPeriods/{periodId} {
       allow read, write: if true;
     }
-    
-    // ========================================
-    // NOUVELLES COLLECTIONS - CYCLE MENSTRUEL
-    // ========================================
-    
-    // Collection menstrualCycle - Configuration du cycle par joueuse
+
+    // CYCLE MENSTRUEL
     match /menstrualCycle/{playerId} {
       allow read, write: if true;
     }
-    
-    // Collection dailySymptoms - Symptômes quotidiens
     match /dailySymptoms/{symptomId} {
       allow read, write: if true;
     }
-    
-    // Collection trainingRecommendations - Recommandations IA
-    match /trainingRecommendations/{recommendationId} {
-      allow read, write: if true;
-    }
-    
-    // Cycle Profiles - Questionnaire Complet
     match /cycleProfiles/{playerId} {
       allow read, write: if true;
     }
-    
-    // ========================================
-    // ALERTES SANTÉ (Aménorrhée, RED-S)
-    // ========================================
-    
-    // Collection healthAlerts - Alertes de santé critiques
-    match /healthAlerts/{alertId} {
+    match /trainingRecommendations/{recommendationId} {
       allow read, write: if true;
     }
-    
-    // Collection trainingRecommendationsHistory - Historique des recommandations
     match /trainingRecommendationsHistory/{recommendationId} {
       allow read, write: if true;
     }
-    
-    // ========================================
-    // PLANNING AVANCÉ - AGENDA ET SÉQUENCES
-    // ========================================
-    
-    // Collection schedules - Agenda et groupes d'entraînement
+
+    // ALERTES SANTÉ
+    match /healthAlerts/{alertId} {
+      allow read, write: if true;
+    }
+    match /injuries/{injuryId} {
+      allow read, write: if true;
+    }
+    match /pains/{painId} {
+      allow read, write: if true;
+    }
+
+    // COMMUNICATION
+    match /urgent_messages/{messageId} {
+      allow read, write: if true;
+    }
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
+    match /fcmTokens/{tokenId} {
+      allow read, write: if true;
+    }
+
+    // PLANNING
     match /schedules/{userId} {
       allow read, write: if true;
-      
-      // Sous-collection days - Événements et séquences par jour
       match /days/{dateKey} {
         allow read, write: if true;
       }

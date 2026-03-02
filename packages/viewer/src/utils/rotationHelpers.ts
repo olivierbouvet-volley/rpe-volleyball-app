@@ -5,11 +5,13 @@
 
 import type { Match, Rally, TeamSide, Player } from '@volleyvision/data-model';
 
-interface PlayerPosition {
+export interface PlayerPosition {
   position: 1 | 2 | 3 | 4 | 5 | 6;
   playerId: string;
   playerName: string;
+  playerNumber: number;
   isLibero?: boolean;
+  isSetter?: boolean;
 }
 
 /**
@@ -18,7 +20,7 @@ interface PlayerPosition {
  * @param match - Match complet
  * @param teamSide - Côté de l'équipe ('home' | 'away')
  * @param rally - Rally contenant les positions des joueurs
- * @returns Array de PlayerPosition avec position, playerId, playerName
+ * @returns Array de PlayerPosition avec position, playerId, playerName, playerNumber, isSetter
  *
  * Utilise rally.positions qui contient les numéros de joueurs à chaque position P1-P6
  */
@@ -49,7 +51,9 @@ export function getPlayersForRotation(
         position: pos as 1 | 2 | 3 | 4 | 5 | 6,
         playerId: player.id,
         playerName: `${player.lastName}`,
+        playerNumber: player.number,
         isLibero: player.isLibero ?? false,
+        isSetter: player.position === 'SET',
       });
     } else {
       // Joueur non trouvé, afficher juste le numéro
@@ -57,7 +61,9 @@ export function getPlayersForRotation(
         position: pos as 1 | 2 | 3 | 4 | 5 | 6,
         playerId: `unknown-${playerNumber}`,
         playerName: `#${playerNumber}`,
+        playerNumber: playerNumber,
         isLibero: false,
+        isSetter: false,
       });
     }
   }
@@ -279,4 +285,191 @@ export function getRotationsInSet(
   }
 
   return Array.from(rotations).sort((a, b) => a - b);
+}
+
+/**
+ * Compte le nombre de blocs et défenses pour une équipe dans une rotation
+ *
+ * @param match - Match complet
+ * @param teamSide - Côté de l'équipe
+ * @param setNumber - Numéro du set
+ * @param rotation - Numéro de rotation (1-6)
+ * @returns Objet avec blocks et digs
+ */
+export function countBlocksAndDigs(
+  match: Match,
+  teamSide: TeamSide,
+  setNumber: number,
+  rotation: number
+): { blocks: number; digs: number } {
+  const set = match.sets.find((s) => s.number === setNumber);
+  if (!set) return { blocks: 0, digs: 0 };
+
+  let blocks = 0;
+  let digs = 0;
+
+  for (const rally of set.rallies) {
+    // Vérifier si l'équipe est dans la bonne rotation
+    const teamRotation = teamSide === 'home' ? rally.rotation?.home : rally.rotation?.away;
+    if (teamRotation !== rotation) continue;
+
+    // Compter les actions de l'équipe
+    for (const action of rally.actions) {
+      const actionTeam = action.player.id.startsWith('home') ? 'home' : 'away';
+      if (actionTeam !== teamSide) continue;
+
+      if (action.skill === 'block' && action.quality === '#') {
+        blocks++;
+      } else if (action.skill === 'dig' && (action.quality === '#' || action.quality === '+')) {
+        digs++;
+      }
+    }
+  }
+
+  return { blocks, digs };
+}
+
+/**
+ * Calcule le taux de réception positif et le nombre d'excellentes réceptions
+ *
+ * @param match - Match complet
+ * @param teamSide - Côté de l'équipe
+ * @param setNumber - Numéro du set
+ * @param rotation - Numéro de rotation (1-6)
+ * @returns Objet avec posRate (%), perfectCount, totalReceptions
+ */
+export function calculateReceptionStats(
+  match: Match,
+  teamSide: TeamSide,
+  setNumber: number,
+  rotation: number
+): { posRate: number; perfectCount: number; totalReceptions: number } {
+  const set = match.sets.find((s) => s.number === setNumber);
+  if (!set) return { posRate: 0, perfectCount: 0, totalReceptions: 0 };
+
+  let totalReceptions = 0;
+  let positiveReceptions = 0; // # et +
+  let perfectCount = 0; // # seulement
+
+  for (const rally of set.rallies) {
+    // Vérifier si l'équipe est dans la bonne rotation
+    const teamRotation = teamSide === 'home' ? rally.rotation?.home : rally.rotation?.away;
+    if (teamRotation !== rotation) continue;
+
+    // Vérifier si l'équipe reçoit (ne sert pas)
+    if (rally.servingTeam === teamSide) continue;
+
+    // Compter les réceptions de l'équipe
+    for (const action of rally.actions) {
+      const actionTeam = action.player.id.startsWith('home') ? 'home' : 'away';
+      if (actionTeam !== teamSide) continue;
+
+      if (action.skill === 'receive') {
+        totalReceptions++;
+        if (action.quality === '#' || action.quality === '+') {
+          positiveReceptions++;
+        }
+        if (action.quality === '#') {
+          perfectCount++;
+        }
+      }
+    }
+  }
+
+  const posRate = totalReceptions > 0 ? (positiveReceptions / totalReceptions) * 100 : 0;
+  return { posRate, perfectCount, totalReceptions };
+}
+
+/**
+ * Récupère tous les rallies pour une équipe dans une rotation donnée
+ *
+ * @param match - Match complet
+ * @param teamSide - Côté de l'équipe
+ * @param setNumber - Numéro du set
+ * @param rotation - Numéro de rotation (1-6)
+ * @param servingTeam - Optionnel: filtrer par équipe au service
+ * @returns Array de rallies
+ */
+export function getRalliesForRotation(
+  match: Match,
+  teamSide: TeamSide,
+  setNumber: number,
+  rotation: number,
+  servingTeam?: TeamSide
+): Rally[] {
+  const set = match.sets.find((s) => s.number === setNumber);
+  if (!set) return [];
+
+  const rallies: Rally[] = [];
+
+  for (const rally of set.rallies) {
+    const teamRotation = teamSide === 'home' ? rally.rotation?.home : rally.rotation?.away;
+    if (teamRotation !== rotation) continue;
+
+    // Filtrer par équipe au service si spécifié
+    if (servingTeam !== undefined && rally.servingTeam !== servingTeam) continue;
+
+    rallies.push(rally);
+  }
+
+  return rallies;
+}
+
+/**
+ * Récupère les informations du serveur pour un rally
+ *
+ * @param match - Match complet
+ * @param rally - Rally
+ * @returns Objet avec player (joueur serveur) et teamSide
+ */
+export function getServerInfo(
+  match: Match,
+  rally: Rally
+): { player: Player | null; teamSide: TeamSide } | null {
+  if (!rally.servingTeam || !rally.positions) return null;
+
+  const team = rally.servingTeam === 'home' ? match.homeTeam : match.awayTeam;
+  const positions = rally.servingTeam === 'home' ? rally.positions.home : rally.positions.away;
+
+  // Le serveur est toujours en position P1
+  const serverNumber = positions.P1;
+  const player = team.players.find((p) => p.number === serverNumber);
+
+  return {
+    player: player || null,
+    teamSide: rally.servingTeam,
+  };
+}
+
+/**
+ * Identifie la position du passeur dans une rotation
+ *
+ * @param match - Match complet
+ * @param teamSide - Côté de l'équipe
+ * @param rally - Rally
+ * @returns Position du passeur (1-6) ou null si non trouvé
+ */
+export function identifySetterPosition(
+  match: Match,
+  teamSide: TeamSide,
+  rally: Rally
+): number | null {
+  if (!rally.positions) return null;
+
+  const team = teamSide === 'home' ? match.homeTeam : match.awayTeam;
+  const positions = teamSide === 'home' ? rally.positions.home : rally.positions.away;
+
+  // Trouver le passeur dans l'équipe (position = 'SET')
+  const setter = team.players.find((p) => p.position === 'SET');
+  if (!setter) return null;
+
+  // Trouver à quelle position se trouve le passeur
+  for (let pos = 1; pos <= 6; pos++) {
+    const posKey = `P${pos}` as keyof typeof positions;
+    if (positions[posKey] === setter.number) {
+      return pos;
+    }
+  }
+
+  return null;
 }

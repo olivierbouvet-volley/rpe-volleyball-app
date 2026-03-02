@@ -100,7 +100,7 @@ function SkillToggleGroup({ selected, onChange }: SkillToggleGroupProps) {
 
   return (
     <div className="flex flex-wrap gap-0.5">
-      {SKILL_FILTERS.map(({ skill, icon, label }) => (
+      {SKILL_FILTERS.map(({ skill, icon, shortcut, label }) => (
         <button
           key={skill}
           onClick={() => toggleSkill(skill)}
@@ -109,8 +109,9 @@ function SkillToggleGroup({ selected, onChange }: SkillToggleGroupProps) {
               ? 'bg-primary-blue text-white'
               : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
           }`}
+          title={label}
         >
-          {icon}
+          {icon}<span className="ml-0.5">{shortcut}</span>
         </button>
       ))}
     </div>
