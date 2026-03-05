@@ -94,6 +94,22 @@ exports.sendRpeReminder = europeWest1
         const today = new Date().toISOString().split('T')[0];
         
         try {
+            // Vérification période de repos
+            const restPeriodsSnapshot = await db.collection('restPeriods').get();
+            let isRestDay = false;
+            
+            restPeriodsSnapshot.forEach(doc => {
+                const period = doc.data();
+                if (today >= period.startDate && today <= period.endDate) {
+                    isRestDay = true;
+                }
+            });
+            
+            if (isRestDay) {
+                console.log('Période de repos - Aucune notification RPE');
+                return null;
+            }
+
             const playersSnapshot = await db.collection('players').get();
             let notificationsSent = 0;
             
@@ -118,7 +134,7 @@ exports.sendRpeReminder = europeWest1
                     await admin.messaging().send({
                         notification: {
                             title: '🏐 Activités du jour',
-                            body: `Hey ${prenom} ! N'oublie pas ton RPE 💪`
+                            body: `Hey ${prenom} ! N'oublie pas tes RPE 💪`
                         },
                         token: token
                     });

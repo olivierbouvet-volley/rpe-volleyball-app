@@ -85,15 +85,74 @@ async function checkNotificationStatus(playerId) {
 }
 
 /**
- * Affiche le prompt pour activer les notifications
- * TEMPORAIREMENT DÉSACTIVÉ - Ne rien afficher
+ * Affiche le prompt pour activer les notifications push
  */
 async function showNotificationPrompt(playerId) {
     var container = document.getElementById('notificationPromptContainer');
-    if (container) {
+    if (!container) return;
+
+    // Si déjà refusé par le navigateur, on n'affiche rien
+    if (Notification.permission === 'denied') {
         container.innerHTML = '';
+        return;
     }
-    return;
+
+    // Si déjà accordé, on s'assure juste que le token est bien enregistré
+    if (Notification.permission === 'granted') {
+        var status = await checkNotificationStatus(playerId);
+        if (!status.enabled) {
+            // Permission OK mais pas de token → on l'enregistre silencieusement
+            await initPushNotifications(playerId);
+        }
+        container.innerHTML = '';
+        return;
+    }
+
+    // Permission pas encore demandée → afficher le prompt
+    container.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255,165,0,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <span style="font-size: 28px;">🔔</span>
+            <div style="flex: 1;">
+                <div style="color: #fff; font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                    Activer les rappels ?
+                </div>
+                <div style="color: rgba(255,255,255,0.65); font-size: 12px;">
+                    Reçois un rappel à 12h pour le check-in et à 20h pour ton RPE.
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button onclick="enableNotifications('${playerId}')" style="
+                    background: #f97316;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px 14px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    white-space: nowrap;
+                ">Oui, activer</button>
+                <button onclick="document.getElementById('notificationPromptContainer').innerHTML=''" style="
+                    background: transparent;
+                    color: rgba(255,255,255,0.5);
+                    border: 1px solid rgba(255,255,255,0.2);
+                    border-radius: 8px;
+                    padding: 6px 14px;
+                    font-size: 12px;
+                    cursor: pointer;
+                ">Plus tard</button>
+            </div>
+        </div>
+    `;
 }
 
 async function enableNotifications(playerId) {
