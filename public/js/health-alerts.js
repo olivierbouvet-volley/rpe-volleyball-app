@@ -445,7 +445,7 @@ function renderHealthAlert(alert) {
                 </div>
             </div>
             <div style="
-                background: white;
+                background: var(--color-surface, white);
                 padding: 12px;
                 border-radius: 6px;
                 margin-top: 8px;

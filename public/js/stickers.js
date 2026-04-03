@@ -625,8 +625,10 @@ async function checkCheckinStickers(playerId, playerData, currentStickers, newSt
         if (!engagementDoc.exists) return;
         
         const engagement = engagementDoc.data();
-        const currentStreak = engagement.currentStreak || 0;
-        
+        // Utiliser le streak maximum jamais atteint (longestStreak) pour ne jamais perdre
+        // les stickers gagnés, même si le streak courant a baissé depuis
+        const bestStreak = Math.max(engagement.currentStreak || 0, engagement.longestStreak || 0);
+
         // Paliers : 7, 14, 21, 28, 35, 42, 49, 56
         const streakPaliers = [
             { days: 7, stickers: ['checkin_7_1', 'checkin_7_2', 'checkin_7_3'] },
@@ -638,10 +640,10 @@ async function checkCheckinStickers(playerId, playerData, currentStickers, newSt
             { days: 49, stickers: ['checkin_49_1', 'checkin_49_2', 'checkin_49_3'] },
             { days: 56, stickers: ['checkin_56_1', 'checkin_56_2', 'checkin_56_3', 'checkin_56_4', 'checkin_56_5', 'checkin_56_6'] }
         ];
-        
-        // Vérifier chaque palier atteint
+
+        // Vérifier chaque palier atteint (basé sur le meilleur streak historique)
         for (const palier of streakPaliers) {
-            if (currentStreak >= palier.days) {
+            if (bestStreak >= palier.days) {
                 for (const stickerId of palier.stickers) {
                     if (!currentStickers.includes(stickerId) && STICKER_DEFINITIONS[stickerId]) {
                         newStickers.push(STICKER_DEFINITIONS[stickerId]);
@@ -891,7 +893,7 @@ async function displayStickerWidget(playerId) {
 
                 <!-- Barre de progression -->
                 <div style="background: rgba(255,255,255,0.2); border-radius: 20px; height: 8px; margin-bottom: 16px; overflow: hidden;">
-                    <div style="background: white; height: 100%; width: ${percentage}%; border-radius: 20px; transition: width 0.5s;"></div>
+                    <div style="background: var(--color-surface, white); height: 100%; width: ${percentage}%; border-radius: 20px; transition: width 0.5s;"></div>
                 </div>
 
                 <!-- Stats par rareté -->
@@ -919,7 +921,7 @@ async function displayStickerWidget(playerId) {
                                 <div style="position: relative;">
                                     <img src="${sticker.image}" 
                                          alt="${sticker.name}" 
-                                         style="width: 64px; height: 64px; border-radius: 12px; border: 3px solid ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; object-fit: cover; background: white;"
+                                         style="width: 64px; height: 64px; border-radius: 12px; border: 3px solid ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; object-fit: cover; background: var(--color-surface, white);"
                                          title="${sticker.name}: ${sticker.description}">
                                     <div style="position: absolute; top: -6px; right: -6px; background: ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white;">
                                         ${sticker.emoji}

@@ -66,7 +66,8 @@ async function getLastWeekendMatches() {
             lastSunday.setDate(lastSunday.getDate() + 1);
         } else {
             // Lundi à vendredi → week-end précédent
-            const daysToLastSunday = dayOfWeek === 1 ? 1 : (dayOfWeek + 6) % 7;
+            // dayOfWeek = nombre de jours écoulés depuis dimanche (1=lundi, 2=mardi, etc.)
+            const daysToLastSunday = dayOfWeek;
             lastSunday = new Date(now);
             lastSunday.setDate(lastSunday.getDate() - daysToLastSunday);
             lastSunday.setHours(0, 0, 0, 0);
@@ -433,15 +434,17 @@ function generateMatchesTabHTML(matchesByDate) {
         
         matches.forEach(match => {
             const resultClass = match.matchWon === true ? 'victory' : match.matchWon === false ? 'defeat' : 'unknown';
-            const resultIcon = match.matchWon === true ? '✅' : match.matchWon === false ? '❌' : '❓';
+            const resultIcon = match.matchWon === true ? '✅' : match.matchWon === false ? '❌' : '—';
             const resultText = match.matchWon === true ? 'Victoire' : match.matchWon === false ? 'Défaite' : 'Non renseigné';
             
-            const timePlayed = match.timePlayed ? parseInt(match.timePlayed) : 0;
+            const timePlayedRaw = match.timePlayed;
+            const timePlayedSaisi = timePlayedRaw !== null && timePlayedRaw !== undefined && timePlayedRaw !== '';
+            const timePlayed = timePlayedSaisi ? parseInt(timePlayedRaw) : null;
             let timeText = 'Non renseigné';
-            if (timePlayed > 0) {
-                // Convertir le pourcentage en texte descriptif
+            if (timePlayed === 0) {
+                timeText = 'Juste la chauffe';
+            } else if (timePlayed > 0) {
                 const timeLabels = {
-                    0: '0 set',
                     20: '1/5 set',
                     25: '1/4 set',
                     33: '1/3 set',

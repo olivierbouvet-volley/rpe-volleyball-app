@@ -117,7 +117,7 @@ window.initializeDateTabs = function() {
         tab.style.cssText = `
             padding: 8px 12px;
             border: 2px solid #e5e7eb;
-            background: white;
+            background: var(--color-surface, white);
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;

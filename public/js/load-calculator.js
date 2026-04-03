@@ -86,7 +86,7 @@ async function loadPlayerMaximums() {
             console.log(`Load Calculator: ${ex.label} - rep=${ex.rep}, charge=${ex.charge}, max=${max}`);
             if (max && max !== '--') {
                 html += `
-                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-align: center;">
+                    <div style="background: var(--color-surface, white); border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; text-align: center;">
                         <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">${ex.label}</div>
                         <div style="font-size: 24px; font-weight: 700; color: #2180ac;">${max}</div>
                         <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">1RM extrapolé</div>

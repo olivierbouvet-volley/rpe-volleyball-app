@@ -77,6 +77,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // PARAMÈTRES ÉQUIPE (contacts staff médical, WhatsApp)
+    match /teamSettings/{docId} {
+      allow read, write: if true;
+    }
+
     // COMMUNICATION
     match /urgent_messages/{messageId} {
       allow read, write: if true;

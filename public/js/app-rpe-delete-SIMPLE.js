@@ -89,7 +89,7 @@ async function loadRpeHistory() {
             const isLastRpe = index === 0; // Le premier (le plus récent) est le dernier
             
             html += `
-                <div style="padding: var(--space-12); margin-bottom: var(--space-8); background: white; border: 1px solid var(--color-border); border-radius: 8px;">
+                <div style="padding: var(--space-12); margin-bottom: var(--space-8); background: var(--color-surface, white); border: 1px solid var(--color-border); border-radius: 8px;">
                     <div style="display: flex; justify-content: space-between; align-items: start; gap: var(--space-8);">
                         <div style="flex: 1;">
                             <strong style="font-size: 14px; color: var(--color-primary);">${dateStr}</strong>

@@ -101,78 +101,78 @@ async function loadPlayersTable() {
             
             html += `<tr data-player-id="${playerId}">
                 <!-- INFOS PERSONNELLES -->
-                <td style="font-weight: 600; position: sticky; left: 0; background: white; z-index: 9; border: 1px solid #333;">${player.name || playerId}</td>
-                <td style="border: 1px solid #333;">${makeCell('seniority', player.seniority, playerId, 'number')}</td>
-                <td style="border: 1px solid #333;">${makeCell('muscuPriority', player.muscuPriority, playerId)}</td>
-                <td style="border: 1px solid #333;">${makeCell('birthday', player.birthday, playerId)}</td>
-                <td style="border: 1px solid #333;"><div class="editable-cell" data-field="handedness" data-player-id="${playerId}" onclick="makeEditableHandedness(this)">${player.handedness || '-'}</div></td>
-                <td style="border: 1px solid #333;"><div class="editable-cell" data-field="position" data-player-id="${playerId}" onclick="makeEditableSelect(this)">${player.position || '-'}</div></td>
+                <td style="font-weight: 600; position: sticky; left: 0; background: var(--color-surface); z-index: 9; border: 1px solid var(--color-border-strong, #333);">${player.name || playerId}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333);">${makeCell('seniority', player.seniority, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333);">${makeCell('muscuPriority', player.muscuPriority, playerId)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333);">${makeCell('birthday', player.birthday, playerId)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333);"><div class="editable-cell" data-field="handedness" data-player-id="${playerId}" onclick="makeEditableHandedness(this)">${player.handedness || '-'}</div></td>
+                <td style="border: 1px solid var(--color-border-strong, #333);"><div class="editable-cell" data-field="position" data-player-id="${playerId}" onclick="makeEditableSelect(this)">${player.position || '-'}</div></td>
                 
                 <!-- ANTHROPO -->
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('height', player.height, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('weight', player.weight, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('legLength', player.legLength, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('sittingHeight', player.sittingHeight, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('wingspan', player.wingspan, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('bodyFat', player.bodyFat, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('height1B', player.height1B, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('height2B', player.height2B, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('gripLeft', player.gripLeft, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dbeafe;">${makeCell('gripRight', player.gripRight, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('height', player.height, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('weight', player.weight, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('legLength', player.legLength, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('sittingHeight', player.sittingHeight, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('wingspan', player.wingspan, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('bodyFat', player.bodyFat, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('height1B', player.height1B, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('height2B', player.height2B, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('gripLeft', player.gripLeft, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-blue, #dbeafe);">${makeCell('gripRight', player.gripRight, playerId, 'number')}</td>
                 
                 <!-- TEST VOLLEY -->
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('jumpWithRun', player.jumpWithRun, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('jumpStanding', player.jumpStanding, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('broadJump', player.broadJump, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('mbCAV', player.mbCAV, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('mbLeftFront', player.mbLeftFront, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('mbChest', player.mbChest, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fef3c7;">${makeCell('mbRightFront', player.mbRightFront, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('jumpWithRun', player.jumpWithRun, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('jumpStanding', player.jumpStanding, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('broadJump', player.broadJump, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('mbCAV', player.mbCAV, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('mbLeftFront', player.mbLeftFront, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('mbChest', player.mbChest, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-yellow, #fef3c7);">${makeCell('mbRightFront', player.mbRightFront, playerId, 'number')}</td>
                 
                 <!-- TEST MUSCU -->
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('speedChrono', player.speedChrono, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('chrono5m', player.chrono5m, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('speedChrono', player.speedChrono, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('chrono5m', player.chrono5m, playerId, 'number')}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('dcRep', player.dcRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('dcCharge', player.dcCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.dcRep, player.dcCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('dcRep', player.dcRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('dcCharge', player.dcCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.dcRep, player.dcCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('tractionRep', player.tractionRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('tractionCharge', player.tractionCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.tractionRep, player.tractionCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('tractionRep', player.tractionRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('tractionCharge', player.tractionCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.tractionRep, player.tractionCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('tirageRep', player.tirageRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('tirageCharge', player.tirageCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.tirageRep, player.tirageCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('tirageRep', player.tirageRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('tirageCharge', player.tirageCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.tirageRep, player.tirageCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('pullOverRep', player.pullOverRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('pullOverCharge', player.pullOverCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.pullOverRep, player.pullOverCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('pullOverRep', player.pullOverRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('pullOverCharge', player.pullOverCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.pullOverRep, player.pullOverCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('hipThrustRep', player.hipThrustRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('hipThrustCharge', player.hipThrustCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.hipThrustRep, player.hipThrustCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('hipThrustRep', player.hipThrustRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('hipThrustCharge', player.hipThrustCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.hipThrustRep, player.hipThrustCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('sdtRep', player.sdtRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('sdtCharge', player.sdtCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.sdtRep, player.sdtCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('sdtRep', player.sdtRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('sdtCharge', player.sdtCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.sdtRep, player.sdtCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('backSquatRep', player.backSquatRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('backSquatCharge', player.backSquatCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.backSquatRep, player.backSquatCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('backSquatRep', player.backSquatRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('backSquatCharge', player.backSquatCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.backSquatRep, player.backSquatCharge)}</td>
                 
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('epauleRep', player.epauleRep, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2;">${makeCell('epauleCharge', player.epauleCharge, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #fee2e2; color: #059669; font-weight: 600;">${calculateMax(player.epauleRep, player.epauleCharge)}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('epauleRep', player.epauleRep, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2);">${makeCell('epauleCharge', player.epauleCharge, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-red, #fee2e2); color: var(--color-success); font-weight: 600;">${calculateMax(player.epauleRep, player.epauleCharge)}</td>
                 
                 <!-- TEST PHYSIO -->
-                <td style="border: 1px solid #333; background: #dcfce7;">${makeCell('vmaTime', player.vmaTime, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dcfce7;">${makeCell('vmaPalier', player.vmaPalier, playerId, 'number')}</td>
-                <td style="border: 1px solid #333; background: #dcfce7;">${makeCell('vmaDate', player.vmaDate, playerId, 'date')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-green, #dcfce7);">${makeCell('vmaTime', player.vmaTime, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-green, #dcfce7);">${makeCell('vmaPalier', player.vmaPalier, playerId, 'number')}</td>
+                <td style="border: 1px solid var(--color-border-strong, #333); background: var(--col-bg-green, #dcfce7);">${makeCell('vmaDate', player.vmaDate, playerId, 'date')}</td>
                 
                 <!-- ACTIONS -->
-                <td style="border: 1px solid #333; text-align: center; position: sticky; right: 0; background: white; z-index: 9;">
-                    <button onclick="showPlayerDetail('${playerId}')" style="padding: 3px 8px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 10px;">👁️</button>
+                <td style="border: 1px solid var(--color-border-strong, #333); text-align: center; position: sticky; right: 0; background: var(--color-surface); z-index: 9;">
+                    <button onclick="showPlayerDetail('${playerId}')" style="padding: 3px 8px; background: #f3f4f6; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; font-size: 10px;">👁️</button>
                 </td>
             </tr>`;
         });
@@ -184,7 +184,7 @@ async function loadPlayersTable() {
         tbody.innerHTML = `
             <tr>
                 <td colspan="57" style="padding: 40px; text-align: center;">
-                    <p style="font-size: var(--font-size-lg); color: #ef4444; margin-bottom: var(--space-12);">❌ Erreur de connexion</p>
+                    <p style="font-size: var(--font-size-lg); color: var(--color-error); margin-bottom: var(--space-12);">❌ Erreur de connexion</p>
                     <p style="color: var(--color-text-secondary); margin-bottom: var(--space-8);">${error.message}</p>
                     <p style="color: var(--color-text-secondary); margin-bottom: var(--space-16); font-size: var(--font-size-sm);">
                         💡 Assurez-vous d'être connecté à Internet et que Firebase est configuré correctement.
@@ -431,7 +431,7 @@ async function loadPlayersManagementList() {
             const initials = player.name ? player.name.split(' ').map(n => n[0]).join('').substring(0, 2) : '??';
             
             html += `
-                <div class="player-management-card" data-player-name="${player.name ? player.name.toLowerCase() : ''}" style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-16); display: flex; align-items: center; gap: var(--space-16); transition: all var(--duration-fast) var(--ease-standard);">
+                <div class="player-management-card" data-player-name="${player.name ? player.name.toLowerCase() : ''}" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-16); display: flex; align-items: center; gap: var(--space-16); transition: all var(--duration-fast) var(--ease-standard);">
                     <!-- Avatar -->
                     <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold; flex-shrink: 0; overflow: hidden;">
                         ${player.photoURL ? 
@@ -457,7 +457,7 @@ async function loadPlayersManagementList() {
                             <span>✏️</span>
                             <span>Modifier</span>
                         </button>
-                        <button onclick="showPlayerDetail('${playerId}')" class="btn" style="padding: 8px 16px; background: #f3f4f6; color: var(--color-text); border: 1px solid var(--color-border); border-radius: var(--radius-base); cursor: pointer; font-size: var(--font-size-sm); transition: all var(--duration-fast) var(--ease-standard);">
+                        <button onclick="showPlayerDetail('${playerId}')" class="btn" style="padding: 8px 16px; background: var(--color-background); color: var(--color-text); border: 1px solid var(--color-border); border-radius: var(--radius-base); cursor: pointer; font-size: var(--font-size-sm); transition: all var(--duration-fast) var(--ease-standard);">
                             👁️ Voir
                         </button>
                     </div>
@@ -472,7 +472,7 @@ async function loadPlayersManagementList() {
         console.error('Erreur chargement liste joueuses:', error);
         container.innerHTML = `
             <div style="text-align: center; padding: 40px;">
-                <p style="font-size: var(--font-size-lg); color: #ef4444; margin-bottom: var(--space-12);">❌ Erreur de connexion</p>
+                <p style="font-size: var(--font-size-lg); color: var(--color-error); margin-bottom: var(--space-12);">❌ Erreur de connexion</p>
                 <p style="color: var(--color-text-secondary); margin-bottom: var(--space-8);">${error.message}</p>
                 <p style="color: var(--color-text-secondary); margin-bottom: var(--space-16); font-size: var(--font-size-sm);">
                     💡 Assurez-vous d'être connecté à Internet et que Firebase est configuré correctement.
@@ -905,26 +905,26 @@ window.switchCoachTab = function(tabName) {
             tab.style.display = 'none';
         });
         
-        // Retirer la classe active de tous les boutons
+        // Retirer la classe active de tous les boutons — on efface les inline styles
         const allBtns = document.querySelectorAll('.tab-btn');
         allBtns.forEach(btn => {
             btn.classList.remove('active');
-            btn.style.borderBottomColor = 'transparent';
-            btn.style.color = 'var(--color-text-secondary)';
+            btn.style.borderBottom = '';
+            btn.style.borderLeft = '';
+            btn.style.color = '';
+            btn.style.background = '';
         });
-        
+
         // Afficher l'onglet Management
         const managementTab = document.getElementById('managementTab');
         if (managementTab) {
             managementTab.style.display = 'block';
         }
-        
-        // Activer le bouton
+
+        // Activer le bouton — classe active seulement, le CSS gère le visuel
         const managementBtn = document.querySelector('[data-tab="management"]');
         if (managementBtn) {
             managementBtn.classList.add('active');
-            managementBtn.style.borderBottomColor = 'var(--color-primary)';
-            managementBtn.style.color = 'var(--color-text)';
         }
         
         // Charger la liste des joueuses

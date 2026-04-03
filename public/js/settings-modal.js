@@ -31,7 +31,7 @@ window.openSettingsModal = function() {
         
         const content = document.createElement('div');
         content.style.cssText = `
-            background: white;
+            background: var(--color-surface, white);
             border-radius: 16px;
             padding: 30px;
             width: 95%;

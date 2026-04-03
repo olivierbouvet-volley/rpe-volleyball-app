@@ -144,7 +144,7 @@ function displayMotivationalQuote() {
             padding: 12px 25px;
             border: none;
             border-radius: 10px;
-            background: white;
+            background: var(--color-surface, white);
             color: #667eea;
             font-weight: 600;
             cursor: pointer;

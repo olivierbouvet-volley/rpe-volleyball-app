@@ -8,27 +8,51 @@ const painsCollection = db.collection('pains'); // Nouvelle collection pour les 
 let allInjuries = [];
 let allPains = []; // Nouvelle variable pour les douleurs
 let currentFilter = 'active'; // 'active', 'all'
+let weekOffset = 0; // 0 = semaine courante, -1 = semaine précédente
+window.medicalSettings = {}; // Contacts staff médical (kiné, groupe)
+
+// Labels complets des zones corporelles (inclut les zones du formulaire douleur joueuse)
+const PAIN_ZONE_LABELS = {
+  head: 'Tête', neck: 'Cou', shoulder: 'Épaule', elbow: 'Coude',
+  wrist: 'Poignet', hand: 'Main/Doigts', back: 'Dos', lower_back: 'Bas du dos',
+  hip: 'Hanche', thigh: 'Cuisse', knee: 'Genou', calf: 'Mollet',
+  ankle: 'Cheville', foot: 'Pied', finger: 'Doigt', other: 'Autre'
+};
+
+function getPainZoneLabel(zoneId) {
+  return PAIN_ZONE_LABELS[zoneId] || getBodyZoneLabel(zoneId);
+}
 
 /**
  * Initialiser le module de suivi des blessures et douleurs
  */
 async function initInjuryTracking() {
   console.log('Initialisation du module de suivi des blessures et douleurs...');
-  
+
+  // Réinitialiser la navigation semaine à chaque ouverture de l'onglet
+  weekOffset = 0;
+
+  // Charger les contacts staff médical
+  await loadMedicalSettings();
+
   // Charger les blessures
   await loadInjuries();
-  
+
   // Charger les douleurs
   await loadPains();
-  
+
   // Afficher les tableaux
   displayInjuriesTable();
   displayPainsTable();
-  
+
   // Afficher les statistiques
   displayInjuryStatistics();
   displayPainStatistics();
-  
+
+  // Vue hebdomadaire et graphique timeline
+  displayWeeklyPainGrid();
+  displayPainTimeline();
+
   // Configurer les event listeners
   setupInjuryEventListeners();
 }
@@ -82,7 +106,7 @@ function displayInjuriesTable() {
   if (filteredInjuries.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+        <td colspan="8" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
           ${currentFilter === 'active' ? 'Aucune blessure active' : 'Aucune blessure enregistrée'}
         </td>
       </tr>
@@ -177,7 +201,7 @@ function displayActiveInjuriesList(activeInjuries) {
   if (!listEl) return;
   
   if (activeInjuries.length === 0) {
-    listEl.innerHTML = '<p style="color: #666; font-style: italic;">Aucune blessure active</p>';
+    listEl.innerHTML = '<p style="color: var(--color-text-secondary); font-style: italic;">Aucune blessure active</p>';
     return;
   }
   
@@ -187,11 +211,11 @@ function displayActiveInjuriesList(activeInjuries) {
     const statusInfo = getStatusInfo(injury.status);
     
     html += `
-      <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+      <li style="padding: 10px 0; border-bottom: 1px solid var(--color-border);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <strong>${injury.playerName}</strong><br>
-            <span style="font-size: 13px; color: #666;">${getInjuryTypeLabel(injury.injuryType)} - ${daysOut} jours</span>
+            <span style="font-size: 13px; color: var(--color-text-secondary);">${getInjuryTypeLabel(injury.injuryType)} - ${daysOut} jours</span>
           </div>
           <span style="padding: 4px 10px; background: ${statusInfo.color}; color: white; border-radius: 4px; font-size: 12px; font-weight: 600;">
             ${statusInfo.label}
@@ -225,7 +249,7 @@ function displayInjuryTypeDistribution() {
     .slice(0, 5); // Top 5
   
   if (sortedTypes.length === 0) {
-    distributionEl.innerHTML = '<p style="color: #666; font-style: italic;">Aucune donnée disponible</p>';
+    distributionEl.innerHTML = '<p style="color: var(--color-text-secondary); font-style: italic;">Aucune donnée disponible</p>';
     return;
   }
   
@@ -236,8 +260,8 @@ function displayInjuryTypeDistribution() {
       <li style="padding: 8px 0; display: flex; justify-content: space-between; align-items: center;">
         <span>${type}</span>
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 100px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden;">
-            <div style="width: ${percentage}%; height: 100%; background: #E63946;"></div>
+          <div style="width: 100px; height: 8px; background: var(--color-border); border-radius: 4px; overflow: hidden;">
+            <div style="width: ${percentage}%; height: 100%; background: var(--color-error);"></div>
           </div>
           <span style="font-weight: 600; min-width: 50px; text-align: right;">${count} (${percentage}%)</span>
         </div>
@@ -409,28 +433,28 @@ async function editInjuryStatus(injuryId) {
   // Créer la modal HTML avec un select
   const modalHTML = `
     <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;" id="statusModal">
-      <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px;">Modifier le statut de la blessure de ${injury.playerName}</h3>
-        
+      <div style="background: var(--color-surface); padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <h3 style="margin: 0 0 20px 0; color: var(--color-text); font-size: 20px;">Modifier le statut de la blessure de ${injury.playerName}</h3>
+
         <div style="margin-bottom: 20px;">
-          <label style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600;">Statut actuel:</label>
-          <div style="padding: 10px; background: #f3f4f6; border-radius: 6px; color: #1f2937;">
+          <label style="display: block; margin-bottom: 8px; color: var(--color-text); font-weight: 600;">Statut actuel:</label>
+          <div style="padding: 10px; background: var(--color-background); border-radius: 6px; color: var(--color-text);">
             ${getStatusInfo(injury.status).label}
           </div>
         </div>
-        
+
         <div style="margin-bottom: 25px;">
-          <label for="newStatusSelect" style="display: block; margin-bottom: 8px; color: #374151; font-weight: 600;">Nouveau statut:</label>
-          <select id="newStatusSelect" style="width: 100%; padding: 12px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 15px; color: #1f2937; background: white; cursor: pointer;">
+          <label for="newStatusSelect" style="display: block; margin-bottom: 8px; color: var(--color-text); font-weight: 600;">Nouveau statut:</label>
+          <select id="newStatusSelect" style="width: 100%; padding: 12px; border: 2px solid var(--color-border); border-radius: 8px; font-size: 15px; color: var(--color-text); background: var(--color-surface); cursor: pointer;">
             <option value="active" ${injury.status === 'active' ? 'selected' : ''}>Blessée</option>
             <option value="rehabilitation" ${injury.status === 'rehabilitation' ? 'selected' : ''}>En réathlétisation</option>
             <option value="progressive_return" ${injury.status === 'progressive_return' ? 'selected' : ''}>Retour progressif</option>
             <option value="recovered" ${injury.status === 'recovered' ? 'selected' : ''}>Rétablie</option>
           </select>
         </div>
-        
+
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button id="cancelStatusBtn" style="padding: 10px 20px; background: #e5e7eb; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Annuler</button>
+          <button id="cancelStatusBtn" style="padding: 10px 20px; background: var(--color-background); color: var(--color-text); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Annuler</button>
           <button id="confirmStatusBtn" style="padding: 10px 20px; background: #1d7480; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">OK</button>
         </div>
       </div>
@@ -560,18 +584,20 @@ function showNotification(message, type = 'info') {
 
 /**
  * Charger toutes les douleurs de l'équipe
+ * Filtre par teamCode avec fallback pour les données existantes sans teamCode
  */
 async function loadPains() {
   try {
-    // Query sans orderBy pour éviter problème d'index
+    const teamCode = appState.currentUser;
     const snapshot = await painsCollection.get();
     allPains = [];
 
     snapshot.forEach(doc => {
-      allPains.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      const data = doc.data();
+      // Inclure : même teamCode OU pas de teamCode (données legacy)
+      if (!data.teamCode || data.teamCode === teamCode) {
+        allPains.push({ id: doc.id, ...data });
+      }
     });
 
     // Trier côté client par date décroissante
@@ -594,41 +620,77 @@ async function loadPains() {
 function displayPainsTable() {
   const tableBody = document.getElementById('painsTableBody');
   if (!tableBody) return;
-  
+
   // Filtrer les douleurs actives
-  let filteredPains = allPains.filter(pain => pain.status === 'active');
-  
+  const filteredPains = allPains.filter(pain => pain.status === 'active');
+
   if (filteredPains.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+        <td colspan="8" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
           Aucune douleur signalée
         </td>
       </tr>
     `;
     return;
   }
-  
+
   let html = '';
   filteredPains.forEach(pain => {
     const daysOut = calculateDaysOut(pain.painDate, pain.recoveryDate);
-    
+    const intensity = pain.intensity || null;
+    const source = pain.source || 'coach';
+    const sourceIcon = source === 'checkin' ? '👩' : '🏋️';
+    const sourceTitle = source === 'checkin' ? 'Déclarée par la joueuse' : 'Déclarée par le coach';
+
+    // Couleur de l'intensité
+    const intensityColor = !intensity ? '#9ca3af'
+      : intensity >= 8 ? '#dc2626'
+      : intensity >= 5 ? '#f59e0b'
+      : '#10b981';
+
+    const intensityHTML = intensity
+      ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:${intensityColor};color:white;font-weight:700;font-size:13px;">${intensity}</span>`
+      : '<span style="color:#9ca3af;font-size:12px;">—</span>';
+
+    // Boutons WhatsApp
+    const settings = window.medicalSettings || {};
+    const playerName = pain.playerName || '';
+    const zone = getPainZoneLabel(pain.bodyZone);
+    const intensityTxt = intensity ? `${intensity}/10` : 'inconnue';
+    const durationTxt = `${daysOut}j`;
+
+    let whatsappHTML = '';
+    if (settings.kinePhone) {
+      const msg = encodeURIComponent(`Bonjour ${settings.kineName || 'Kiné'}, ${playerName} a signalé une douleur au ${zone} (intensité ${intensityTxt}, depuis ${durationTxt}). Merci pour le suivi.`);
+      whatsappHTML += `<a href="https://wa.me/${settings.kinePhone}?text=${msg}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:#25d366;color:white;border-radius:6px;text-decoration:none;font-size:11px;margin-right:4px;" title="Envoyer au kiné">📱 Kiné</a>`;
+    } else {
+      whatsappHTML += `<span style="color:#9ca3af;font-size:11px;" title="Configurer le numéro kiné dans les paramètres">📱 —</span> `;
+    }
+    if (settings.medicalGroupPhone) {
+      const msg2 = encodeURIComponent(`[DOULEUR] ${playerName} — ${zone} — ${intensityTxt} — ${durationTxt}`);
+      whatsappHTML += `<a href="https://wa.me/${settings.medicalGroupPhone}?text=${msg2}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:#128c7e;color:white;border-radius:6px;text-decoration:none;font-size:11px;" title="Envoyer au groupe staff">👥 Staff</a>`;
+    }
+
     html += `
       <tr>
         <td style="font-weight: 600;">${pain.playerName}</td>
         <td>${formatDateFR(pain.painDate)}</td>
-        <td>${getBodyZoneLabel(pain.bodyZone)}</td>
+        <td>${getPainZoneLabel(pain.bodyZone)}</td>
         <td>${pain.description || '-'}</td>
-        <td style="font-weight: 600;">${daysOut} jours</td>
-        <td>
-          <button onclick="markPainAsRecovered('${pain.id}')" class="btn-recover-injury" title="Marquer comme rétablie">
+        <td style="text-align:center;">${intensityHTML}</td>
+        <td style="text-align:center;" title="${sourceTitle}">${sourceIcon}</td>
+        <td style="font-weight: 600;">${daysOut} j</td>
+        <td style="white-space:nowrap;">
+          ${whatsappHTML}
+          <button onclick="markPainAsRecovered('${pain.id}')" class="btn-recover-injury" title="Marquer comme rétablie" style="margin-left:4px;">
             <i class="fas fa-check-circle"></i>
           </button>
         </td>
       </tr>
     `;
   });
-  
+
   tableBody.innerHTML = html;
 }
 
@@ -645,45 +707,52 @@ function displayPainStatistics() {
 }
 
 /**
- * Déclarer une nouvelle douleur
+ * Déclarer une nouvelle douleur (depuis le dashboard coach)
  */
 async function declarePain() {
   const playerSelect = document.getElementById('painPlayerSelect');
   const bodyZoneSelect = document.getElementById('painBodyZone');
   const descriptionInput = document.getElementById('painDescription');
-  
+  const intensityInput = document.getElementById('painIntensityCoach');
+
   const playerName = playerSelect.value;
   const playerId = playerSelect.options[playerSelect.selectedIndex].dataset.playerId;
   const bodyZone = bodyZoneSelect.value;
   const description = descriptionInput.value.trim();
-  
+  const intensity = intensityInput ? parseInt(intensityInput.value) || null : null;
+
   if (!playerName || !bodyZone) {
     alert('Veuillez remplir tous les champs obligatoires');
     return;
   }
-  
+
   try {
+    const today = new Date().toISOString().split('T')[0];
     await painsCollection.add({
       playerName,
       playerId,
       bodyZone,
       description,
+      intensity,
+      daysSince: 1,
+      source: 'coach',
+      teamCode: appState.currentUser,
+      lastConfirmedDate: today,
+      confirmationHistory: [{ date: today, intensity }],
       painDate: firebase.firestore.Timestamp.fromDate(new Date()),
-      status: 'active', // active ou recovered
+      status: 'active',
       recoveryDate: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    
+
     showNotification('Douleur déclarée avec succès', 'success');
-    
-    // Réinitialiser le formulaire
     document.getElementById('declarePainForm').reset();
-    
-    // Recharger les données
+
     await loadPains();
     displayPainsTable();
     displayPainStatistics();
-    
+    displayWeeklyPainGrid();
+
   } catch (error) {
     console.error('Erreur lors de la déclaration:', error);
     showNotification('Erreur lors de la déclaration de la douleur', 'error');
@@ -691,29 +760,354 @@ async function declarePain() {
 }
 
 /**
- * Marquer une douleur comme rétablie
+ * Marquer une douleur comme rétablie (depuis le dashboard coach)
  */
 async function markPainAsRecovered(painId) {
   if (!confirm('Marquer cette douleur comme rétablie ?')) return;
-  
+
   try {
     await painsCollection.doc(painId).update({
       status: 'recovered',
       recoveryDate: firebase.firestore.Timestamp.fromDate(new Date()),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    
+
     showNotification('Douleur marquée comme rétablie', 'success');
-    
-    // Recharger les données
     await loadPains();
     displayPainsTable();
     displayPainStatistics();
-    
+    displayWeeklyPainGrid();
+
   } catch (error) {
     console.error('Erreur lors de la mise à jour:', error);
     showNotification('Erreur lors de la mise à jour', 'error');
   }
 }
+
+// ===================================================
+// FONCTIONS CÔTÉ JOUEUSE — Gestion multi-jours
+// ===================================================
+
+/**
+ * Récupérer les douleurs actives d'une joueuse spécifique
+ */
+async function getActivePainsForPlayer(playerId) {
+  try {
+    const snapshot = await painsCollection
+      .where('playerId', '==', playerId)
+      .where('status', '==', 'active')
+      .get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Erreur getActivePainsForPlayer:', error);
+    return [];
+  }
+}
+
+/**
+ * Confirmer qu'une douleur continue (depuis le check-in joueuse)
+ */
+async function confirmPainContinues(painId, newIntensity) {
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    await painsCollection.doc(painId).update({
+      lastConfirmedDate: today,
+      intensity: newIntensity || null,
+      confirmationHistory: firebase.firestore.FieldValue.arrayUnion({
+        date: today,
+        intensity: newIntensity || null
+      }),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Erreur confirmPainContinues:', error);
+  }
+}
+
+/**
+ * Marquer une douleur comme terminée (depuis le check-in joueuse)
+ */
+async function markPainResolvedFromCheckin(painId) {
+  try {
+    await painsCollection.doc(painId).update({
+      status: 'recovered',
+      recoveryDate: firebase.firestore.Timestamp.fromDate(new Date()),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Erreur markPainResolvedFromCheckin:', error);
+  }
+}
+
+// ===================================================
+// CONTACTS STAFF MÉDICAL
+// ===================================================
+
+/**
+ * Charger les paramètres médicaux (numéros WhatsApp kiné et groupe)
+ */
+async function loadMedicalSettings() {
+  try {
+    const doc = await db.collection('teamSettings').doc('pole').get();
+    if (doc.exists) {
+      window.medicalSettings = doc.data();
+    }
+  } catch (error) {
+    console.warn('Paramètres médicaux non configurés:', error.message);
+    window.medicalSettings = {};
+  }
+  displayMedicalContactsStatus();
+}
+
+/**
+ * Afficher le statut des contacts médicaux configurés
+ */
+function displayMedicalContactsStatus() {
+  const displayEl = document.getElementById('medicalContactsDisplay');
+  if (!displayEl) return;
+  const s = window.medicalSettings || {};
+  if (!s.kinePhone && !s.medicalGroupPhone) {
+    displayEl.textContent = '⚠️ Aucun contact configuré — cliquez sur "Configurer" pour ajouter les numéros WhatsApp';
+  } else {
+    let parts = [];
+    if (s.kinePhone) parts.push(`📱 Kiné : ${s.kineName || ''} (+${s.kinePhone})`);
+    if (s.medicalGroupPhone) parts.push(`👥 Groupe : ${s.medicalGroupName || ''} (+${s.medicalGroupPhone})`);
+    displayEl.textContent = parts.join(' · ');
+  }
+}
+
+/**
+ * Afficher/masquer le formulaire de configuration des contacts
+ */
+function toggleMedicalContactsForm() {
+  const form = document.getElementById('medicalContactsForm');
+  if (!form) return;
+  const isVisible = form.style.display !== 'none';
+  form.style.display = isVisible ? 'none' : 'block';
+
+  // Pré-remplir avec les valeurs existantes
+  if (!isVisible) {
+    const s = window.medicalSettings || {};
+    const kineNameEl = document.getElementById('kineNameInput');
+    const kinePhoneEl = document.getElementById('kinePhoneInput');
+    const groupNameEl = document.getElementById('medicalGroupNameInput');
+    const groupPhoneEl = document.getElementById('medicalGroupPhoneInput');
+    if (kineNameEl) kineNameEl.value = s.kineName || '';
+    if (kinePhoneEl) kinePhoneEl.value = s.kinePhone || '';
+    if (groupNameEl) groupNameEl.value = s.medicalGroupName || '';
+    if (groupPhoneEl) groupPhoneEl.value = s.medicalGroupPhone || '';
+  }
+}
+
+/**
+ * Sauvegarder les contacts médicaux (depuis les paramètres coach)
+ */
+async function saveMedicalContacts() {
+  const kinePhone = (document.getElementById('kinePhoneInput')?.value || '').trim();
+  const kineName = (document.getElementById('kineNameInput')?.value || '').trim();
+  const groupPhone = (document.getElementById('medicalGroupPhoneInput')?.value || '').trim();
+  const groupName = (document.getElementById('medicalGroupNameInput')?.value || '').trim();
+
+  try {
+    await db.collection('teamSettings').doc('pole').set({
+      kinePhone, kineName,
+      medicalGroupPhone: groupPhone,
+      medicalGroupName: groupName,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    window.medicalSettings = { kinePhone, kineName, medicalGroupPhone: groupPhone, medicalGroupName: groupName };
+    showNotification('Contacts médicaux enregistrés', 'success');
+    displayPainsTable(); // Rafraîchir les boutons WhatsApp
+  } catch (error) {
+    console.error('Erreur saveMedicalContacts:', error);
+    showNotification('Erreur lors de la sauvegarde', 'error');
+  }
+}
+
+// ===================================================
+// VUE HEBDOMADAIRE DES DOULEURS
+// ===================================================
+
+/**
+ * Convertir un objet Date en "YYYY-MM-DD" en heure LOCALE (pas UTC).
+ * Évite le décalage d'un jour quand on est en UTC+1/+2.
+ */
+function toLocalDateStr(date) {
+  const d = (date instanceof Date) ? date : (date?.toDate?.() || new Date(date));
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Calculer les bornes lundi/dimanche d'une semaine (offset par rapport à la semaine courante)
+ */
+function getWeekBounds(offset) {
+  const today = new Date();
+  const dow = today.getDay() || 7; // getDay(): 0=dim, 1=lun... → on veut Lun=1..Dim=7
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - dow + 1 + offset * 7);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return { monday, sunday };
+}
+
+/**
+ * Afficher la grille hebdomadaire des douleurs
+ */
+function displayWeeklyPainGrid() {
+  const gridEl = document.getElementById('weeklyPainGrid');
+  const labelEl = document.getElementById('weekViewLabel');
+  if (!gridEl) return;
+
+  const { monday, sunday } = getWeekBounds(weekOffset);
+  const todayStr = toLocalDateStr(new Date());
+
+  if (labelEl) {
+    labelEl.textContent = `${monday.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} — ${sunday.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+  }
+
+  // Douleurs visibles cette semaine (comparaison en heure locale)
+  const mondayStr = toLocalDateStr(monday);
+  const sundayStr = toLocalDateStr(sunday);
+  const weekPains = allPains.filter(pain => {
+    const pdStr = toLocalDateStr(pain.painDate?.toDate?.() || new Date(pain.painDate));
+    return (pdStr >= mondayStr && pdStr <= sundayStr) ||
+           (pain.status === 'active' && pdStr < mondayStr);
+  });
+
+  if (weekPains.length === 0) {
+    gridEl.innerHTML = '<p style="color:#9ca3af;font-style:italic;text-align:center;padding:16px;">Aucune douleur cette semaine</p>';
+    return;
+  }
+
+  // Construire la grille : joueuses uniques × 7 jours
+  const joueusesMap = {};
+  weekPains.forEach(p => {
+    if (!joueusesMap[p.playerId]) joueusesMap[p.playerId] = { name: p.playerName, pains: [] };
+    joueusesMap[p.playerId].pains.push(p);
+  });
+
+  const joursFR = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
+  let html = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr>
+      <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb;">Joueuse</th>
+      ${joursFR.map((j, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const dStr = toLocalDateStr(d);
+        const isToday = dStr === todayStr;
+        return `<th style="padding:8px;text-align:center;border-bottom:2px solid #e5e7eb;${isToday ? 'background:#fef3c7;' : ''}">${j}<br><span style="font-size:10px;color:#9ca3af;">${d.getDate()}/${d.getMonth()+1}</span></th>`;
+      }).join('')}
+    </tr></thead>
+    <tbody>`;
+
+  Object.values(joueusesMap).forEach(({ name, pains }) => {
+    html += `<tr><td style="padding:8px;font-weight:600;">${name}</td>`;
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(monday.getDate() + i);
+      const dayStr = toLocalDateStr(dayDate); // ← heure locale, pas UTC
+      const isToday = dayStr === todayStr;
+      const isFuture = dayStr > todayStr; // Pas de pastille dans le futur
+
+      // Douleur active ce jour ? (toutes les comparaisons en heure locale)
+      const activePain = isFuture ? null : pains.find(p => {
+        const pdStr = toLocalDateStr(p.painDate?.toDate?.() || new Date(p.painDate));
+        if (pdStr > dayStr) return false; // pas encore déclarée ce jour
+        if (p.status === 'recovered') {
+          const rdStr = toLocalDateStr(p.recoveryDate?.toDate?.() || new Date(p.recoveryDate));
+          return rdStr >= dayStr;
+        }
+        return true;
+      });
+
+      if (activePain) {
+        const intensity = activePain.intensity;
+        const color = !intensity ? '#f59e0b' : intensity >= 8 ? '#dc2626' : intensity >= 5 ? '#f59e0b' : '#10b981';
+        const label = intensity ? `${intensity}` : '?';
+        html += `<td style="padding:8px;text-align:center;${isToday ? 'background:#fef9ed;' : ''}">
+          <span title="${getPainZoneLabel(activePain.bodyZone)}" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:${color};color:white;font-weight:700;font-size:12px;">${label}</span>
+        </td>`;
+      } else if (isFuture) {
+        html += `<td style="padding:8px;text-align:center;background:#fafafa;"></td>`;
+      } else {
+        html += `<td style="padding:8px;text-align:center;${isToday ? 'background:#fef9ed;' : ''}">—</td>`;
+      }
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  gridEl.innerHTML = html;
+}
+
+/**
+ * Changer la semaine affichée (navigation ◀/▶)
+ */
+function changeWeekView(delta) {
+  weekOffset += delta;
+  displayWeeklyPainGrid();
+}
+
+/**
+ * Afficher le graphique timeline des douleurs (4 dernières semaines)
+ */
+function displayPainTimeline() {
+  const canvas = document.getElementById('painTimelineChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const data = [];
+  const labels = [];
+  for (let i = -3; i <= 0; i++) {
+    const { monday, sunday } = getWeekBounds(i);
+    const count = allPains.filter(p => {
+      const pd = p.painDate?.toDate?.() || new Date(p.painDate);
+      return pd >= monday && pd <= sunday;
+    }).length;
+    const label = `S${i + 4} (${monday.getDate()}/${monday.getMonth()+1})`;
+    labels.push(label);
+    data.push(count);
+  }
+
+  // Détruire le graphique précédent s'il existe
+  if (window._painTimelineChart) {
+    window._painTimelineChart.destroy();
+  }
+
+  window._painTimelineChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Douleurs déclarées',
+        data,
+        backgroundColor: '#f59e0b',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } }
+      }
+    }
+  });
+}
+
+// Exposer les fonctions globales utiles
+window.changeWeekView = changeWeekView;
+window.saveMedicalContacts = saveMedicalContacts;
+window.toggleMedicalContactsForm = toggleMedicalContactsForm;
+window.getActivePainsForPlayer = getActivePainsForPlayer;
+window.confirmPainContinues = confirmPainContinues;
+window.markPainResolvedFromCheckin = markPainResolvedFromCheckin;
+window.getPainZoneLabel = getPainZoneLabel; // Utilisée aussi par coach-alerts.js
 
 

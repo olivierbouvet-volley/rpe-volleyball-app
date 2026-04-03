@@ -10,6 +10,9 @@
         "rpe": [
           "rpe-volleyball-sable"
         ],
+        "rpe-dev": [
+          "rpe-gen2-eeaee"
+        ],
         "volleyvision": [
           "volleyvision-pole"
         ]

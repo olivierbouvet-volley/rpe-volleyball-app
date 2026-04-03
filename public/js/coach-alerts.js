@@ -105,24 +105,27 @@ function checkAlert(type, value) {
  */
 function calculatePriority(alerts) {
     let priority = 0;
-    
+
     alerts.forEach(alert => {
+        // Douleurs physiques
+        if (alert.category === 'pain') {
+            priority += (alert.intensity || 5);
+            if (alert.duration > 3) priority += 5;
+            if (alert.source === 'checkin') priority += 3; // Déclarée par la joueuse : plus fiable
+        }
         // Symptômes menstruels
-        if (alert.category === 'menstrual') {
-            // Alerte critique (symptômes totaux >= 20) : priorité maximale
+        else if (alert.category === 'menstrual') {
             if (alert.type === 'menstrual_critical') {
                 priority += 100;
             } else {
-                // Symptôme individuel >= 5 : priorité basée sur la valeur
                 priority += (alert.value - 5) + 5;
             }
-        } 
+        }
         // Alertes standard
         else {
             const threshold = ALERT_THRESHOLDS[alert.type];
             if (!threshold) return;
-            
-            // Calculer l'écart par rapport au seuil
+
             let severity = 0;
             switch (threshold.condition) {
                 case '>=':
@@ -134,12 +137,10 @@ function calculatePriority(alerts) {
                     severity = threshold.value - alert.value;
                     break;
             }
-            
-            // Plus l'écart est grand, plus c'est prioritaire
             priority += Math.max(0, severity) + 1;
         }
     });
-    
+
     return priority;
 }
 
@@ -161,7 +162,18 @@ async function loadCoachAlerts() {
         playersSnapshot.forEach(doc => {
             players[doc.id] = doc.data();
         });
-        
+
+        // Récupérer les douleurs actives (toutes, filtrées côté client ensuite)
+        const painsSnapshot = await db.collection('pains')
+            .where('status', '==', 'active')
+            .get();
+        const playerPains = {};
+        painsSnapshot.forEach(doc => {
+            const pain = doc.data();
+            if (!playerPains[pain.playerId]) playerPains[pain.playerId] = [];
+            playerPains[pain.playerId].push({ id: doc.id, ...pain });
+        });
+
         // Récupérer les check-ins du jour
         const todayCheckinsSnapshot = await db.collection('checkins')
             .where('date', '==', today)
@@ -313,6 +325,26 @@ async function loadCoachAlerts() {
                 }
             }
             
+            // Alertes douleur physique
+            const pains = playerPains[playerId] || [];
+            pains.forEach(pain => {
+                const painDate = pain.painDate?.toDate?.() || new Date(pain.painDate);
+                const duration = Math.ceil((new Date() - painDate) / (1000 * 60 * 60 * 24));
+                // Toujours alerter si déclarée par la joueuse, ou si intensité >= 4
+                if (pain.source === 'checkin' || (pain.intensity && pain.intensity >= 4)) {
+                    alerts.push({
+                        type: 'pain',
+                        category: 'pain',
+                        painId: pain.id,
+                        bodyZone: pain.bodyZone,
+                        intensity: pain.intensity || null,
+                        duration,
+                        source: pain.source || 'coach',
+                        description: pain.description || ''
+                    });
+                }
+            });
+
             if (alerts.length > 0) {
                 coachAlertsData.push({
                     playerId,
@@ -327,7 +359,46 @@ async function loadCoachAlerts() {
                 });
             }
         });
-        
+
+        // Joueuses avec douleur active mais SANS check-in du jour
+        Object.entries(playerPains).forEach(([playerId, pains]) => {
+            if (playerCheckins[playerId]) return; // Déjà traitée
+            const player = players[playerId];
+            if (!player) return;
+
+            const alerts = [];
+            pains.forEach(pain => {
+                const painDate = pain.painDate?.toDate?.() || new Date(pain.painDate);
+                const duration = Math.ceil((new Date() - painDate) / (1000 * 60 * 60 * 24));
+                if (pain.source === 'checkin' || (pain.intensity && pain.intensity >= 4)) {
+                    alerts.push({
+                        type: 'pain',
+                        category: 'pain',
+                        painId: pain.id,
+                        bodyZone: pain.bodyZone,
+                        intensity: pain.intensity || null,
+                        duration,
+                        source: pain.source || 'coach',
+                        description: pain.description || ''
+                    });
+                }
+            });
+
+            if (alerts.length > 0) {
+                coachAlertsData.push({
+                    playerId,
+                    playerName: player.name || playerId,
+                    photoURL: player.photoURL,
+                    alerts,
+                    comment: null,
+                    priority: calculatePriority(alerts),
+                    checkinData: null,
+                    menstrualSymptoms: {},
+                    totalSymptomsScore: 0
+                });
+            }
+        });
+
         // Trier par priorité décroissante
         coachAlertsData.sort((a, b) => b.priority - a.priority);
         
@@ -413,6 +484,31 @@ function generateAlertsPopupHTML() {
         // Générer les badges d'alerte
         let alertBadges = '';
         playerAlert.alerts.forEach(alert => {
+            // Douleur physique
+            if (alert.category === 'pain') {
+                const intensityColor = !alert.intensity ? '#f59e0b'
+                    : alert.intensity >= 8 ? '#dc2626'
+                    : alert.intensity >= 5 ? '#f59e0b'
+                    : '#10b981';
+                const intensityLabel = alert.intensity ? `${alert.intensity}/10` : '?/10';
+                const sourceLabel = alert.source === 'checkin' ? '👩 Déclarée par la joueuse' : '🏋️ Déclarée par le coach';
+                const zoneLabel = (typeof getPainZoneLabel === 'function') ? getPainZoneLabel(alert.bodyZone) : (alert.bodyZone || '—');
+                const durationLabel = alert.duration === 1 ? 'aujourd\'hui' : `depuis ${alert.duration} j`;
+
+                alertBadges += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff7ed; border-radius: 8px; border-left: 3px solid ${intensityColor}; margin-bottom: 4px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 16px;">🤕</span>
+                            <div>
+                                <span style="font-size: 13px; font-weight: 600; color: #92400e;">Douleur ${zoneLabel}</span>
+                                <div style="font-size: 11px; color: #9ca3af;">${sourceLabel} · ${durationLabel}${alert.description ? ' · ' + alert.description : ''}</div>
+                            </div>
+                        </div>
+                        <span style="font-weight: 700; font-size: 14px; color: ${intensityColor};">${intensityLabel}</span>
+                    </div>
+                `;
+                return;
+            }
             // Symptômes menstruels (avec recommandations)
             if (alert.category === 'menstrual') {
                 const isCritical = alert.type === 'menstrual_critical';
@@ -427,7 +523,7 @@ function generateAlertsPopupHTML() {
                             <span style="font-weight: 700; font-size: 14px; color: ${alert.color};">${alert.value}${isCritical ? '' : '/10'}</span>
                         </div>
                         ${alert.recommendation ? `
-                            <div style="background: white; padding: 8px 10px; border-radius: 6px; border-left: 3px solid ${alert.color};">
+                            <div style="background: var(--color-surface, white); padding: 8px 10px; border-radius: 6px; border-left: 3px solid ${alert.color};">
                                 <div style="font-size: 11px; font-weight: 600; color: ${alert.color}; text-transform: uppercase; margin-bottom: 4px;">📋 Recommandation</div>
                                 <div style="font-size: 12px; color: #374151; line-height: 1.5;">${alert.recommendation}</div>
                             </div>
@@ -474,7 +570,7 @@ function generateAlertsPopupHTML() {
         ` : '';
         
         html += `
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 16px; ${index === 0 ? 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);' : ''}">
+            <div style="background: var(--color-surface, white); border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 16px; ${index === 0 ? 'box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);' : ''}">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                     <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold; overflow: hidden; flex-shrink: 0;">
                         ${playerAlert.photoURL 
@@ -1186,20 +1282,20 @@ function generateRecommendationHTML(recommendation, dayOfCycle = 0) {
             </div>
             
             <!-- Justification IA -->
-            <div style="background: white; padding: 12px 16px; border-radius: 8px; border-left: 4px solid ${iconConfig.color}; margin-bottom: 16px;">
+            <div style="background: var(--color-surface, white); padding: 12px 16px; border-radius: 8px; border-left: 4px solid ${iconConfig.color}; margin-bottom: 16px;">
                 <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px; text-transform: uppercase;">💡 Recommandation IA</div>
                 <div style="font-size: 14px; color: #1f2937; line-height: 1.5;">${recommendation.justification}</div>
             </div>
             
             <!-- Recommandations détaillées PPG et Terrain -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                <div style="background: white; padding: 12px; border-radius: 8px;">
+                <div style="background: var(--color-surface, white); padding: 12px; border-radius: 8px;">
                     <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">🏋️ PPG</div>
                     <ul style="margin: 0; padding-left: 16px; font-size: 13px; color: #374151;">
                         ${recommendation.detailedRecommendations.ppg.map(r => `<li style="margin-bottom: 4px;">${r}</li>`).join('')}
                     </ul>
                 </div>
-                <div style="background: white; padding: 12px; border-radius: 8px;">
+                <div style="background: var(--color-surface, white); padding: 12px; border-radius: 8px;">
                     <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">🏐 Terrain</div>
                     <ul style="margin: 0; padding-left: 16px; font-size: 13px; color: #374151;">
                         ${recommendation.detailedRecommendations.terrain.map(r => `<li style="margin-bottom: 4px;">${r}</li>`).join('')}
@@ -1211,7 +1307,7 @@ function generateRecommendationHTML(recommendation, dayOfCycle = 0) {
     // Alertes si présentes
     if (recommendation.alertList && recommendation.alertList.length > 0) {
         html += `
-            <div style="background: white; padding: 12px; border-radius: 8px;">
+            <div style="background: var(--color-surface, white); padding: 12px; border-radius: 8px;">
                 <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">⚠️ Alertes Symptômes (${recommendation.alertList.length})</div>
                 ${generateCycleAlertsHTML(recommendation.alertList)}
             </div>
@@ -1559,7 +1655,7 @@ function generateHealthAlertsHTML() {
         player.alerts.forEach(alert => {
             html += `
                 <div style="
-                    background: white;
+                    background: var(--color-surface, white);
                     padding: 12px;
                     border-radius: 6px;
                     margin-top: 8px;
@@ -1616,7 +1712,7 @@ function showHealthAlertsPopup() {
     
     const popup = document.createElement('div');
     popup.style.cssText = `
-        background: white;
+        background: var(--color-surface, white);
         border-radius: 16px;
         width: 90%;
         max-width: 600px;

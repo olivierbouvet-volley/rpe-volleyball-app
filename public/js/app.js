@@ -528,7 +528,10 @@ async function loadPlayerDashboard() {
         if (typeof displayStickerWidget === 'function') {
             setTimeout(() => displayStickerWidget(appState.currentUser), 400);
         }
-        
+
+        // === DOULEURS : Vérifier les douleurs actives à confirmer ===
+        setTimeout(() => checkActivePainsForCheckin(), 600);
+
     } catch (error) {
         console.error('Erreur lors du chargement du dashboard:', error);
     }
@@ -546,7 +549,7 @@ async function loadPlayerCheckinHistory() {
             .get();
         
         if (checkinsSnapshot.empty) {
-            historyList.innerHTML = '<div style="text-align: center; color: #9ca3af; padding: 20px;">Aucun check-in enregistré</div>';
+            historyList.innerHTML = '<div style="text-align: center; color: var(--color-text-secondary); padding: 20px;">Aucun check-in enregistré</div>';
             return;
         }
         
@@ -579,14 +582,14 @@ async function loadPlayerCheckinHistory() {
             let color;
             if (inverse) {
                 // Pour courbatures et stress (bas = bon)
-                if (value <= 3) color = '#10b981'; // vert
-                else if (value <= 6) color = '#f59e0b'; // orange
-                else color = '#ef4444'; // rouge
+                if (value <= 3) color = 'var(--color-success)'; // vert
+                else if (value <= 6) color = 'var(--color-warning)'; // orange
+                else color = 'var(--color-error)'; // rouge
             } else {
                 // Pour sommeil, humeur, énergie (haut = bon)
-                if (value >= 7) color = '#10b981'; // vert
-                else if (value >= 4) color = '#f59e0b'; // orange
-                else color = '#ef4444'; // rouge
+                if (value >= 7) color = 'var(--color-success)'; // vert
+                else if (value >= 4) color = 'var(--color-warning)'; // orange
+                else color = 'var(--color-error)'; // rouge
             }
             return `color: ${color}; font-weight: 600;`;
         };
@@ -595,14 +598,14 @@ async function loadPlayerCheckinHistory() {
         let html = `
             <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                 <thead>
-                    <tr style="background: #f9fafb;">
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Date</th>
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Sommeil</th>
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Courbatures</th>
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Stress</th>
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Humeur</th>
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Énergie</th>
-                        <th style="text-align: left; padding: 12px 8px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #e5e7eb;">Score</th>
+                    <tr style="background: var(--color-background);">
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Date</th>
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Sommeil</th>
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Courbatures</th>
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Stress</th>
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Humeur</th>
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Énergie</th>
+                        <th style="text-align: left; padding: 12px 8px; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border);">Score</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -626,9 +629,9 @@ async function loadPlayerCheckinHistory() {
                 score = Math.round((sleep + (11 - soreness) + (11 - stress) + mood) / 4 * 10);
             }
             
-            let scoreClass = 'color: #ef4444;';
-            if (score >= 80) scoreClass = 'color: #10b981;';
-            else if (score >= 60) scoreClass = 'color: #f59e0b;';
+            let scoreClass = 'color: var(--color-error);';
+            if (score >= 80) scoreClass = 'color: var(--color-success);';
+            else if (score >= 60) scoreClass = 'color: var(--color-warning);';
             
             // Récupérer les symptômes menstruels > 4
             const symptoms = data.symptoms || {};
@@ -670,7 +673,7 @@ async function loadPlayerCheckinHistory() {
             
             const symptomsHtml = (highSymptoms.length > 0 || highSpmSymptoms.length > 0) ? `
                 <tr>
-                    <td colspan="7" style="padding: 8px 16px; background: #fef2f2; border-bottom: 1px solid #f3f4f6; font-size: 12px; color: #991b1b;">
+                    <td colspan="7" style="padding: 8px 16px; background: var(--color-error-bg, #fef2f2); border-bottom: 1px solid var(--color-border); font-size: 12px; color: var(--color-error-text, #991b1b);">
                         ${highSymptoms.length > 0 ? `<div style="margin-bottom: 4px;"><strong>Symptômes :</strong> ${highSymptoms.join(' • ')}</div>` : ''}
                         ${highSpmSymptoms.length > 0 ? `<div><strong>SPM :</strong> ${highSpmSymptoms.join(' • ')}</div>` : ''}
                     </td>
@@ -679,13 +682,13 @@ async function loadPlayerCheckinHistory() {
             
             html += `
                 <tr>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'};">${dateStr}</td>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(sleep)}">${sleep}/10</td>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(soreness, true)}">${soreness}/10</td>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(stress, true)}">${stress}/10</td>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(mood)}">${mood}/10</td>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${energy !== null ? getColorStyle(energy) : ''}">${energy !== null ? energy + '/10' : '--'}</td>
-                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; font-weight: 600; ${scoreClass}">${score}%</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'};">${dateStr}</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'}; ${getColorStyle(sleep)}">${sleep}/10</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'}; ${getColorStyle(soreness, true)}">${soreness}/10</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'}; ${getColorStyle(stress, true)}">${stress}/10</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'}; ${getColorStyle(mood)}">${mood}/10</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'}; ${energy !== null ? getColorStyle(energy) : ''}">${energy !== null ? energy + '/10' : '--'}</td>
+                    <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid var(--color-border)'}; font-weight: 600; ${scoreClass}">${score}%</td>
                 </tr>
                 ${symptomsHtml}
             `;
@@ -699,7 +702,7 @@ async function loadPlayerCheckinHistory() {
         historyList.innerHTML = html;
     } catch (error) {
         console.error('Erreur chargement historique check-ins:', error);
-        historyList.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Erreur de chargement</div>';
+        historyList.innerHTML = '<div style="text-align: center; color: var(--color-error); padding: 20px;">Erreur de chargement</div>';
     }
 }
 
@@ -761,7 +764,38 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
     
     try {
         await db.collection('checkins').add(checkinData);
-        
+
+        // === DOULEUR : Enregistrer si déclarée dans le formulaire ===
+        const painData = getCheckinPainData();
+        if (painData) {
+            const today2 = new Date().toISOString().split('T')[0];
+            await db.collection('pains').add({
+                playerId: appState.currentUser,
+                playerName: window.currentPlayer?.name || appState.currentUser,
+                bodyZone: painData.zone,
+                intensity: painData.intensity,
+                description: painData.description,
+                daysSince: painData.daysSince,
+                source: 'checkin',
+                teamCode: 'pole',
+                lastConfirmedDate: today2,
+                confirmationHistory: [{ date: today2, intensity: painData.intensity }],
+                painDate: firebase.firestore.Timestamp.fromDate(new Date()),
+                status: 'active',
+                recoveryDate: null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        resetCheckinPainForm();
+        // Remettre le bouton toggle en état "Aucune douleur"
+        const painToggleBtn = document.getElementById('painToggleBtn');
+        if (painToggleBtn) {
+            painToggleBtn.textContent = '✅ Aucune douleur';
+            painToggleBtn.style.background = '#f3f4f6';
+            painToggleBtn.style.color = '#6b7280';
+            painToggleBtn.style.borderColor = '#e5e7eb';
+        }
+
         // === GAMIFICATION : Vérifier et attribuer les stickers ===
         if (typeof checkAndAwardStickers === 'function') {
             await checkAndAwardStickers(appState.currentUser, 'checkin');
@@ -801,6 +835,216 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
     }
 });
+
+// ===================================================
+// MODULE DOULEUR — CHECK-IN JOUEUSE
+// ===================================================
+
+/** Afficher le formulaire douleur dans le check-in */
+function showCheckinPainForm() {
+    const form = document.getElementById('painCheckinForm');
+    if (form) form.style.display = 'block';
+}
+
+/** Masquer le formulaire douleur SANS réinitialiser (appelé seul) */
+function hideCheckinPainForm() {
+    const form = document.getElementById('painCheckinForm');
+    if (form) form.style.display = 'none';
+}
+
+/**
+ * Toggle le formulaire douleur via le bouton discret.
+ * Par défaut : "Aucune douleur" (fermé). Si on clique, ça ouvre le formulaire.
+ */
+function toggleCheckinPainForm() {
+    const form = document.getElementById('painCheckinForm');
+    const btn = document.getElementById('painToggleBtn');
+    if (!form) return;
+
+    const isOpen = form.style.display !== 'none';
+    if (isOpen) {
+        // Fermer et réinitialiser
+        resetCheckinPainForm();
+        if (btn) { btn.textContent = '✅ Aucune douleur'; btn.style.background = '#f3f4f6'; btn.style.color = '#6b7280'; }
+    } else {
+        // Ouvrir
+        form.style.display = 'block';
+        if (btn) { btn.textContent = '🤕 Signaler une douleur'; btn.style.background = '#fff7ed'; btn.style.color = '#92400e'; btn.style.borderColor = '#fed7aa'; }
+    }
+}
+
+/** Sélectionner l'intensité de la douleur (pastilles) */
+function selectPainIntensity(value) {
+    document.getElementById('checkinPainIntensity').value = value;
+    const labels = ['', 'Légère', 'Légère', 'Modérée', 'Modérée', 'Modérée', 'Importante', 'Importante', 'Forte', 'Très forte', 'Insupportable'];
+    const colors = ['', '#10b981', '#10b981', '#84cc16', '#84cc16', '#f59e0b', '#f59e0b', '#f59e0b', '#ef4444', '#dc2626', '#dc2626'];
+    const labelEl = document.getElementById('checkinPainIntensityLabel');
+    if (labelEl) labelEl.textContent = `${value}/10 — ${labels[value] || ''}`;
+
+    document.querySelectorAll('.pain-intensity-btn').forEach(btn => {
+        const v = parseInt(btn.dataset.value);
+        if (v <= value) {
+            btn.style.background = colors[value] || '#f59e0b';
+            btn.style.color = 'white';
+            btn.style.borderColor = colors[value] || '#f59e0b';
+        } else {
+            btn.style.background = 'white';
+            btn.style.color = '#374151';
+            btn.style.borderColor = '#e5e7eb';
+        }
+    });
+}
+
+/** Lire les données du formulaire douleur. Retourne null si non rempli. */
+function getCheckinPainData() {
+    const form = document.getElementById('painCheckinForm');
+    if (!form || form.style.display === 'none') return null;
+
+    const zone = document.getElementById('checkinPainZone')?.value;
+    if (!zone) return null;
+
+    const intensity = parseInt(document.getElementById('checkinPainIntensity')?.value) || null;
+    if (!intensity || intensity === 0) return null;
+
+    const daysSince = parseInt(document.getElementById('checkinPainDaysSince')?.value) || 1;
+    const description = document.getElementById('checkinPainDescription')?.value.trim() || '';
+
+    return { zone, intensity, daysSince, description };
+}
+
+/** Réinitialiser le formulaire douleur après soumission (sans appeler hideCheckinPainForm) */
+function resetCheckinPainForm() {
+    const zoneEl = document.getElementById('checkinPainZone');
+    const intensityEl = document.getElementById('checkinPainIntensity');
+    const daysSinceEl = document.getElementById('checkinPainDaysSince');
+    const descEl = document.getElementById('checkinPainDescription');
+    const labelEl = document.getElementById('checkinPainIntensityLabel');
+
+    if (zoneEl) zoneEl.value = '';
+    if (intensityEl) intensityEl.value = '0';
+    if (daysSinceEl) daysSinceEl.value = '1';
+    if (descEl) descEl.value = '';
+    if (labelEl) labelEl.textContent = 'Aucune sélection';
+
+    document.querySelectorAll('.pain-intensity-btn').forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.color = '#374151';
+        btn.style.borderColor = '#e5e7eb';
+    });
+
+    // Masquer le formulaire DIRECTEMENT (pas via hideCheckinPainForm pour éviter la récursion)
+    const form = document.getElementById('painCheckinForm');
+    if (form) form.style.display = 'none';
+}
+
+/** Vérifier les douleurs actives à confirmer au check-in */
+async function checkActivePainsForCheckin() {
+    const playerId = appState.currentUser;
+    if (!playerId || typeof getActivePainsForPlayer !== 'function') return;
+
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const activePains = await getActivePainsForPlayer(playerId);
+
+        // Filtrer celles pas encore confirmées aujourd'hui
+        const unconfirmed = activePains.filter(p => p.lastConfirmedDate !== today);
+        if (unconfirmed.length === 0) return;
+
+        displayPainConfirmationSection(unconfirmed);
+    } catch (error) {
+        console.warn('Erreur checkActivePainsForCheckin:', error);
+    }
+}
+
+/** Afficher la section de confirmation des douleurs en cours */
+function displayPainConfirmationSection(pains) {
+    const section = document.getElementById('painConfirmationSection');
+    if (!section) return;
+
+    const PAIN_ZONE_LABELS = {
+        head: 'Tête', neck: 'Cou', shoulder: 'Épaule', elbow: 'Coude',
+        wrist: 'Poignet', hand: 'Main/Doigts', back: 'Dos', lower_back: 'Bas du dos',
+        hip: 'Hanche', thigh: 'Cuisse', knee: 'Genou', calf: 'Mollet',
+        ankle: 'Cheville', foot: 'Pied', finger: 'Doigt', other: 'Autre'
+    };
+
+    let html = `<div style="background:#fef3c7;padding:16px;border-radius:12px;border-left:4px solid #f59e0b;margin-bottom:8px;">
+        <div style="font-size:14px;font-weight:600;color:#92400e;margin-bottom:12px;">⚠️ Tu avais signalé ${pains.length > 1 ? 'ces douleurs' : 'cette douleur'} — comment ça va aujourd'hui ?</div>`;
+
+    pains.forEach(pain => {
+        const zone = PAIN_ZONE_LABELS[pain.bodyZone] || pain.bodyZone;
+        const painDate = pain.painDate?.toDate?.() || new Date(pain.painDate);
+        const duration = Math.ceil((new Date() - painDate) / (1000 * 60 * 60 * 24));
+        const intensityLabel = pain.intensity ? ` (${pain.intensity}/10)` : '';
+
+        html += `<div id="painConfirm_${pain.id}" style="background:white;padding:12px;border-radius:8px;margin-bottom:8px;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px;">🤕 ${zone}${intensityLabel} — depuis ${duration} j</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:12px;color:#6b7280;">Intensité actuelle :</span>
+                ${[1,2,3,4,5,6,7,8,9,10].map(v => `
+                    <button type="button" onclick="confirmPainStillHere('${pain.id}',${v})"
+                        style="width:26px;height:26px;padding:0;border:2px solid #e5e7eb;background:white;border-radius:50%;cursor:pointer;font-size:11px;font-weight:600;" class="confirm-intensity-${pain.id}"
+                        data-val="${v}">${v}</button>`).join('')}
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+                <button type="button" onclick="confirmPainGone('${pain.id}')" style="padding:6px 14px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">
+                    ✅ C'est passé !
+                </button>
+            </div>
+        </div>`;
+    });
+
+    html += '</div>';
+    section.innerHTML = html;
+    section.style.display = 'block';
+}
+
+/** La joueuse confirme que la douleur continue avec une intensité */
+async function confirmPainStillHere(painId, intensity) {
+    // Mettre à jour visuellement
+    document.querySelectorAll(`.confirm-intensity-${painId}`).forEach(btn => {
+        const v = parseInt(btn.dataset.val);
+        const color = intensity >= 8 ? '#dc2626' : intensity >= 5 ? '#f59e0b' : '#10b981';
+        if (v <= intensity) {
+            btn.style.background = color;
+            btn.style.color = 'white';
+            btn.style.borderColor = color;
+        } else {
+            btn.style.background = 'white';
+            btn.style.color = '#374151';
+            btn.style.borderColor = '#e5e7eb';
+        }
+    });
+
+    if (typeof confirmPainContinues === 'function') {
+        await confirmPainContinues(painId, intensity);
+        // Masquer cette entrée après confirmation
+        setTimeout(() => {
+            const el = document.getElementById(`painConfirm_${painId}`);
+            if (el) el.style.opacity = '0.5';
+        }, 500);
+    }
+}
+
+/** La joueuse indique que la douleur est passée */
+async function confirmPainGone(painId) {
+    if (typeof markPainResolvedFromCheckin === 'function') {
+        await markPainResolvedFromCheckin(painId);
+        const el = document.getElementById(`painConfirm_${painId}`);
+        if (el) {
+            el.innerHTML = '<div style="font-size:13px;color:#10b981;font-weight:600;padding:4px;">✅ Super ! Marquée comme rétablie.</div>';
+        }
+    }
+}
+
+// Exposer les fonctions globales
+window.showCheckinPainForm = showCheckinPainForm;
+window.hideCheckinPainForm = hideCheckinPainForm;
+window.toggleCheckinPainForm = toggleCheckinPainForm;
+window.resetCheckinPainForm = resetCheckinPainForm;
+window.selectPainIntensity = selectPainIntensity;
+window.confirmPainStillHere = confirmPainStillHere;
+window.confirmPainGone = confirmPainGone;
 
 // Gestion du formulaire RPE
 document.getElementById('rpeForm').addEventListener('submit', async (e) => {
@@ -847,6 +1091,12 @@ document.getElementById('rpeForm').addEventListener('submit', async (e) => {
         matchWon = document.getElementById('matchWon') ? document.getElementById('matchWon').value : null;
         matchScore = document.getElementById('matchScore') ? document.getElementById('matchScore').value : null;
         timePlayed = document.getElementById('timePlayed') ? document.getElementById('timePlayed').value : null;
+
+        // Temps de jeu obligatoire pour un match
+        if (timePlayed === null || timePlayed === '') {
+            alert('Veuillez sélectionner ton temps de jeu (même 0% si tu n\'es pas rentré en jeu).');
+            return;
+        }
     }
     
     try {
@@ -1180,31 +1430,34 @@ function displayTeamGrid(players) {
             ? `<img src="${player.photoURL}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="${player.name}" onerror="this.style.display='none'; this.parentElement.textContent='${initials}';">`
             : initials;
         
+        card.setAttribute('data-status', player.status);
         card.innerHTML = `
-            <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; font-weight: bold; overflow: hidden;">
+            <div class="player-score-badge player-score-badge--${player.status}">${player.score}</div>
+            <div class="player-avatar-circle">
                 ${avatarContent}
             </div>
             <div class="player-card-info">
-                <div class="player-card-name">${player.name}</div>
-                <div class="player-card-status">Score: ${player.score}/10</div>
-                <div class="status-gauge" style="margin-top: var(--space-8);">
+                <div class="player-card-name">
+                    <span class="status-dot status-dot--${player.status}"></span>${player.name}
+                </div>
+                <div class="status-gauge" style="margin-top: 6px;">
                     <div class="status-gauge-fill ${player.status}" style="width: ${player.score * 10}%"></div>
                 </div>
-<div style="margin-top: var(--space-12); padding-top: var(--space-8); border-top: 1px solid var(--color-border); font-size: var(--font-size-sm); color: var(--color-text-secondary);">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-4);">
-                        <span>Semaine:</span>
-                        <span style="font-weight: 600; color: var(--color-primary);">${player.weeklyHours.toFixed(1)}h</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-4);">
-                        <span>Mois:</span>
-                        <span style="font-weight: 600; color: var(--color-primary);">${player.monthlyHours.toFixed(1)}h</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Année:</span>
-                        <span style="font-weight: 600; color: var(--color-primary);">${player.yearlyHours.toFixed(1)}h</span>
-                    </div>
+                <div class="player-hours" style="border-top: 1px solid var(--color-border); padding-top: 8px; margin-top: 8px;">
+                    <span class="player-hours-item">
+                        <i class="fas fa-calendar-week"></i>
+                        <strong>${player.weeklyHours.toFixed(1)}h</strong>
+                    </span>
+                    <span class="player-hours-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <strong>${player.monthlyHours.toFixed(1)}h</strong>
+                    </span>
+                    <span class="player-hours-item">
+                        <i class="fas fa-chart-line"></i>
+                        <strong>${player.yearlyHours.toFixed(0)}h</strong>
+                    </span>
                 </div>
-                <div id="cyclePhase-${player.id}" style="margin-top: var(--space-8); padding: var(--space-8); background: ${getPhaseBackground(player.cyclePhase)}; border-radius: 8px; font-size: var(--font-size-sm); text-align: center;">
+                <div id="cyclePhase-${player.id}" class="player-cycle-phase" style="background: ${getPhaseBackground(player.cyclePhase)};">
                     ${getPhaseDisplay(player.cyclePhase, player.cycleDay)}
                 </div>
             </div>
@@ -1217,7 +1470,7 @@ function displayTeamGrid(players) {
     }
 }
 
-// Mettre à jour les compteurs de filtres
+// Mettre à jour les compteurs de filtres + KPI
 function updateFilterCounts(players) {
     const counts = {
         all: players.length,
@@ -1225,11 +1478,24 @@ function updateFilterCounts(players) {
         attention: players.filter(p => p.status === 'attention').length,
         critical: players.filter(p => p.status === 'critical').length
     };
-    
+
     document.getElementById('countAll').textContent = counts.all;
     document.getElementById('countOptimal').textContent = counts.optimal;
     document.getElementById('countAttention').textContent = counts.attention;
     document.getElementById('countCritical').textContent = counts.critical;
+
+    // Mise à jour des KPI
+    const kpiOptimal = document.getElementById('kpiOptimal');
+    const kpiAttention = document.getElementById('kpiAttention');
+    const kpiCritical = document.getElementById('kpiCritical');
+    const kpiScoreMoyen = document.getElementById('kpiScoreMoyen');
+    if (kpiOptimal) kpiOptimal.textContent = counts.optimal;
+    if (kpiAttention) kpiAttention.textContent = counts.attention;
+    if (kpiCritical) kpiCritical.textContent = counts.critical;
+    if (kpiScoreMoyen && players.length > 0) {
+        const avg = players.reduce((s, p) => s + (p.score || 0), 0) / players.length;
+        kpiScoreMoyen.textContent = avg.toFixed(1);
+    }
 }
 
 // Filtrer les joueuses par statut
@@ -1552,8 +1818,8 @@ function blockCheckinForm() {
             message = document.createElement('p');
             message.className = 'rest-day-message';
             message.style.cssText = `
-                background: #e3f2fd;
-                color: #1976d2;
+                background: var(--color-info-bg, #e3f2fd);
+                color: var(--color-info-text, #1976d2);
                 padding: 15px;
                 border-radius: 8px;
                 margin-top: 15px;
@@ -2005,17 +2271,17 @@ const matchQuestionsHTML = `
         <label class="form-label">Ton temps de jeu</label>
         <div id="timePlayedTooltip" style="display: none; position: fixed; background: rgba(0,0,0,0.9); color: white; padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: 600; z-index: 10000; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3);"></div>
         <div class="time-played-badges" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px;">
-            <button type="button" class="time-played-badge" data-value="0" data-label="0 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #ef4444; background: white; color: #ef4444; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">0%</button>
-            <button type="button" class="time-played-badge" data-value="20" data-label="1/5 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #f59e0b; background: white; color: #f59e0b; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">20%</button>
-            <button type="button" class="time-played-badge" data-value="25" data-label="1/4 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #f59e0b; background: white; color: #f59e0b; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">25%</button>
-            <button type="button" class="time-played-badge" data-value="33" data-label="1/3 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #fbbf24; background: white; color: #fbbf24; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">33%</button>
-            <button type="button" class="time-played-badge" data-value="40" data-label="2/5 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #fbbf24; background: white; color: #fbbf24; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">40%</button>
-            <button type="button" class="time-played-badge" data-value="50" data-label="2/4 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #3b82f6; background: white; color: #3b82f6; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">50%</button>
-            <button type="button" class="time-played-badge" data-value="60" data-label="3/5 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #3b82f6; background: white; color: #3b82f6; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">60%</button>
-            <button type="button" class="time-played-badge" data-value="66" data-label="2/3 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: white; color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">66%</button>
-            <button type="button" class="time-played-badge" data-value="75" data-label="3/4 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: white; color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">75%</button>
-            <button type="button" class="time-played-badge" data-value="80" data-label="4/5 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: white; color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">80%</button>
-            <button type="button" class="time-played-badge" data-value="100" data-label="Tous les sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: white; color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">100%</button>
+            <button type="button" class="time-played-badge" data-value="0" data-label="0 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #ef4444; background: var(--color-surface); color: #ef4444; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">0%</button>
+            <button type="button" class="time-played-badge" data-value="20" data-label="1/5 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #f59e0b; background: var(--color-surface); color: #f59e0b; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">20%</button>
+            <button type="button" class="time-played-badge" data-value="25" data-label="1/4 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #f59e0b; background: var(--color-surface); color: #f59e0b; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">25%</button>
+            <button type="button" class="time-played-badge" data-value="33" data-label="1/3 set" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #fbbf24; background: var(--color-surface); color: #fbbf24; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">33%</button>
+            <button type="button" class="time-played-badge" data-value="40" data-label="2/5 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #fbbf24; background: var(--color-surface); color: #fbbf24; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">40%</button>
+            <button type="button" class="time-played-badge" data-value="50" data-label="2/4 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #3b82f6; background: var(--color-surface); color: #3b82f6; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">50%</button>
+            <button type="button" class="time-played-badge" data-value="60" data-label="3/5 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #3b82f6; background: var(--color-surface); color: #3b82f6; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">60%</button>
+            <button type="button" class="time-played-badge" data-value="66" data-label="2/3 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: var(--color-surface); color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">66%</button>
+            <button type="button" class="time-played-badge" data-value="75" data-label="3/4 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: var(--color-surface); color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">75%</button>
+            <button type="button" class="time-played-badge" data-value="80" data-label="4/5 sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: var(--color-surface); color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">80%</button>
+            <button type="button" class="time-played-badge" data-value="100" data-label="Tous les sets" style="min-width: 50px; height: 50px; border-radius: 50%; border: 3px solid #10b981; background: var(--color-surface); color: #10b981; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">100%</button>
         </div>
         <input type="hidden" id="timePlayed" value="">
     </div>

@@ -684,3 +684,144 @@
         font-size: 20px;
     }
 }
+
+/* ============================================
+   DARK MODE — Weekend Match Recap
+   ============================================ */
+
+html[data-theme="dark"] #weekendMatchRecap {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+html[data-theme="dark"] .weekend-recap-header h3,
+html[data-theme="dark"] .day-name,
+html[data-theme="dark"] .player-name,
+html[data-theme="dark"] .stats-header h4,
+html[data-theme="dark"] .player-stat-name,
+html[data-theme="dark"] .history-header h4,
+html[data-theme="dark"] .time-value,
+html[data-theme="dark"] .summary-value,
+html[data-theme="dark"] .pill-value {
+    color: #f1f5f9;
+}
+
+html[data-theme="dark"] .pill-label,
+html[data-theme="dark"] .day-date,
+html[data-theme="dark"] .player-rpe,
+html[data-theme="dark"] .match-score,
+html[data-theme="dark"] .match-time,
+html[data-theme="dark"] .stats-subtitle,
+html[data-theme="dark"] .time-label,
+html[data-theme="dark"] .time-avg,
+html[data-theme="dark"] .history-subtitle,
+html[data-theme="dark"] .summary-label,
+html[data-theme="dark"] .no-matches p,
+html[data-theme="dark"] .loading-spinner,
+html[data-theme="dark"] .history-loading,
+html[data-theme="dark"] .no-history {
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .stat-pill {
+    background: #1e293b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .weekend-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .weekend-tab {
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .weekend-tab:hover {
+    color: #f1f5f9;
+}
+
+html[data-theme="dark"] .weekend-tab.active {
+    color: #818cf8;
+}
+
+html[data-theme="dark"] .match-day-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .match-card {
+    background: #1e293b;
+    border-left-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .match-card.victory {
+    border-left-color: #10b981;
+    background: linear-gradient(135deg, #1e293b 0%, #052e16 100%);
+}
+
+html[data-theme="dark"] .match-card.defeat {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, #1e293b 0%, #2d1515 100%);
+}
+
+html[data-theme="dark"] .result-badge.victory {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+html[data-theme="dark"] .result-badge.defeat {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+html[data-theme="dark"] .result-badge.unknown {
+    background: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .player-stat-card {
+    background: #1e293b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .victories-detail {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+html[data-theme="dark"] .defeats-detail {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+html[data-theme="dark"] .winrate-detail {
+    background: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .winrate-detail.positive {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+html[data-theme="dark"] .player-stat-time {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+}
+
+html[data-theme="dark"] .history-chart-container {
+    background: #1e293b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .history-loading span::before {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: #818cf8;
+}
+
+html[data-theme="dark"] .summary-stat {
+    background: #1e293b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .history-error {
+    color: #f87171;
+}

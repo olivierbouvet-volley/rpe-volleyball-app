@@ -489,7 +489,7 @@ const weekPlannerStyles = `
 <style>
 .week-planner {
     padding: 20px;
-    background: white;
+    background: var(--color-surface, white);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
