@@ -14,7 +14,6 @@ const CLIENT_SECRET = 'j9iVZfS8kkCEFUPaAeJV0sAi';
 const CORS_CONFIG = [
   {
     origin: [
-      'https://volleyvision-pole.web.app',
       'https://rpe-gen2-eeaee.web.app',
       'https://rpe-volleyball-sable.web.app',
       'http://localhost:5173',

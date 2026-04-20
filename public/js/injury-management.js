@@ -797,7 +797,34 @@ async function getActivePainsForPlayer(playerId) {
       .where('playerId', '==', playerId)
       .where('status', '==', 'active')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const today = new Date();
+    const activePains = [];
+
+    for (const doc of snapshot.docs) {
+      const pain = { id: doc.id, ...doc.data() };
+      const referenceDate = pain.lastConfirmedDate || pain.painDate;
+      const painDate = referenceDate?.toDate?.() || (referenceDate ? new Date(referenceDate) : null);
+
+      if (painDate) {
+        const daysSinceLastUpdate = Math.floor((today - painDate) / (1000 * 60 * 60 * 24));
+
+        if (daysSinceLastUpdate >= 7) {
+          await painsCollection.doc(doc.id).update({
+            status: 'recovered',
+            recoveryDate: firebase.firestore.Timestamp.fromDate(new Date()),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            autoRecovered: true,
+            autoRecoveredReason: 'no_update_7_days'
+          });
+          continue;
+        }
+      }
+
+      activePains.push(pain);
+    }
+
+    return activePains;
   } catch (error) {
     console.error('Erreur getActivePainsForPlayer:', error);
     return [];

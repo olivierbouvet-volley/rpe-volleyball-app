@@ -13,6 +13,27 @@
 let coachAlertsData = [];
 let alertsPopupDismissedToday = false;
 
+function getPainDateReference(pain) {
+    const referenceDate = pain.lastConfirmedDate || pain.painDate;
+    return referenceDate?.toDate?.() || (referenceDate ? new Date(referenceDate) : null);
+}
+
+function getDaysSincePainUpdate(pain) {
+    const painDate = getPainDateReference(pain);
+    if (!painDate) return null;
+    return Math.floor((new Date() - painDate) / (1000 * 60 * 60 * 24));
+}
+
+async function autoRecoverStalePain(painId) {
+    await db.collection('pains').doc(painId).update({
+        status: 'recovered',
+        recoveryDate: firebase.firestore.Timestamp.fromDate(new Date()),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        autoRecovered: true,
+        autoRecoveredReason: 'no_update_7_days'
+    });
+}
+
 // Seuils d'alerte - Check-in standard
 const ALERT_THRESHOLDS = {
     soreness: { value: 5, condition: '>=', label: 'Courbatures', icon: '💪', color: '#ef4444' },
@@ -328,16 +349,24 @@ async function loadCoachAlerts() {
             // Alertes douleur physique
             const pains = playerPains[playerId] || [];
             pains.forEach(pain => {
-                const painDate = pain.painDate?.toDate?.() || new Date(pain.painDate);
-                const duration = Math.ceil((new Date() - painDate) / (1000 * 60 * 60 * 24));
-                // Toujours alerter si déclarée par la joueuse, ou si intensité >= 4
-                if (pain.source === 'checkin' || (pain.intensity && pain.intensity >= 4)) {
+                const duration = getDaysSincePainUpdate(pain);
+                const intensity = typeof pain.intensity === 'number' ? pain.intensity : null;
+
+                if (duration !== null && duration >= 7) {
+                    autoRecoverStalePain(pain.id).catch(error => {
+                        console.warn('Impossible de clôturer automatiquement une douleur ancienne:', error);
+                    });
+                    return;
+                }
+
+                // Aucune alerte si aucune douleur ou douleur très légère (1/10)
+                if (intensity !== null && intensity > 1) {
                     alerts.push({
                         type: 'pain',
                         category: 'pain',
                         painId: pain.id,
                         bodyZone: pain.bodyZone,
-                        intensity: pain.intensity || null,
+                        intensity,
                         duration,
                         source: pain.source || 'coach',
                         description: pain.description || ''
@@ -368,15 +397,23 @@ async function loadCoachAlerts() {
 
             const alerts = [];
             pains.forEach(pain => {
-                const painDate = pain.painDate?.toDate?.() || new Date(pain.painDate);
-                const duration = Math.ceil((new Date() - painDate) / (1000 * 60 * 60 * 24));
-                if (pain.source === 'checkin' || (pain.intensity && pain.intensity >= 4)) {
+                const duration = getDaysSincePainUpdate(pain);
+                const intensity = typeof pain.intensity === 'number' ? pain.intensity : null;
+
+                if (duration !== null && duration >= 7) {
+                    autoRecoverStalePain(pain.id).catch(error => {
+                        console.warn('Impossible de clôturer automatiquement une douleur ancienne:', error);
+                    });
+                    return;
+                }
+
+                if (intensity !== null && intensity > 1) {
                     alerts.push({
                         type: 'pain',
                         category: 'pain',
                         painId: pain.id,
                         bodyZone: pain.bodyZone,
-                        intensity: pain.intensity || null,
+                        intensity,
                         duration,
                         source: pain.source || 'coach',
                         description: pain.description || ''

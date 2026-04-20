@@ -111,6 +111,10 @@ const defaultPlayers = [
 // Initialiser les joueuses si elles n'existent pas
 async function initializePlayers() {
     try {
+        if (typeof window.waitForAuth === 'function') {
+            await window.waitForAuth();
+        }
+
         const playersSnapshot = await db.collection('players').get();
         
         if (playersSnapshot.empty) {
@@ -144,7 +148,12 @@ initializePlayers();
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
+    // S'assurer que l'auth anonyme est prête avant tout accès Firestore
+    if (typeof window.waitForAuth === 'function') {
+        await window.waitForAuth();
+    }
+
     const username = document.getElementById('playerName').value.trim();
     const password = document.getElementById('teamCode').value;
     
@@ -311,6 +320,11 @@ async function loadPlayerDashboard() {
         // Réinitialiser les pastilles
         if (typeof refreshRatingBadges === 'function') {
             refreshRatingBadges();
+        }
+
+        // Init cycle detection ici (vue joueuse active, checkInForm présent)
+        if (typeof window.resetAndInitCycleDetection === 'function') {
+            window.resetAndInitCycleDetection();
         }
         
         const playerDoc = await db.collection('players').doc(appState.currentUser).get();
@@ -904,7 +918,7 @@ function getCheckinPainData() {
     if (!zone) return null;
 
     const intensity = parseInt(document.getElementById('checkinPainIntensity')?.value) || null;
-    if (!intensity || intensity === 0) return null;
+    if (!intensity || intensity <= 1) return null;
 
     const daysSince = parseInt(document.getElementById('checkinPainDaysSince')?.value) || 1;
     const description = document.getElementById('checkinPainDescription')?.value.trim() || '';
@@ -946,8 +960,11 @@ async function checkActivePainsForCheckin() {
         const today = new Date().toISOString().split('T')[0];
         const activePains = await getActivePainsForPlayer(playerId);
 
+        // Ignorer les douleurs nulles ou très légères (1/10)
+        const relevantPains = activePains.filter(p => (p.intensity || 0) > 1);
+
         // Filtrer celles pas encore confirmées aujourd'hui
-        const unconfirmed = activePains.filter(p => p.lastConfirmedDate !== today);
+        const unconfirmed = relevantPains.filter(p => p.lastConfirmedDate !== today);
         if (unconfirmed.length === 0) return;
 
         displayPainConfirmationSection(unconfirmed);

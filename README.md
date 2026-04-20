@@ -1,5 +1,7 @@
 # RPE Monitor Gen2 - Pôle Espoir Volleyball Sablé
 
+> VolleyVision a été extrait dans un dépôt séparé sibling. Ce repository contient uniquement RPE Gen2.
+
 ## 🎯 Nouvelles fonctionnalités V2
 
 ### Pour les joueuses

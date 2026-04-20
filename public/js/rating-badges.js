@@ -325,8 +325,9 @@ function initRatingBadges() {
                 console.log(`✅ Rating Badges: ${sliderId} trouvé et transformé`);
             }
         } else {
+            // Les sliders RPE/performance n'existent que sur la vue joueuse — silencieux sur la vue coach
             if (sliderId.includes('rpe') || sliderId.includes('performance')) {
-                console.warn(`⚠️ Rating Badges: ${sliderId} NON TROUVÉ`);
+                console.log(`ℹ️ Rating Badges: ${sliderId} absent (vue coach)`);
             }
         }
     });

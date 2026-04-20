@@ -424,14 +424,15 @@ function initCycleDetection() {
     }
 }
 
-// Lancer l'initialisation
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCycleDetection);
-} else {
+// ⚠️ NE PAS auto-init ici : checkInForm n'existe que sur la vue joueuse.
+// Appeler window.resetAndInitCycleDetection() depuis loadPlayerDashboard() dans app.js.
+window.initCycleDetection = initCycleDetection;
+window.resetAndInitCycleDetection = function() {
+    cycleDetectionRetries = 0;
+    cycleDetectionInitialized = false;
     initCycleDetection();
-}
+};
 
-console.log('✅ Cycle Detection Module initialisé');
-console.log('   - Onglets J1-J5 en création...');
+console.log('✅ Cycle Detection Module chargé (init différée)');
 console.log('   - Détection menstruation automatique active');
 console.log('   - Cycles irréguliers supportés');

@@ -14,7 +14,7 @@ const STICKER_DEFINITIONS = {
         description: '7 check-ins consécutifs',
         emoji: '🌟',
         rarity: 'common',
-        image: '/img/stickers/common/01_Paola_Egonu_Volleyball.webp',
+        image: '/img/stickers/common/01_Paola_Egonu_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 7 }
     },
     checkin_7_2: {
@@ -23,7 +23,7 @@ const STICKER_DEFINITIONS = {
         description: '7 check-ins d\'affilée',
         emoji: '⭐',
         rarity: 'common',
-        image: '/img/stickers/common/02_Jordan_Larson_Volleyball.webp',
+        image: '/img/stickers/common/02_Jordan_Larson_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 7 }
     },
     checkin_7_3: {
@@ -32,7 +32,7 @@ const STICKER_DEFINITIONS = {
         description: '7 jours consécutifs',
         emoji: '✨',
         rarity: 'common',
-        image: '/img/stickers/common/03_Tijana_Boskovic_Volleyball.webp',
+        image: '/img/stickers/common/03_Tijana_Boskovic_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 7 }
     },
     checkin_14_1: {
@@ -41,7 +41,7 @@ const STICKER_DEFINITIONS = {
         description: '14 check-ins consécutifs',
         emoji: '🔥',
         rarity: 'common',
-        image: '/img/stickers/common/04_Melissa_Vargas_Volleyball.webp',
+        image: '/img/stickers/common/04_Melissa_Vargas_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 14 }
     },
     checkin_14_2: {
@@ -50,7 +50,7 @@ const STICKER_DEFINITIONS = {
         description: '14 jours d\'affilée',
         emoji: '💪',
         rarity: 'common',
-        image: '/img/stickers/common/05_Kim_Yeon_Koung_Volleyball.webp',
+        image: '/img/stickers/common/05_Kim_Yeon_Koung_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 14 }
     },
     checkin_14_3: {
@@ -59,7 +59,7 @@ const STICKER_DEFINITIONS = {
         description: '14 check-ins sans pause',
         emoji: '🌟',
         rarity: 'common',
-        image: '/img/stickers/common/06_Simone_Biles_Gymnastique.webp',
+        image: '/img/stickers/common/06_Simone_Biles_Gymnastique.png',
         criteria: { type: 'checkin_streak', days: 14 }
     },
     checkin_21_1: {
@@ -68,7 +68,7 @@ const STICKER_DEFINITIONS = {
         description: '21 check-ins consécutifs',
         emoji: '🏆',
         rarity: 'common',
-        image: '/img/stickers/common/07_Serena_Williams_Tennis.webp',
+        image: '/img/stickers/common/07_Serena_Williams_Tennis.png',
         criteria: { type: 'checkin_streak', days: 21 }
     },
     checkin_21_2: {
@@ -77,7 +77,7 @@ const STICKER_DEFINITIONS = {
         description: '21 jours d\'affilée',
         emoji: '⚡',
         rarity: 'common',
-        image: '/img/stickers/common/08_Allyson_Felix_Athletisme.webp',
+        image: '/img/stickers/common/08_Allyson_Felix_Athletisme.png',
         criteria: { type: 'checkin_streak', days: 21 }
     },
     checkin_21_3: {
@@ -86,7 +86,7 @@ const STICKER_DEFINITIONS = {
         description: '21 check-ins sans interruption',
         emoji: '💎',
         rarity: 'common',
-        image: '/img/stickers/common/09_Fernanda_Garay_Volleyball.webp',
+        image: '/img/stickers/common/09_Fernanda_Garay_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 21 }
     },
     checkin_28_1: {
@@ -95,7 +95,7 @@ const STICKER_DEFINITIONS = {
         description: '28 check-ins consécutifs',
         emoji: '🌠',
         rarity: 'common',
-        image: '/img/stickers/common/10_Kerri_Walsh_Jennings_Volleyball.webp',
+        image: '/img/stickers/common/10_Kerri_Walsh_Jennings_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 28 }
     },
     checkin_28_2: {
@@ -104,7 +104,7 @@ const STICKER_DEFINITIONS = {
         description: '28 jours d\'affilée',
         emoji: '📅',
         rarity: 'common',
-        image: '/img/stickers/common/11_Ekaterina_Gamova_Volleyball.webp',
+        image: '/img/stickers/common/11_Ekaterina_Gamova_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 28 }
     },
     checkin_28_3: {
@@ -113,7 +113,7 @@ const STICKER_DEFINITIONS = {
         description: '28 check-ins sans faille',
         emoji: '🎯',
         rarity: 'common',
-        image: '/img/stickers/common/12_Zhu_Ting_Volleyball.webp',
+        image: '/img/stickers/common/12_Zhu_Ting_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 28 }
     },
     checkin_35_1: {
@@ -122,7 +122,7 @@ const STICKER_DEFINITIONS = {
         description: '35 check-ins consécutifs',
         emoji: '🚀',
         rarity: 'common',
-        image: '/img/stickers/common/13_Earvin_Ngapeth_Volleyball_France.webp',
+        image: '/img/stickers/common/13_Earvin_Ngapeth_Volleyball_France.png',
         criteria: { type: 'checkin_streak', days: 35 }
     },
     checkin_35_2: {
@@ -131,7 +131,7 @@ const STICKER_DEFINITIONS = {
         description: '35 jours d\'affilée',
         emoji: '🌈',
         rarity: 'common',
-        image: '/img/stickers/common/14_Melanie_De_Jesus_Dos_Santos_Gymnastique_France.webp',
+        image: '/img/stickers/common/14_Melanie_De_Jesus_Dos_Santos_Gymnastique_France.png',
         criteria: { type: 'checkin_streak', days: 35 }
     },
     checkin_35_3: {
@@ -140,7 +140,7 @@ const STICKER_DEFINITIONS = {
         description: '35 check-ins implacables',
         emoji: '💫',
         rarity: 'common',
-        image: '/img/stickers/common/15_Clarisse_Agbegnenou_Judo_France.webp',
+        image: '/img/stickers/common/15_Clarisse_Agbegnenou_Judo_France.png',
         criteria: { type: 'checkin_streak', days: 35 }
     },
     checkin_42_1: {
@@ -149,7 +149,7 @@ const STICKER_DEFINITIONS = {
         description: '42 check-ins consécutifs',
         emoji: '🏅',
         rarity: 'common',
-        image: '/img/stickers/common/16_Lea_Tissier_Handball_France.webp',
+        image: '/img/stickers/common/16_Lea_Tissier_Handball_France.png',
         criteria: { type: 'checkin_streak', days: 42 }
     },
     checkin_42_2: {
@@ -158,7 +158,7 @@ const STICKER_DEFINITIONS = {
         description: '42 jours d\'affilée',
         emoji: '🔷',
         rarity: 'common',
-        image: '/img/stickers/common/17_Marie_Eve_Gahie_Judo_France.webp',
+        image: '/img/stickers/common/17_Marie_Eve_Gahie_Judo_France.png',
         criteria: { type: 'checkin_streak', days: 42 }
     },
     checkin_42_3: {
@@ -167,7 +167,7 @@ const STICKER_DEFINITIONS = {
         description: '42 check-ins parfaits',
         emoji: '⭐',
         rarity: 'common',
-        image: '/img/stickers/common/18_Roger_Federer_Tennis.webp',
+        image: '/img/stickers/common/18_Roger_Federer_Tennis.png',
         criteria: { type: 'checkin_streak', days: 42 }
     },
     checkin_49_1: {
@@ -176,7 +176,7 @@ const STICKER_DEFINITIONS = {
         description: '49 check-ins consécutifs',
         emoji: '👑',
         rarity: 'common',
-        image: '/img/stickers/common/19_Nikola_Karabatic_Handball.webp',
+        image: '/img/stickers/common/19_Nikola_Karabatic_Handball.png',
         criteria: { type: 'checkin_streak', days: 49 }
     },
     checkin_49_2: {
@@ -185,7 +185,7 @@ const STICKER_DEFINITIONS = {
         description: '49 jours d\'affilée',
         emoji: '🌟',
         rarity: 'common',
-        image: '/img/stickers/common/20_Cristiano_Ronaldo_Football.webp',
+        image: '/img/stickers/common/20_Cristiano_Ronaldo_Football.png',
         criteria: { type: 'checkin_streak', days: 49 }
     },
     checkin_49_3: {
@@ -194,7 +194,7 @@ const STICKER_DEFINITIONS = {
         description: '49 check-ins magistraux',
         emoji: '💎',
         rarity: 'common',
-        image: '/img/stickers/common/21_Florent_Manaudou_Natation.webp',
+        image: '/img/stickers/common/21_Florent_Manaudou_Natation.png',
         criteria: { type: 'checkin_streak', days: 49 }
     },
     checkin_56_1: {
@@ -203,7 +203,7 @@ const STICKER_DEFINITIONS = {
         description: '56 check-ins consécutifs',
         emoji: '🏆',
         rarity: 'common',
-        image: '/img/stickers/common/22_Leon_Marchand_Natation.webp',
+        image: '/img/stickers/common/22_Leon_Marchand_Natation.png',
         criteria: { type: 'checkin_streak', days: 56 }
     },
     checkin_56_2: {
@@ -212,7 +212,7 @@ const STICKER_DEFINITIONS = {
         description: '56 jours d\'affilée',
         emoji: '🔥',
         rarity: 'common',
-        image: '/img/stickers/common/23_Teddy_Riner_Judo.webp',
+        image: '/img/stickers/common/23_Teddy_Riner_Judo.png',
         criteria: { type: 'checkin_streak', days: 56 }
     },
     checkin_56_3: {
@@ -221,7 +221,7 @@ const STICKER_DEFINITIONS = {
         description: '56 check-ins légendaires',
         emoji: '✨',
         rarity: 'common',
-        image: '/img/stickers/common/24_Giba_Volleyball.webp',
+        image: '/img/stickers/common/24_Giba_Volleyball.png',
         criteria: { type: 'checkin_streak', days: 56 }
     },
     checkin_56_4: {
@@ -230,7 +230,7 @@ const STICKER_DEFINITIONS = {
         description: '56 jours sans pause',
         emoji: '🌠',
         rarity: 'common',
-        image: '/img/stickers/common/25_Rafael_Nadal_Tennis.webp',
+        image: '/img/stickers/common/25_Rafael_Nadal_Tennis.png',
         criteria: { type: 'checkin_streak', days: 56 }
     },
     checkin_56_5: {
@@ -239,7 +239,7 @@ const STICKER_DEFINITIONS = {
         description: '56 check-ins divins',
         emoji: '⚡',
         rarity: 'common',
-        image: '/img/stickers/common/26_Usain_Bolt_Athletisme.webp',
+        image: '/img/stickers/common/26_Usain_Bolt_Athletisme.png',
         criteria: { type: 'checkin_streak', days: 56 }
     },
     checkin_56_6: {
@@ -248,7 +248,7 @@ const STICKER_DEFINITIONS = {
         description: '56 jours de gloire',
         emoji: '👑',
         rarity: 'common',
-        image: '/img/stickers/common/27_Lionel_Messi_Football.webp',
+        image: '/img/stickers/common/27_Lionel_Messi_Football.png',
         criteria: { type: 'checkin_streak', days: 56 }
     },
 
@@ -259,7 +259,7 @@ const STICKER_DEFINITIONS = {
         description: '5 jours consécutifs de RPE',
         emoji: '💪',
         rarity: 'rare',
-        image: '/img/stickers/rare/01_Muhammad_Ali_Boxe_GOLD.webp',
+        image: '/img/stickers/rare/01_Muhammad_Ali_Boxe_GOLD.png',
         criteria: { type: 'streak', days: 5 }
     },
     week_complete: {
@@ -268,7 +268,7 @@ const STICKER_DEFINITIONS = {
         description: '9/9 RPE obligatoires de la semaine',
         emoji: '✅',
         rarity: 'rare',
-        image: '/img/stickers/rare/05_Jesse_Owens_Athletisme_GOLD.webp',
+        image: '/img/stickers/rare/05_Jesse_Owens_Athletisme_GOLD.png',
         criteria: { type: 'weekly_rpe', required: 9 }
     },
     super_invested: {
@@ -277,7 +277,7 @@ const STICKER_DEFINITIONS = {
         description: '2+ séances supplémentaires dans la semaine',
         emoji: '⭐',
         rarity: 'rare',
-        image: '/img/stickers/rare/03_Michael_Jordan_Basketball_GOLD.webp',
+        image: '/img/stickers/rare/03_Michael_Jordan_Basketball_GOLD.png',
         criteria: { type: 'bonus_sessions', required: 2 }
     },
     streak_7: {
@@ -286,7 +286,7 @@ const STICKER_DEFINITIONS = {
         description: '7 jours consécutifs de RPE',
         emoji: '🔥',
         rarity: 'rare',
-        image: '/img/stickers/rare/01_Muhammad_Ali_Boxe_GOLD.webp',
+        image: '/img/stickers/rare/01_Muhammad_Ali_Boxe_GOLD.png',
         criteria: { type: 'streak', days: 7 }
     },
     streak_14: {
@@ -295,7 +295,7 @@ const STICKER_DEFINITIONS = {
         description: '14 jours consécutifs',
         emoji: '🔥🔥',
         rarity: 'rare',
-        image: '/img/stickers/rare/02_Pele_Football_GOLD.webp',
+        image: '/img/stickers/rare/02_Pele_Football_GOLD.png',
         criteria: { type: 'streak', days: 14 }
     },
     month_100: {
@@ -304,7 +304,7 @@ const STICKER_DEFINITIONS = {
         description: 'Tous les RPE obligatoires du mois',
         emoji: '📅',
         rarity: 'rare',
-        image: '/img/stickers/rare/03_Michael_Jordan_Basketball_GOLD.webp',
+        image: '/img/stickers/rare/03_Michael_Jordan_Basketball_GOLD.png',
         criteria: { type: 'monthly_rpe', completion: 100 }
     },
     week_perfect: {
@@ -313,7 +313,7 @@ const STICKER_DEFINITIONS = {
         description: '13/13 RPE (obligatoires + supplémentaires)',
         emoji: '💎',
         rarity: 'rare',
-        image: '/img/stickers/rare/04_Diego_Maradona_Football_GOLD.webp',
+        image: '/img/stickers/rare/04_Diego_Maradona_Football_GOLD.png',
         criteria: { type: 'weekly_rpe', required: 13 }
     },
     rpe_regular: {
@@ -322,7 +322,7 @@ const STICKER_DEFINITIONS = {
         description: '50 RPE soumis au total',
         emoji: '📈',
         rarity: 'rare',
-        image: '/img/stickers/rare/01_Muhammad_Ali_Boxe_GOLD.webp',
+        image: '/img/stickers/rare/01_Muhammad_Ali_Boxe_GOLD.png',
         criteria: { type: 'total_rpe', required: 50 }
     },
     checkin_master: {
@@ -331,7 +331,7 @@ const STICKER_DEFINITIONS = {
         description: '100 check-ins au total',
         emoji: '✅',
         rarity: 'rare',
-        image: '/img/stickers/rare/02_Pele_Football_GOLD.webp',
+        image: '/img/stickers/rare/02_Pele_Football_GOLD.png',
         criteria: { type: 'total_checkins', required: 100 }
     },
     rpe_expert: {
@@ -340,7 +340,7 @@ const STICKER_DEFINITIONS = {
         description: '200 RPE soumis au total',
         emoji: '🏆',
         rarity: 'rare',
-        image: '/img/stickers/rare/05_Jesse_Owens_Athletisme_GOLD.webp',
+        image: '/img/stickers/rare/05_Jesse_Owens_Athletisme_GOLD.png',
         criteria: { type: 'total_rpe', required: 200 }
     },
 
@@ -870,60 +870,74 @@ async function displayStickerWidget(playerId) {
 
         const playerData = playerDoc.data();
         const ownedStickers = playerData.stickers || [];
-        
+
         // Compter par rareté
         const counts = countByRarity(ownedStickers);
         const totalStickers = Object.keys(STICKER_DEFINITIONS).length;
         const percentage = Math.round((ownedStickers.length / totalStickers) * 100);
 
-        // Obtenir les 3 derniers stickers débloqués
-        const recentStickers = ownedStickers.slice(-3).reverse().map(id => STICKER_DEFINITIONS[id]).filter(s => s);
+        // Obtenir les 3 derniers stickers débloqués (avec leur id pour le clic)
+        const recentStickers = ownedStickers.slice(-3).reverse()
+            .map(id => ({ id, ...STICKER_DEFINITIONS[id] }))
+            .filter(s => s.image);
 
         // Générer le HTML du widget
         const html = `
-            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: white;">
+            <div class="card" style="background: linear-gradient(150deg, #2180ac 0%, #145470 100%); color: white; border: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: white;">
                         🏆 Collection de Stickers
                     </h3>
-                    <div style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                    <div style="background: rgba(255,255,255,0.18); padding: 5px 11px; border-radius: 20px; font-size: 13px; font-weight: 600;">
                         ${ownedStickers.length}/${totalStickers}
                     </div>
                 </div>
 
                 <!-- Barre de progression -->
-                <div style="background: rgba(255,255,255,0.2); border-radius: 20px; height: 8px; margin-bottom: 16px; overflow: hidden;">
-                    <div style="background: var(--color-surface, white); height: 100%; width: ${percentage}%; border-radius: 20px; transition: width 0.5s;"></div>
+                <div style="background: rgba(255,255,255,0.18); border-radius: 20px; height: 6px; margin-bottom: 14px; overflow: hidden;">
+                    <div style="background: white; height: 100%; width: ${percentage}%; border-radius: 20px; transition: width 0.5s;"></div>
                 </div>
 
-                <!-- Stats par rareté -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
-                    <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 12px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700;">${counts.common}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Communs</div>
+                <!-- Stats par rareté — cliquables -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+                    <div onclick="openStickerCollection('${playerId}', 'common')"
+                         style="background: rgba(255,255,255,0.13); padding: 10px 8px; border-radius: 10px; text-align: center; cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+                         onmouseout="this.style.background='rgba(255,255,255,0.13)'">
+                        <div style="font-size: 22px; font-weight: 700;">${counts.common}</div>
+                        <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">Communs</div>
                     </div>
-                    <div style="background: rgba(59, 130, 246, 0.3); padding: 12px; border-radius: 12px; text-align: center; border: 2px solid rgba(59, 130, 246, 0.5);">
-                        <div style="font-size: 24px; font-weight: 700;">${counts.rare}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Rares</div>
+                    <div onclick="openStickerCollection('${playerId}', 'rare')"
+                         style="background: rgba(59,130,246,0.25); padding: 10px 8px; border-radius: 10px; text-align: center; border: 1.5px solid rgba(59,130,246,0.45); cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='rgba(59,130,246,0.4)'"
+                         onmouseout="this.style.background='rgba(59,130,246,0.25)'">
+                        <div style="font-size: 22px; font-weight: 700;">${counts.rare}</div>
+                        <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">Rares</div>
                     </div>
-                    <div style="background: rgba(234, 179, 8, 0.3); padding: 12px; border-radius: 12px; text-align: center; border: 2px solid rgba(234, 179, 8, 0.5);">
-                        <div style="font-size: 24px; font-weight: 700;">${counts.legendary}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Légendaires</div>
+                    <div onclick="openStickerCollection('${playerId}', 'legendary')"
+                         style="background: rgba(234,179,8,0.25); padding: 10px 8px; border-radius: 10px; text-align: center; border: 1.5px solid rgba(234,179,8,0.45); cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='rgba(234,179,8,0.4)'"
+                         onmouseout="this.style.background='rgba(234,179,8,0.25)'">
+                        <div style="font-size: 22px; font-weight: 700;">${counts.legendary}</div>
+                        <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">Légendaires</div>
                     </div>
                 </div>
 
                 ${recentStickers.length > 0 ? `
-                    <!-- Derniers stickers débloqués -->
-                    <div style="margin-top: 16px;">
-                        <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9; font-weight: 600;">✨ Derniers débloqués</div>
-                        <div style="display: flex; gap: 8px; justify-content: center;">
+                    <!-- Derniers stickers débloqués — cliquables -->
+                    <div style="margin-top: 14px;">
+                        <div style="font-size: 12px; margin-bottom: 10px; opacity: 0.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Derniers débloqués</div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
                             ${recentStickers.map(sticker => `
-                                <div style="position: relative;">
-                                    <img src="${sticker.image}" 
-                                         alt="${sticker.name}" 
-                                         style="width: 64px; height: 64px; border-radius: 12px; border: 3px solid ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; object-fit: cover; background: var(--color-surface, white);"
-                                         title="${sticker.name}: ${sticker.description}">
-                                    <div style="position: absolute; top: -6px; right: -6px; background: ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white;">
+                                <div onclick="showStickerDetail('${sticker.id}')"
+                                     style="position: relative; cursor: pointer; transition: transform 0.2s;"
+                                     onmouseover="this.style.transform='scale(1.08)'"
+                                     onmouseout="this.style.transform='scale(1)'">
+                                    <img src="${sticker.image}"
+                                         alt="${sticker.name}"
+                                         style="width: 64px; height: 64px; border-radius: 12px; border: 2.5px solid ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; object-fit: cover; display: block;"
+                                         title="${sticker.name}">
+                                    <div style="position: absolute; top: -5px; right: -5px; background: ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid white;">
                                         ${sticker.emoji}
                                     </div>
                                 </div>
@@ -931,29 +945,27 @@ async function displayStickerWidget(playerId) {
                         </div>
                     </div>
                 ` : `
-                    <div style="text-align: center; padding: 20px; opacity: 0.8; font-size: 14px;">
-                        Complète des RPE pour débloquer des stickers ! 🎯
+                    <div style="text-align: center; padding: 16px 0; opacity: 0.75; font-size: 13px;">
+                        Complète des RPE pour débloquer des stickers !
                     </div>
                 `}
 
-                <!-- Bouton voir collection (Phase 2) -->
-                ${ownedStickers.length > 0 ? `
-                    <button onclick="alert('Page Collection à venir en Phase 2 ! 🎨')" 
-                            style="width: 100%; margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); color: white; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(255,255,255,0.3)'"
-                            onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                        📖 Voir ma collection complète
+                <!-- Actions compactes -->
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+                    <button onclick="openStickerCollection('${playerId}')"
+                            style="padding: 7px 16px; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.45); color: white; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; font-family: inherit;"
+                            onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+                        Voir ma collection
                     </button>
-                ` : ''}
+                    <button onclick="forceCheckStickers('${playerId}')"
+                            style="padding: 7px 16px; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.45); color: white; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; font-family: inherit;"
+                            onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+                        Mettre à jour
+                    </button>
+                </div>
             </div>
-            <button class="sticker-collection-btn" onclick="openStickerCollection('${playerId}')" 
-                    style="width: 100%; padding: 12px; margin-top: 15px; background: linear-gradient(135deg, #10b981, #3b82f6); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                📖 Voir ma collection complète
-            </button>
-            <button onclick="forceCheckStickers('${playerId}')" 
-                    style="width: 100%; padding: 12px; margin-top: 10px; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
-                🎯 Vérifier mes stickers maintenant
-            </button>
         `;
 
         widgetContainer.innerHTML = html;

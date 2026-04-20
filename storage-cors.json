@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["https://volleyvision-pole.web.app", "http://localhost:5173", "http://localhost:4173"],
+    "origin": ["https://rpe-gen2-eeaee.web.app", "https://rpe-volleyball-sable.web.app", "http://localhost:5173", "http://localhost:4173"],
     "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
     "maxAgeSeconds": 3600,
     "responseHeader": [

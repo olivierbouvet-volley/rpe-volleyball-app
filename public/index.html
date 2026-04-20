@@ -1010,10 +1010,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
     
-    <!-- Configuration Firebase Prod/Dev -->
+    <!-- Configuration Firebase Prod -->
     <script src="/js/config/firebase-config-prod.js"></script>
-    <script src="/js/config/firebase-config-dev.js"></script>
     <script src="/js/config/firebase-loader.js"></script>
+    <script src="/js/config/firebase-auth-helper.js"></script>
 </head>
 <body>
     <!-- Login Screen - Version simplifiée sans rôle -->
@@ -3984,19 +3984,36 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Cache Buster for iOS -->
+    <!-- Cache Buster v2 — vide SW + Cache API sur tous navigateurs -->
     <script>
-        const cacheBuster = '?v=' + new Date().getTime();
+        const CACHE_VERSION = '2026-04-21-v2';
+        const LAST_CACHE_KEY = 'rpe_cache_version';
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Force reload of scripts to bypass cache on iOS
-            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                console.log('iOS detected - forcing cache bypass');
-                // Unregister old service workers
+            const lastVersion = localStorage.getItem(LAST_CACHE_KEY);
+            if (lastVersion !== CACHE_VERSION) {
+                console.log('[Cache] Nouvelle version détectée, vidage du cache...');
+                // 1. Désenregistrer le service worker
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then(registrations => {
-                        registrations.forEach(reg => reg.unregister());
+                        registrations.forEach(reg => {
+                            reg.unregister();
+                            console.log('[Cache] SW désenregistré:', reg.scope);
+                        });
                     });
                 }
+                // 2. Vider le Cache API (stickers, assets)
+                if ('caches' in window) {
+                    caches.keys().then(keys => {
+                        keys.forEach(key => {
+                            caches.delete(key);
+                            console.log('[Cache] Cache supprimé:', key);
+                        });
+                    });
+                }
+                localStorage.setItem(LAST_CACHE_KEY, CACHE_VERSION);
+                console.log('[Cache] Cache vidé — rechargement dans 1s...');
+                setTimeout(() => location.reload(true), 1000);
             }
         });
     </script>
