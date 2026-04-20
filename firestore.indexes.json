@@ -1,6 +1,20 @@
 {
   "indexes": [
     {
+      "collectionGroup": "rpe",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sessionType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "checkins",
       "queryScope": "COLLECTION",
       "fields": [

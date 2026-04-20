@@ -1,31 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useMatchStore } from './store/matchStore';
-import { useAuthStore } from './store/useAuthStore';
 import { parsePlaylistFromURL } from './utils/playlistImporter';
-import { LibraryPage } from './pages/LibraryPage';
+import ImportPage from './pages/ImportPage';
 import AnalysisPage from './pages/AnalysisPage';
-import { ShareMatchView } from './pages/ShareMatchView';
 import PlayerPage from './pages/PlayerPage';
 import SharePlayerView from './pages/SharePlayerView';
-import { AuthPage } from './pages/AuthPage';
-import { OnboardingWizard } from './components/OnboardingWizard';
 
 function App() {
   const match = useMatchStore((state) => state.match);
-  const { user, isInitialized, initialize, hasCompletedOnboarding, completeOnboarding } = useAuthStore();
   const [directPlayerView, setDirectPlayerView] = useState<string | null>(null);
   const [isShareMode, setIsShareMode] = useState(false);
-
-  // Détection lien partagé (?shareMatch=TOKEN) — avant toute auth
-  const [shareMatchToken] = useState(() =>
-    new URLSearchParams(window.location.search).get('shareMatch'),
-  );
-
-  // Lance l'écoute onAuthStateChanged au montage
-  useEffect(() => {
-    const unsubscribe = initialize();
-    return unsubscribe;
-  }, [initialize]);
 
   // Handle playlist URL parameter (full integration in PROMPT 2H)
   useEffect(() => {
@@ -58,32 +42,12 @@ function App() {
   }, [match]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--surface-root)', color: 'var(--text-primary)' }}>
-      {/* Lien de partage public — pas d'auth requise */}
-      {shareMatchToken ? (
-        <ShareMatchView token={shareMatchToken} />
-      ) : !isInitialized ? (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: 'var(--brand-green)', borderTopColor: 'transparent' }}
-            />
-            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Chargement…</span>
-          </div>
-        </div>
-      ) : !user ? (
-        /* Utilisateur non connecté → page Auth */
-        <AuthPage />
-      ) : !hasCompletedOnboarding ? (
-        /* Première connexion → Wizard onboarding */
-        <OnboardingWizard onComplete={completeOnboarding} />
-      ) : match === null ? (
-        <LibraryPage />
+    <div className="min-h-screen bg-slate-900 text-slate-100">
+      {match === null ? (
+        <ImportPage />
       ) : directPlayerView !== null ? (
         isShareMode ? (
           <SharePlayerView playerId={directPlayerView} />
-
         ) : (
           <PlayerPage
             playerId={directPlayerView}

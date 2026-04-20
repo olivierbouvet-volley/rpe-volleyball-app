@@ -10,17 +10,13 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@remotion/player": "^4.0.445",
     "@volleyvision/data-model": "workspace:*",
     "@volleyvision/dvw-parser": "workspace:*",
-    "firebase": "^12.11.0",
-    "flexlayout-react": "^0.8.19",
     "html2canvas": "^1.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-grid-layout": "^2.2.2",
     "recharts": "^3.7.0",
-    "remotion": "^4.0.445",
     "zustand": "^4.5.0"
   },
   "devDependencies": {

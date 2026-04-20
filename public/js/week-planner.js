@@ -93,7 +93,7 @@ async function initWeekPlanner() {
         const players = await getPlayersWithCycleData();
         
         // Générer la vue calendrier
-        renderWeekPlannerUI(container, players);
+        renderWeekPlanner(container, players);
         
         console.log('📅 Planificateur Semaine: Chargé avec', players.length, 'joueuses');
         
@@ -175,6 +175,8 @@ function getPhaseForDate(cycleConfig, date) {
     let cycleDay = daysSinceJ1 + 1;
     if (cycleDay <= 0) cycleDay = 1;
 
+    const isExtended = cycleDay > cycleLength;
+
     // Déterminer la phase
     let phase;
     if (cycleDay <= 5) {
@@ -183,11 +185,13 @@ function getPhaseForDate(cycleConfig, date) {
         phase = 'follicular';
     } else if (cycleDay <= 16) {
         phase = 'ovulatory';
+    } else if (isExtended) {
+        phase = 'extended';
     } else {
-        phase = 'luteal'; // cycle prolongé = phase lutéale continue
+        phase = 'luteal';
     }
 
-    return { phase, day: cycleDay };
+    return { phase, day: cycleDay, isExtended };
 }
 
 /**
@@ -275,7 +279,7 @@ function getDayRecommendation(stats) {
 /**
  * Rendre le planificateur semaine
  */
-function renderWeekPlannerUI(container, players) {
+function renderWeekPlanner(container, players) {
     const days = getNextDays(7);
     
     // Calculer les stats pour chaque jour

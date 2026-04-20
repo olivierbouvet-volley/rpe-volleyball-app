@@ -3,7 +3,6 @@ import type { QualityDistribution } from '@volleyvision/data-model';
 interface AttackComboTableProps {
   combos: Record<string, QualityDistribution>;
   attackCombinations?: Record<string, string>;
-  onComboClick?: (code: string) => void;
 }
 
 /**
@@ -24,7 +23,7 @@ function getQualityBgClass(quality: string): string {
 /**
  * Attack performance table by combo code
  */
-export function AttackComboTable({ combos, attackCombinations, onComboClick }: AttackComboTableProps) {
+export function AttackComboTable({ combos, attackCombinations }: AttackComboTableProps) {
   // Convert to array and sort by total descending
   const comboEntries = Object.entries(combos)
     .map(([code, dist]) => ({
@@ -56,21 +55,12 @@ export function AttackComboTable({ combos, attackCombinations, onComboClick }: A
             .filter(s => s.count > 0);
 
           return (
-            <div
-              key={code}
-              className={`group bg-slate-900/50 rounded p-3 ${
-                onComboClick ? 'cursor-pointer hover:bg-slate-700/60 transition-colors' : ''
-              }`}
-              onClick={() => onComboClick?.(code)}
-            >
+            <div key={code} className="bg-slate-900/50 rounded p-3">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <span className="font-mono font-bold text-slate-200">{code}</span>
                   {description && (
                     <span className="ml-2 text-sm text-slate-400">{description}</span>
-                  )}
-                  {onComboClick && (
-                    <span className="ml-1 text-xs text-slate-600 group-hover:text-blue-400 transition-colors">▶</span>
                   )}
                 </div>
                 <span className="text-sm text-slate-400">Total: {total}</span>

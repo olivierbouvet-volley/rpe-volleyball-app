@@ -529,12 +529,8 @@ async function loadPlayerDashboard() {
             setTimeout(() => displayStickerWidget(appState.currentUser), 400);
         }
 
-        // === DOULEURS : Charger les paramètres médicaux puis vérifier douleurs ===
-        if (typeof loadMedicalSettings === 'function') {
-            loadMedicalSettings().then(() => checkActivePainsForCheckin());
-        } else {
-            setTimeout(() => checkActivePainsForCheckin(), 600);
-        }
+        // === DOULEURS : Vérifier les douleurs actives à confirmer ===
+        setTimeout(() => checkActivePainsForCheckin(), 600);
 
     } catch (error) {
         console.error('Erreur lors du chargement du dashboard:', error);
@@ -941,37 +937,27 @@ function resetCheckinPainForm() {
     if (form) form.style.display = 'none';
 }
 
-/** Vérifier les douleurs actives à confirmer au check-in, et afficher la question kiné si jour kiné */
+/** Vérifier les douleurs actives à confirmer au check-in */
 async function checkActivePainsForCheckin() {
     const playerId = appState.currentUser;
-    if (!playerId) return;
+    if (!playerId || typeof getActivePainsForPlayer !== 'function') return;
 
     try {
         const today = new Date().toISOString().split('T')[0];
-        const isKineDay = typeof isTodayKineDay === 'function' && isTodayKineDay();
+        const activePains = await getActivePainsForPlayer(playerId);
 
-        // Vérifier si la joueuse a déjà répondu à la question kiné aujourd'hui
-        const alreadyAnswered = isKineDay
-            ? (await db.collection('kineRequests').doc(`${today}_${playerId}`).get()).exists
-            : false;
+        // Filtrer celles pas encore confirmées aujourd'hui
+        const unconfirmed = activePains.filter(p => p.lastConfirmedDate !== today);
+        if (unconfirmed.length === 0) return;
 
-        let unconfirmed = [];
-        if (typeof getActivePainsForPlayer === 'function') {
-            const activePains = await getActivePainsForPlayer(playerId);
-            unconfirmed = activePains.filter(p => p.lastConfirmedDate !== today);
-        }
-
-        // Afficher la section si douleurs à confirmer OU jour kiné sans réponse
-        if (unconfirmed.length > 0 || (isKineDay && !alreadyAnswered)) {
-            displayPainConfirmationSection(unconfirmed, isKineDay && !alreadyAnswered);
-        }
+        displayPainConfirmationSection(unconfirmed);
     } catch (error) {
         console.warn('Erreur checkActivePainsForCheckin:', error);
     }
 }
 
 /** Afficher la section de confirmation des douleurs en cours */
-function displayPainConfirmationSection(pains, showKine = false) {
+function displayPainConfirmationSection(pains) {
     const section = document.getElementById('painConfirmationSection');
     if (!section) return;
 
@@ -982,13 +968,8 @@ function displayPainConfirmationSection(pains, showKine = false) {
         ankle: 'Cheville', foot: 'Pied', finger: 'Doigt', other: 'Autre'
     };
 
-    const kineName = window.medicalSettings?.kineName || 'le kiné';
-
-    let html = `<div style="background:#fef3c7;padding:16px;border-radius:12px;border-left:4px solid #f59e0b;margin-bottom:8px;">`;
-
-    if (pains.length > 0) {
-        html += `<div style="font-size:14px;font-weight:600;color:#92400e;margin-bottom:12px;">⚠️ Tu avais signalé ${pains.length > 1 ? 'ces douleurs' : 'cette douleur'} — comment ça va aujourd'hui ?</div>`;
-    }
+    let html = `<div style="background:#fef3c7;padding:16px;border-radius:12px;border-left:4px solid #f59e0b;margin-bottom:8px;">
+        <div style="font-size:14px;font-weight:600;color:#92400e;margin-bottom:12px;">⚠️ Tu avais signalé ${pains.length > 1 ? 'ces douleurs' : 'cette douleur'} — comment ça va aujourd'hui ?</div>`;
 
     pains.forEach(pain => {
         const zone = PAIN_ZONE_LABELS[pain.bodyZone] || pain.bodyZone;
@@ -1013,51 +994,9 @@ function displayPainConfirmationSection(pains, showKine = false) {
         </div>`;
     });
 
-    // Question kiné si c'est un jour de présence et pas encore répondu
-    if (showKine) {
-        html += `<div id="kineAskBlock" style="margin-top:12px;padding:14px;background:white;border-radius:10px;border:2px solid #3b82f6;">
-            <div style="font-size:14px;font-weight:600;color:#1d4ed8;margin-bottom:10px;">🩺 ${kineName} est disponible ce midi</div>
-            <div style="font-size:13px;color:#374151;margin-bottom:12px;">Tu as signalé une douleur — est-ce que tu veux passer le voir à midi ?</div>
-            <div style="display:flex;gap:10px;">
-                <button type="button" onclick="answerKineRequest(true)"
-                    style="flex:1;padding:10px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;">
-                    Oui, je viens 👍
-                </button>
-                <button type="button" onclick="answerKineRequest(false)"
-                    style="flex:1;padding:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
-                    Non merci
-                </button>
-            </div>
-        </div>`;
-    }
-
     html += '</div>';
     section.innerHTML = html;
     section.style.display = 'block';
-}
-
-/** Réponse de la joueuse à la question kiné */
-async function answerKineRequest(wantsKine) {
-    const block = document.getElementById('kineAskBlock');
-    if (!block) return;
-    const playerId = appState.currentUser;
-    const playerName = appState.currentPlayerName || window.currentPlayer?.name || '';
-
-    // Récupérer les douleurs actives pour les inclure dans la demande
-    let pains = [];
-    if (typeof getActivePainsForPlayer === 'function') {
-        try { pains = await getActivePainsForPlayer(playerId); } catch(e) {}
-    }
-
-    if (typeof saveKineRequest === 'function') {
-        await saveKineRequest(playerId, playerName, wantsKine, pains);
-    }
-
-    if (wantsKine) {
-        block.innerHTML = '<div style="font-size:13px;color:#1d4ed8;font-weight:600;padding:6px 0;">✅ Ta demande a été transmise au staff — à tout à l\'heure !</div>';
-    } else {
-        block.innerHTML = '<div style="font-size:13px;color:#6b7280;padding:6px 0;">OK, pas de rdv kiné aujourd\'hui.</div>';
-    }
 }
 
 /** La joueuse confirme que la douleur continue avec une intensité */
@@ -1231,24 +1170,25 @@ document.getElementById('rpeForm').addEventListener('submit', async (e) => {
             }
             
             await db.collection('rpe').add(rpeData);
-
-            // === GAMIFICATION : Mise à jour du streak entraînement EN PREMIER ===
-            // (les stats doivent être à jour avant de vérifier les stickers)
+            
+            // === GAMIFICATION : Vérifier et attribuer les stickers ===
+            if (typeof checkAndAwardStickers === 'function') {
+                await checkAndAwardStickers(appState.currentUser, 'rpe');
+            }
+            
+            // === GAMIFICATION : Mise à jour du streak entraînement ===
             if (typeof updateTrainingStreak === 'function') {
                 const trainingResult = await updateTrainingStreak(appState.currentUser);
                 if (trainingResult && trainingResult.message) {
+                    // Afficher le toast de progression
                     if (typeof showTrainingCelebration === 'function') {
                         setTimeout(() => showTrainingCelebration(trainingResult), 500);
                     }
                 }
+                // Rafraîchir le widget progression
                 if (typeof displayTrainingWidget === 'function') {
                     displayTrainingWidget(appState.currentUser);
                 }
-            }
-
-            // === GAMIFICATION : Vérifier et attribuer les stickers (après mise à jour des stats) ===
-            if (typeof checkAndAwardStickers === 'function') {
-                await checkAndAwardStickers(appState.currentUser, 'rpe');
             }
             
             // Personnaliser le message selon le contexte

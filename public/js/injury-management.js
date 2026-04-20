@@ -896,188 +896,34 @@ function toggleMedicalContactsForm() {
     if (kinePhoneEl) kinePhoneEl.value = s.kinePhone || '';
     if (groupNameEl) groupNameEl.value = s.medicalGroupName || '';
     if (groupPhoneEl) groupPhoneEl.value = s.medicalGroupPhone || '';
-    // Initialiser le calendrier avec les dates existantes
-    kineCalInit(s.kineDates || []);
   }
 }
 
 /**
  * Sauvegarder les contacts médicaux (depuis les paramètres coach)
  */
-// ── Calendrier kiné ──────────────────────────────────────────────
-// kineDates = Set de chaînes "YYYY-MM-DD"
-let _kineDates = new Set();
-let _kineCalYear, _kineCalMonth;
-
-function kineCalInit(existingDates) {
-  _kineDates = new Set(existingDates || []);
-  const now = new Date();
-  _kineCalYear  = now.getFullYear();
-  _kineCalMonth = now.getMonth();
-  kineCalRender();
-}
-
-function kineCalRender() {
-  const label = document.getElementById('kineCalMonthLabel');
-  const grid  = document.getElementById('kineCalendar');
-  if (!label || !grid) return;
-
-  const mois = ['Janvier','Février','Mars','Avril','Mai','Juin',
-                 'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  label.textContent = `${mois[_kineCalMonth]} ${_kineCalYear}`;
-
-  const firstDay = new Date(_kineCalYear, _kineCalMonth, 1).getDay(); // 0=dim
-  const offset   = (firstDay === 0) ? 6 : firstDay - 1; // lundi en premier
-  const daysInMonth = new Date(_kineCalYear, _kineCalMonth + 1, 0).getDate();
-  const today = new Date().toISOString().split('T')[0];
-
-  let html = ['L','M','M','J','V','S','D']
-    .map(d => `<div style="font-weight:700;color:var(--color-text-secondary);padding:2px 0;">${d}</div>`)
-    .join('');
-
-  // Cases vides avant le 1er
-  for (let i = 0; i < offset; i++) html += '<div></div>';
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${_kineCalYear}-${String(_kineCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isSelected = _kineDates.has(dateStr);
-    const isToday    = dateStr === today;
-    const isPast     = dateStr < today;
-    html += `<div onclick="kineCalToggle('${dateStr}')" style="
-      padding:5px 2px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:${isSelected?'700':'400'};
-      background:${isSelected ? '#3b82f6' : 'transparent'};
-      color:${isSelected ? 'white' : isPast ? '#9ca3af' : 'var(--color-text)'};
-      border:${isToday ? '2px solid #3b82f6' : '2px solid transparent'};
-      transition: background 0.15s;
-    ">${d}</div>`;
-  }
-
-  grid.innerHTML = html;
-}
-
-function kineCalToggle(dateStr) {
-  if (_kineDates.has(dateStr)) {
-    _kineDates.delete(dateStr);
-  } else {
-    _kineDates.add(dateStr);
-  }
-  kineCalRender();
-}
-
-function kineCalPrevMonth() {
-  _kineCalMonth--;
-  if (_kineCalMonth < 0) { _kineCalMonth = 11; _kineCalYear--; }
-  kineCalRender();
-}
-function kineCalNextMonth() {
-  _kineCalMonth++;
-  if (_kineCalMonth > 11) { _kineCalMonth = 0; _kineCalYear++; }
-  kineCalRender();
-}
-window.kineCalPrevMonth = kineCalPrevMonth;
-window.kineCalNextMonth = kineCalNextMonth;
-window.kineCalToggle    = kineCalToggle;
-
 async function saveMedicalContacts() {
   const kinePhone = (document.getElementById('kinePhoneInput')?.value || '').trim();
-  const kineName  = (document.getElementById('kineNameInput')?.value || '').trim();
+  const kineName = (document.getElementById('kineNameInput')?.value || '').trim();
   const groupPhone = (document.getElementById('medicalGroupPhoneInput')?.value || '').trim();
-  const groupName  = (document.getElementById('medicalGroupNameInput')?.value || '').trim();
-
-  // Dates spécifiques cochées dans le calendrier
-  const kineDates = Array.from(_kineDates).sort();
+  const groupName = (document.getElementById('medicalGroupNameInput')?.value || '').trim();
 
   try {
     await db.collection('teamSettings').doc('pole').set({
       kinePhone, kineName,
       medicalGroupPhone: groupPhone,
       medicalGroupName: groupName,
-      kineDates,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
-    window.medicalSettings = { kinePhone, kineName, medicalGroupPhone: groupPhone, medicalGroupName: groupName, kineDates };
+    window.medicalSettings = { kinePhone, kineName, medicalGroupPhone: groupPhone, medicalGroupName: groupName };
     showNotification('Contacts médicaux enregistrés', 'success');
-    displayPainsTable();
+    displayPainsTable(); // Rafraîchir les boutons WhatsApp
   } catch (error) {
     console.error('Erreur saveMedicalContacts:', error);
     showNotification('Erreur lors de la sauvegarde', 'error');
   }
 }
-
-/**
- * Retourne true si aujourd'hui est un jour de présence du kiné
- */
-function isTodayKineDay() {
-  const dates = window.medicalSettings?.kineDates;
-  if (!dates || dates.length === 0) return false;
-  const today = new Date().toISOString().split('T')[0];
-  return dates.includes(today);
-}
-window.isTodayKineDay = isTodayKineDay;
-
-/**
- * Enregistrer la demande de RDV kiné d'une joueuse
- */
-async function saveKineRequest(playerId, playerName, wantsKine, pains) {
-  const today = new Date().toISOString().split('T')[0];
-  try {
-    await db.collection('kineRequests').doc(`${today}_${playerId}`).set({
-      playerId, playerName, wantsKine, date: today,
-      pains: pains.map(p => ({ bodyZone: p.bodyZone, intensity: p.intensity })),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(e) {
-    console.warn('Erreur saveKineRequest:', e);
-  }
-}
-window.saveKineRequest = saveKineRequest;
-
-/**
- * Charger les demandes kiné du jour pour le dashboard coach
- */
-async function loadTodayKineRequests() {
-  const container = document.getElementById('kineRequestsToday');
-  if (!container) return;
-  const today = new Date().toISOString().split('T')[0];
-  try {
-    const snap = await db.collection('kineRequests')
-      .where('date', '==', today)
-      .where('wantsKine', '==', true)
-      .get();
-    if (snap.empty) {
-      container.innerHTML = '<span style="color:var(--color-text-secondary);font-size:13px;">Aucune demande aujourd\'hui</span>';
-      return;
-    }
-    let html = '';
-    snap.forEach(doc => {
-      const d = doc.data();
-      const zones = (d.pains || []).map(p => {
-        const LABELS = { head:'Tête', neck:'Cou', shoulder:'Épaule', elbow:'Coude', wrist:'Poignet',
-          hand:'Main/Doigts', back:'Dos', lower_back:'Bas du dos', hip:'Hanche', thigh:'Cuisse',
-          knee:'Genou', calf:'Mollet', ankle:'Cheville', foot:'Pied', finger:'Doigt', other:'Autre' };
-        return `${LABELS[p.bodyZone] || p.bodyZone}${p.intensity ? ` (${p.intensity}/10)` : ''}`;
-      }).join(', ');
-      const msg = window.medicalSettings?.kinePhone
-        ? encodeURIComponent(`Bonjour ${window.medicalSettings.kineName || 'Kiné'}, ${d.playerName} souhaite un RDV ce midi (${zones}).`)
-        : '';
-      const whatsapp = window.medicalSettings?.kinePhone
-        ? `<a href="https://wa.me/${window.medicalSettings.kinePhone}?text=${msg}" target="_blank" style="margin-left:8px;padding:3px 8px;background:#25d366;color:white;border-radius:6px;text-decoration:none;font-size:11px;">📱 WhatsApp</a>`
-        : '';
-      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--color-background);border-radius:8px;margin-bottom:6px;border-left:3px solid #f59e0b;">
-        <div>
-          <span style="font-weight:600;font-size:13px;">🤕 ${d.playerName}</span>
-          <span style="font-size:12px;color:var(--color-text-secondary);margin-left:8px;">${zones}</span>
-        </div>
-        ${whatsapp}
-      </div>`;
-    });
-    container.innerHTML = html;
-  } catch(e) {
-    console.warn('Erreur loadTodayKineRequests:', e);
-  }
-}
-window.loadTodayKineRequests = loadTodayKineRequests;
 
 // ===================================================
 // VUE HEBDOMADAIRE DES DOULEURS

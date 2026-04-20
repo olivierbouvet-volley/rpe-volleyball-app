@@ -9,8 +9,6 @@ import { useVideoStore } from '../store/videoStore';
 import { useMatchStore } from '../store/matchStore';
 import { useLayoutStore } from '../store/layoutStore';
 import { useTeamColorStore } from '../store/teamColorStore';
-import { useMatchLibraryStore } from '../store/matchLibraryStore';
-import { usePopOutWindow } from '../hooks/usePopOutWindow';
 import { formatVideoTime, isValidYouTubeUrl } from '../utils/videoHelpers';
 import { isRallyInTimeRange } from '../utils/timelineHelpers';
 
@@ -24,52 +22,28 @@ export function VideoPlayer() {
   const {
     youtubeUrl,
     videoId,
-    videoType,
-    localVideoUrl,
     isPlaying,
     currentTime,
     duration,
     offset,
     setYoutubeUrl,
-    setOffset,
-    setLocalVideoFile,
     setIsPlaying,
     setCurrentTime,
     setDuration,
     registerSeekFunction,
-    registerPlayFunction,
     clearVideo,
   } = useVideoStore();
 
   const { match } = useMatchStore();
   const isVideoDetached = useLayoutStore((s) => s.isVideoDetached);
   const { homeColor, awayColor } = useTeamColorStore();
-  const { currentMatchId, currentMatchOwnerId, saveMatchVideoUrl, saveMatchVideoOffset } = useMatchLibraryStore(
-    (s) => ({
-      currentMatchId: s.currentMatchId,
-      currentMatchOwnerId: s.currentMatchOwnerId,
-      saveMatchVideoUrl: s.saveMatchVideoUrl,
-      saveMatchVideoOffset: s.saveMatchVideoOffset,
-    }),
-  );
-  const { popOut, popIn } = usePopOutWindow({
-    title: 'VolleyVision – Video Player',
-    width: 1280,
-    height: 720,
-  });
 
   const [urlInput, setUrlInput] = useState(youtubeUrl || '');
   const [isSeeking, setIsSeeking] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
-  const [savingUrl, setSavingUrl] = useState(false);
-  const [savedUrlFlash, setSavedUrlFlash] = useState(false);
-  const [savingOffset, setSavingOffset] = useState(false);
-  const [savedOffsetFlash, setSavedOffsetFlash] = useState(false);
   const timeUpdateIntervalRef = useRef<number | null>(null);
   const loadingTimeoutRef = useRef<number | null>(null);
-  /** Ref sur l'élément <video> HTML5 pour la lecture locale */
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
   // Initialize YouTube player (pass empty videoId when detached to avoid creating it)
   const {
@@ -86,6 +60,7 @@ export function VideoPlayer() {
     autoplay: false,
     controls: false, // Use custom controls
     onReady: async () => {
+      console.log('[VideoPlayer] Player ready');
       setLoadingTimeout(false);
       setPlayerError(null);
       if (loadingTimeoutRef.current) {
@@ -147,39 +122,18 @@ export function VideoPlayer() {
     };
   }, [videoId, isReady]);
 
-  // Register seekTo and play functions in videoStore when player is ready
+  // Register seekTo function in videoStore when player is ready
   useEffect(() => {
     if (isReady && seekTo && !isVideoDetached) {
       registerSeekFunction(seekTo);
-      registerPlayFunction(play);
     }
     return () => {
       // Only clear if NOT detaching — the proxy seekTo from usePopOutWindow takes over
       if (!useLayoutStore.getState().isVideoDetached) {
         registerSeekFunction(() => {});
-        registerPlayFunction(() => {});
       }
     };
-  }, [isReady, seekTo, play, registerSeekFunction, registerPlayFunction, isVideoDetached]);
-
-  // ── Vidéo locale : enregistrer le seek function ──
-  useEffect(() => {
-    if (videoType === 'local' && localVideoRef.current) {
-      registerSeekFunction((seconds) => {
-        if (localVideoRef.current) {
-          localVideoRef.current.currentTime = seconds;
-        }
-      });
-    }
-  }, [videoType, localVideoUrl, registerSeekFunction]);
-
-  // ── Handler : sélection d'un fichier vidéo local ──
-  const handleLocalFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setLocalVideoFile(file);
-    }
-  }, [setLocalVideoFile]);
+  }, [isReady, seekTo, registerSeekFunction, isVideoDetached]);
 
   // Update current time periodically when playing
   useEffect(() => {
@@ -187,7 +141,7 @@ export function VideoPlayer() {
       timeUpdateIntervalRef.current = window.setInterval(async () => {
         const time = await getCurrentTime();
         setCurrentTime(time);
-      }, 250); // Update every 250ms — smooth enough, much lighter
+      }, 100); // Update every 100ms for smooth progress bar
     } else {
       if (timeUpdateIntervalRef.current !== null) {
         clearInterval(timeUpdateIntervalRef.current);
@@ -297,12 +251,18 @@ export function VideoPlayer() {
     // Get all rallies from all sets
     const allRallies = match.sets.flatMap((set) => set.rallies);
 
+    // Debug: check if rallies have timestamps
+    const ralliesWithTimestamps = allRallies.filter(r => r.videoTimestamp != null);
+    console.log('[VideoPlayer] Total rallies:', allRallies.length, 'With timestamps:', ralliesWithTimestamps.length);
+    console.log('[VideoPlayer] Current time:', currentTime, 'Offset:', offset);
+
     // Find the active rally
     const activeRally = allRallies.find((rally) =>
       isRallyInTimeRange(rally, currentTime, offset)
     );
 
     if (activeRally) {
+      console.log('[VideoPlayer]  Found active rally, using scoreAfter');
       return {
         home: activeRally.homeScoreAfter,
         away: activeRally.awayScoreAfter,
@@ -316,9 +276,12 @@ export function VideoPlayer() {
       return rally.videoTimestamp + offset <= currentTime;
     });
 
+    console.log('[VideoPlayer] Rallies before current time:', ralliesBeforeCurrent.length);
+
     // Use the last rally's scoreAfter
     if (ralliesBeforeCurrent.length > 0) {
       const lastRally = ralliesBeforeCurrent[ralliesBeforeCurrent.length - 1];
+      console.log('[VideoPlayer]  Using last rally score:', lastRally.homeScoreAfter, '-', lastRally.awayScoreAfter);
       return {
         home: lastRally.homeScoreAfter,
         away: lastRally.awayScoreAfter,
@@ -327,6 +290,7 @@ export function VideoPlayer() {
     }
 
     // Fallback: show 0-0 for first set if no rallies found yet
+    console.log('[VideoPlayer] No rallies before current time, showing 0-0');
     return {
       home: 0,
       away: 0,
@@ -346,186 +310,37 @@ export function VideoPlayer() {
         <p className="text-slate-500 text-xs text-center">
           Les contrôles timeline et playlist restent synchronisés.
         </p>
-        <button
-          onClick={popIn}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg
-                     bg-slate-700 hover:bg-slate-600 border border-slate-500
-                     text-slate-200 text-sm font-medium transition-colors"
-          title="Fermer la fenêtre et ramener la vidéo ici"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="3 8 3 3 8 3" />
-            <polyline points="21 16 21 21 16 21" />
-            <line x1="3" y1="3" x2="10" y2="10" />
-            <line x1="21" y1="21" x2="14" y2="14" />
-          </svg>
-          Ramener la vidéo ici
-        </button>
       </div>
     );
   }
 
-  if (!videoId && videoType !== 'local') {
+  if (!videoId) {
     return (
       <div className="flex flex-col gap-4 p-6 bg-slate-800 rounded-lg">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Lecteur Vidéo</h3>
-          <span className="text-xs text-slate-500">Aucune vidéo chargée</span>
+          <h3 className="text-lg font-semibold">YouTube Video Player</h3>
+          <span className="text-xs text-slate-500">No video loaded</span>
         </div>
-
-        {/* YouTube URL */}
+        <p className="text-sm text-slate-400">
+          Enter a YouTube URL to sync with the match data
+        </p>
         <form onSubmit={handleUrlSubmit} className="flex flex-col gap-2">
-          <p className="text-sm text-slate-400">YouTube</p>
           <input
             type="text"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
+            placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
             className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded font-medium text-sm transition-colors"
           >
-            Charger YouTube
+            Load Video
           </button>
         </form>
-
-        {/* Séparateur */}
-        <div className="flex items-center gap-2 text-slate-600">
-          <div className="flex-1 border-t border-slate-700" />
-          <span className="text-xs">ou</span>
-          <div className="flex-1 border-t border-slate-700" />
-        </div>
-
-        {/* Fichier local */}
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-slate-400">Fichier local (MP4, MOV, AVI...)</p>
-          <label className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 border-dashed rounded cursor-pointer transition-colors text-sm font-medium text-slate-300">
-            <span>📂</span>
-            <span>Ouvrir une vidéo locale</span>
-            <input
-              type="file"
-              accept="video/*"
-              className="hidden"
-              onChange={handleLocalFileChange}
-            />
-          </label>
-        </div>
-
         <div className="text-xs text-slate-500 border-t border-slate-700 pt-3">
-          Tous les contrôles (timeline, playlist, seek) fonctionnent avec les deux sources.
-        </div>
-      </div>
-    );
-  }
-
-  // ── Lecteur vidéo LOCAL (HTML5) ──
-  if (videoType === 'local' && localVideoUrl) {
-    const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
-    return (
-      <div className="flex flex-col gap-2 bg-slate-800 rounded-lg overflow-hidden">
-        {/* Vidéo HTML5 */}
-        <div className="relative aspect-video bg-black">
-          <video
-            ref={localVideoRef}
-            src={localVideoUrl}
-            className="absolute inset-0 w-full h-full"
-            onTimeUpdate={() => {
-              if (localVideoRef.current) {
-                setCurrentTime(localVideoRef.current.currentTime);
-              }
-            }}
-            onLoadedMetadata={() => {
-              if (localVideoRef.current) {
-                setDuration(localVideoRef.current.duration);
-                // Enregistrer le seek function
-                registerSeekFunction((s) => {
-                  if (localVideoRef.current) localVideoRef.current.currentTime = s;
-                });
-              }
-            }}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-          />
-        </div>
-
-        {/* Barre de progression */}
-        <div className="px-3">
-          <input
-            type="range"
-            min={0}
-            max={duration || 100}
-            step={0.1}
-            value={currentTime}
-            className="w-full h-1 accent-blue-500"
-            onChange={(e) => {
-              const t = parseFloat(e.target.value);
-              setCurrentTime(t);
-              if (localVideoRef.current) localVideoRef.current.currentTime = t;
-            }}
-          />
-        </div>
-
-        {/* Contrôles */}
-        <div className="flex items-center justify-between px-3 pb-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (localVideoRef.current) {
-                  localVideoRef.current.currentTime = Math.max(0, currentTime - 10);
-                }
-              }}
-              className="p-1 text-slate-400 hover:text-white"
-              title="Reculer 10s"
-            >⏮ 10s</button>
-            <button
-              onClick={() => {
-                if (localVideoRef.current) {
-                  isPlaying ? localVideoRef.current.pause() : localVideoRef.current.play();
-                }
-              }}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm font-bold"
-            >
-              {isPlaying ? '⏸' : '▶'}
-            </button>
-            <button
-              onClick={() => {
-                if (localVideoRef.current) {
-                  localVideoRef.current.currentTime = Math.min(duration, currentTime + 10);
-                }
-              }}
-              className="p-1 text-slate-400 hover:text-white"
-              title="Avancer 10s"
-            >10s ⏭</button>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400">
-              {formatVideoTime(currentTime)} / {formatVideoTime(duration)}
-            </span>
-            {/* Progress */}
-            <span className="text-xs text-slate-500">{Math.round(progressPercent)}%</span>
-            {/* Bouton changer de fichier */}
-            <label className="cursor-pointer text-xs text-blue-400 hover:text-blue-300 underline">
-              Changer
-              <input type="file" accept="video/*" className="hidden" onChange={handleLocalFileChange} />
-            </label>
-            <button
-              onClick={clearVideo}
-              className="text-xs text-slate-500 hover:text-red-400"
-              title="Fermer la vidéo"
-            >✕</button>
-          </div>
+          Supported formats: youtube.com/watch?v=..., youtu.be/..., youtube.com/embed/...
         </div>
       </div>
     );
@@ -618,36 +433,6 @@ export function VideoPlayer() {
             </div>
           </div>
         )}
-
-        {/* Pop-out overlay button — top-left corner */}
-        {isReady && (
-          <button
-            onClick={popOut}
-            title="Ouvrir dans une fenêtre séparée"
-            className="absolute top-2 left-2 z-10 flex items-center gap-1.5 px-2 py-1 rounded
-                       bg-slate-900/80 hover:bg-slate-700/90 border border-slate-600/60
-                       text-slate-400 hover:text-slate-200 transition-colors text-xs
-                       backdrop-blur-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 3 21 3 21 9" />
-              <polyline points="9 21 3 21 3 15" />
-              <line x1="21" y1="3" x2="14" y2="10" />
-              <line x1="3" y1="21" x2="10" y2="14" />
-            </svg>
-            <span>Pop-out</span>
-          </button>
-        )}
       </div>
 
       {/* Custom controls */}
@@ -723,7 +508,7 @@ export function VideoPlayer() {
             </button>
           </div>
 
-          {/* Change video URL + Save to match */}
+          {/* Change video URL */}
           <div className="pt-2 border-t border-slate-700">
             <details className="group">
               <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-300 transition-colors flex items-center gap-2">
@@ -747,98 +532,6 @@ export function VideoPlayer() {
                   Load New Video
                 </button>
               </form>
-
-              {/* Save URL to match */}
-              {currentMatchId && videoId && (
-                <button
-                  onClick={async () => {
-                    if (!currentMatchOwnerId) return;
-                    setSavingUrl(true);
-                    await saveMatchVideoUrl(currentMatchOwnerId, currentMatchId, youtubeUrl || '');
-                    setSavingUrl(false);
-                    setSavedUrlFlash(true);
-                    setTimeout(() => setSavedUrlFlash(false), 2000);
-                  }}
-                  disabled={savingUrl}
-                  className="mt-2 w-full px-3 py-2 rounded text-xs font-medium transition-colors disabled:opacity-50"
-                  style={{
-                    backgroundColor: savedUrlFlash ? '#16a34a' : '#1e293b',
-                    border: '1px solid #334155',
-                    color: savedUrlFlash ? '#fff' : '#94a3b8',
-                  }}
-                >
-                  {savedUrlFlash ? '✓ URL enregistrée !' : savingUrl ? 'Enregistrement…' : '💾 Enregistrer l\'URL pour ce match'}
-                </button>
-              )}
-
-              {/* Sync offset — always visible */}
-              <div className="mt-3 pt-3 border-t border-slate-700">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-slate-400">🕐 Offset synchro</span>
-                  <span className="text-xs font-mono text-slate-300">{offset >= 0 ? '+' : ''}{offset.toFixed(1)}s</span>
-                </div>
-
-                {/* Set offset to current video time */}
-                <button
-                  onClick={() => setOffset(currentTime)}
-                  className="w-full mb-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-xs font-medium transition-colors"
-                >
-                  ▶ Caler sur le temps actuel ({Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')})
-                </button>
-
-                {/* Fine adjustment buttons */}
-                <div className="flex gap-1 mb-2">
-                  {([-10, -1, -0.1] as const).map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setOffset(Math.max(0, offset + d))}
-                      className="flex-1 px-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs transition-colors"
-                    >
-                      {d}s
-                    </button>
-                  ))}
-                  {([0.1, 1, 10] as const).map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => setOffset(offset + d)}
-                      className="flex-1 px-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs transition-colors"
-                    >
-                      +{d}s
-                    </button>
-                  ))}
-                </div>
-
-                {/* Reset */}
-                <button
-                  onClick={() => setOffset(0)}
-                  className="w-full mb-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-xs transition-colors"
-                >
-                  ↺ Remettre à zéro
-                </button>
-
-                {/* Save to Firestore — only when a library match is open */}
-                {currentMatchId && (
-                  <button
-                    onClick={async () => {
-                      if (!currentMatchOwnerId) return;
-                      setSavingOffset(true);
-                      await saveMatchVideoOffset(currentMatchOwnerId, currentMatchId, offset);
-                      setSavingOffset(false);
-                      setSavedOffsetFlash(true);
-                      setTimeout(() => setSavedOffsetFlash(false), 2000);
-                    }}
-                    disabled={savingOffset}
-                    className="w-full px-3 py-2 rounded text-xs font-medium transition-colors disabled:opacity-50"
-                    style={{
-                      backgroundColor: savedOffsetFlash ? '#16a34a' : '#1e293b',
-                      border: '1px solid #334155',
-                      color: savedOffsetFlash ? '#fff' : '#94a3b8',
-                    }}
-                  >
-                    {savedOffsetFlash ? '✓ Synchro enregistrée !' : savingOffset ? 'Enregistrement…' : '💾 Enregistrer la synchronisation'}
-                  </button>
-                )}
-              </div>
             </details>
           </div>
         </div>

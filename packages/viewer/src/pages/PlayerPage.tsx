@@ -192,44 +192,6 @@ export default function PlayerPage({ playerId, onBack }: PlayerPageProps) {
     }
   };
 
-  // Handler pour filtrer les attaques par combinaison
-  const handleComboClick = (code: string) => {
-    if (!videoId) return;
-
-    const { setCriteria, isPlaylistMode, togglePlaylistMode, setPlaylistIndex } = useFilterStore.getState();
-    const { triggerPlay, seekTo: storSeekTo, offset: storeOffset } = useVideoStore.getState();
-
-    const comboCriteria = {
-      ...DEFAULT_CRITERIA,
-      playerIds: [playerId],
-      skills: ['attack' as const],
-      attackCombos: [code],
-      hasVideoTimestamp: true,
-    };
-
-    // Calculer les actions correspondantes directement
-    const comboActions = applyFilters(match!, comboCriteria);
-
-    // Mettre à jour le filtre store (playlist se met à jour silencieusement)
-    setCriteria(comboCriteria);
-    setPlaylistIndex(0);
-    if (!isPlaylistMode) togglePlaylistMode();
-    // Pas de requestPlaylistSwitch() — on ne change pas de panneau
-
-    // Seeker et lancer directement sur le premier clip
-    if (comboActions.length > 0) {
-      const first = comboActions[0];
-      const timestamp = first.action.videoTimestamp ?? first.estimatedTimestamp;
-      if (timestamp != null) {
-        const startTime = first.sequenceStart
-          ? Math.max(0, first.sequenceStart + storeOffset)
-          : Math.max(0, timestamp + storeOffset - preRollSeconds);
-        storSeekTo(startTime);
-        setTimeout(() => triggerPlay(), 200);
-      }
-    }
-  };
-
   // Handler pour filtrer les actions par set
   const handleSetClick = (setNumber: number) => {
     if (!videoId) return;
@@ -330,7 +292,6 @@ export default function PlayerPage({ playerId, onBack }: PlayerPageProps) {
         <AttackComboTable
           combos={playerStats.attackByCombo}
           attackCombinations={match!.dvwMetadata?.attackCombinations as Record<string, string> | undefined}
-          onComboClick={videoId ? handleComboClick : undefined}
         />
       )}
 

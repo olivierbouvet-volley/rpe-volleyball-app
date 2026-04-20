@@ -7,10 +7,6 @@ interface StatsTableProps {
   stats: PlayerMatchStats[];
   match: Match;
   onPlayerClick?: (playerId: string) => void;
-  /** Surcharge cross-matchs : playerId → "Prénom Nom" */
-  playerNameMap?: Map<string, string>;
-  /** Surcharge cross-matchs : playerId → numéro */
-  playerNumberMap?: Map<string, number>;
 }
 
 const skills: Skill[] = ['serve', 'receive', 'set', 'attack', 'block', 'dig'];
@@ -28,9 +24,7 @@ const skillLabels: Record<Skill, string> = {
 /**
  * Display player statistics table with quality distributions
  */
-export const StatsTable = memo(function StatsTable({
-  stats, match, onPlayerClick, playerNameMap, playerNumberMap,
-}: StatsTableProps) {
+export const StatsTable = memo(function StatsTable({ stats, match, onPlayerClick }: StatsTableProps) {
   if (stats.length === 0) {
     return (
       <div className="text-center py-12 text-slate-400">
@@ -60,10 +54,8 @@ export const StatsTable = memo(function StatsTable({
         </thead>
         <tbody>
           {stats.map((playerStats) => {
-            const playerName = playerNameMap?.get(playerStats.playerId)
-              ?? getPlayerName(playerStats.playerId, match);
-            const playerNumber = playerNumberMap?.get(playerStats.playerId)
-              ?? getPlayerNumber(playerStats.playerId, match);
+            const playerName = getPlayerName(playerStats.playerId, match);
+            const playerNumber = getPlayerNumber(playerStats.playerId, match);
 
             return (
               <tr

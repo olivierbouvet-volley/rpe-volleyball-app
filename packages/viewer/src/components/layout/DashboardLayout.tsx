@@ -1,120 +1,135 @@
 /**
  * @file DashboardLayout.tsx
- * @description Layout FlexLayout-React avec drag & drop, resize, tabs et presets
- * Remplace react-grid-layout (v3)
+ * @description Main dashboard layout orchestrator using react-grid-layout
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Layout, Model, Actions } from 'flexlayout-react';
-import type { TabNode, IJsonModel } from 'flexlayout-react';
-import 'flexlayout-react/style/dark.css';
-import '../../styles/flexlayout-theme.css';
-
+import { ReactNode, useRef, useState, useEffect } from 'react';
+import { ResponsiveGridLayout } from 'react-grid-layout';
+import type { LayoutItem } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
 import { useLayoutStore } from '../../store/layoutStore';
-import { LayoutPresetBar } from './LayoutPresetBar';
-import { SaveLayoutModal } from './SaveLayoutModal';
+import { PanelWrapper } from './PanelWrapper';
 
 interface DashboardLayoutProps {
   renderPanelContent: (panelId: string) => ReactNode;
-  /** Prop conservé pour compatibilité — pop-out géré dans VideoPlayer (étape 9) */
   onVideoPopOut?: () => void;
 }
 
 /**
- * DashboardLayout — layout dockable VS Code-style
+ * DashboardLayout - Responsive grid layout for dashboard panels
  *
- * Fonctionnalités :
- * - Drag & drop des panneaux (header de l'onglet)
- * - Resize des panneaux (séparateur)
- * - Tabs multiples dans chaque zone
- * - 4 presets intégrés + presets utilisateur nommés
- * - Persisté en localStorage via layoutStore
- * - requestSelectTab : permet à l'extérieur de sélectionner un panneau
+ * Features:
+ * - Drag & drop panels by their title bar
+ * - Resize panels from bottom-right corner
+ * - Responsive breakpoints (lg, md, sm)
+ * - Persistent layout in localStorage
+ * - Panel visibility toggle
+ * - Panel collapse/expand
+ *
+ * The layout automatically compacts vertically to prevent gaps
  */
-export function DashboardLayout({ renderPanelContent }: DashboardLayoutProps) {
+export function DashboardLayout({
+  renderPanelContent,
+  onVideoPopOut,
+}: DashboardLayoutProps) {
   const {
-    modelJson,
-    modelVersion,
-    setModelJson,
-    pendingTabSelect,
-    clearPendingTabSelect,
+    layouts,
+    panels,
+    setLayouts,
+    togglePanelVisibility,
+    togglePanelCollapsed,
+    resetToDefault,
   } = useLayoutStore();
 
-  // Modèle FlexLayout en state local — recréé à chaque changement de preset
-  const [model, setModel] = useState<Model>(() => Model.fromJson(modelJson));
-  const prevVersionRef = useRef(modelVersion);
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [currentModelJson, setCurrentModelJson] = useState<IJsonModel>(modelJson);
+  // Mesurer la largeur du conteneur pour ResponsiveGridLayout
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState<number>(1200);
 
-  // ── Recréer le model quand un preset est appliqué ──
   useEffect(() => {
-    if (modelVersion !== prevVersionRef.current) {
-      prevVersionRef.current = modelVersion;
-      const newModel = Model.fromJson(modelJson);
-      setModel(newModel);
-      setCurrentModelJson(modelJson);
-    }
-  }, [modelVersion, modelJson]);
-
-  // ── Sélectionner un onglet demandé depuis l'extérieur ──
-  useEffect(() => {
-    if (pendingTabSelect) {
-      try {
-        model.doAction(Actions.selectTab(pendingTabSelect));
-        setModel(Model.fromJson(model.toJson() as IJsonModel));
-      } catch {
-        // Tab introuvable dans le layout courant
+    const measureWidth = () => {
+      if (containerRef.current) {
+        setWidth(containerRef.current.offsetWidth);
       }
-      clearPendingTabSelect();
-    }
-  }, [pendingTabSelect, model, clearPendingTabSelect]);
+    };
 
-  // ── Factory : rendu du contenu de chaque onglet ──
-  const factory = (node: TabNode): ReactNode => {
-    const component = node.getComponent() ?? '';
-    return (
-      <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
-        {renderPanelContent(component)}
-      </div>
-    );
-  };
+    measureWidth();
+    window.addEventListener('resize', measureWidth);
+    return () => window.removeEventListener('resize', measureWidth);
+  }, []);
 
-  // ── Callback FlexLayout : sauvegarde le modèle après chaque interaction ──
-  const handleModelChange = (updatedModel: Model) => {
-    const json = updatedModel.toJson() as IJsonModel;
-    setCurrentModelJson(json);
-    setModelJson(json);
-    // Forcer le re-render en cas de mutation (FlexLayout mutate en place)
-    setModel(updatedModel);
+  const handleLayoutChange = (_currentLayout: readonly LayoutItem[], allLayouts: any) => {
+    setLayouts(allLayouts);
   };
 
   return (
-    <div
-      className="flex flex-col"
-      style={{ height: '100%', backgroundColor: 'var(--surface-root)' }}
-    >
-      {/* Barre de presets */}
-      <LayoutPresetBar onSave={() => setSaveModalOpen(true)} />
-
-      {/* Zone FlexLayout */}
-      <div className="flex-1 relative" style={{ minHeight: 0 }}>
-        <Layout
-          model={model}
-          factory={factory}
-          onModelChange={handleModelChange}
-          realtimeResize
-        />
+    <div className="relative">
+      {/* Barre d'outils layout */}
+      <div className="flex items-center justify-between mb-3 px-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Toggle visibilité des panneaux */}
+          {panels.map((panel) => (
+            <button
+              key={panel.id}
+              onClick={() => togglePanelVisibility(panel.id)}
+              className={`px-2 py-1 rounded text-xs transition-colors ${
+                panel.visible
+                  ? 'bg-slate-700 text-white hover:bg-slate-600'
+                  : 'bg-slate-800 text-slate-500 line-through hover:bg-slate-700'
+              }`}
+              title={`${panel.visible ? 'Masquer' : 'Afficher'} ${panel.title}`}
+              type="button"
+            >
+              {panel.icon} {panel.title}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={resetToDefault}
+            className="px-2 py-1 rounded text-xs bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            title="Réinitialiser la disposition"
+            type="button"
+          >
+            🔄 Reset layout
+          </button>
+        </div>
       </div>
 
-      {/* Modal sauvegarder preset */}
-      {saveModalOpen && (
-        <SaveLayoutModal
-          modelJson={currentModelJson}
-          onClose={() => setSaveModalOpen(false)}
-        />
-      )}
+      {/* Grid Layout Container */}
+      <div ref={containerRef}>
+        <ResponsiveGridLayout
+          width={width}
+          layouts={layouts as any}
+          breakpoints={{ lg: 1200, md: 996, sm: 0 }}
+          cols={{ lg: 12, md: 10, sm: 6 }}
+          rowHeight={40}
+          onLayoutChange={handleLayoutChange as any}
+          {...{ draggableHandle: '.panel-drag-handle' } as any}
+          compactType={null}
+          isResizable={true}
+          isDraggable={true}
+          margin={[8, 8]}
+          containerPadding={[0, 0]}
+        >
+          {panels
+            .filter((p) => p.visible)
+            .map((panel) => (
+              <div key={panel.id}>
+                <PanelWrapper
+                  panelId={panel.id}
+                  title={panel.title}
+                  icon={panel.icon}
+                  collapsed={panel.collapsed}
+                  onToggleCollapse={() => togglePanelCollapsed(panel.id)}
+                  onPopOut={panel.id === 'video' ? onVideoPopOut : undefined}
+                  showPopOut={panel.id === 'video'}
+                >
+                  {renderPanelContent(panel.id)}
+                </PanelWrapper>
+              </div>
+            ))}
+        </ResponsiveGridLayout>
+      </div>
     </div>
   );
 }
-
-

@@ -86,71 +86,49 @@ function displayMotivationalQuote() {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(19, 52, 59, 0.55);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10000;
             animation: fadeIn 0.3s ease-in-out;
         `;
-
+        
         const quoteContainer = document.createElement('div');
         quoteContainer.style.cssText = `
-            background: linear-gradient(150deg, #2180ac 0%, #145470 100%);
-            border-radius: 16px;
-            padding: 44px 36px 36px;
-            max-width: 480px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 500px;
             width: 90%;
-            box-shadow: 0 24px 64px rgba(19, 52, 59, 0.4), 0 2px 8px rgba(19, 52, 59, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
-            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
+            animation: slideUp 0.4s ease-out;
         `;
-
-        // Guillemet décoratif en arrière-plan
-        const decorQuote = document.createElement('div');
-        decorQuote.style.cssText = `
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            font-size: 120px;
-            font-family: Georgia, 'Times New Roman', serif;
-            color: rgba(255, 255, 255, 0.08);
-            line-height: 1;
-            pointer-events: none;
-            user-select: none;
+        
+        // Icône/emoji inspirant
+        const icon = document.createElement('div');
+        icon.style.cssText = `
+            font-size: 48px;
+            margin-bottom: 15px;
         `;
-        decorQuote.textContent = '\u201C';
-
-        // Ligne décorative
-        const topLine = document.createElement('div');
-        topLine.style.cssText = `
-            width: 40px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 2px;
-            margin: 0 auto 28px;
-        `;
-
+        const icons = ['🔥', '💪', '⚡', '🌟', '🎯', '✨', '🚀'];
+        icon.textContent = icons[Math.floor(Math.random() * icons.length)];
+        
         // Texte de la phrase
         const quoteText = document.createElement('p');
         quoteText.id = 'motivationalQuoteText';
         quoteText.style.cssText = `
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 20px;
+            font-weight: 600;
             color: white;
-            margin: 0 0 36px 0;
-            line-height: 1.65;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            letter-spacing: 0.1px;
-            position: relative;
-            z-index: 1;
+            margin: 0 0 30px 0;
+            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 0.5px;
         `;
         quoteText.textContent = getRandomQuote();
-
+        
         // Boutons
         const buttonContainer = document.createElement('div');
         buttonContainer.style.cssText = `
@@ -159,82 +137,74 @@ function displayMotivationalQuote() {
             justify-content: center;
             flex-wrap: wrap;
         `;
-
+        
         const closeBtn = document.createElement('button');
-        closeBtn.textContent = 'Commençons';
+        closeBtn.textContent = 'Commençons ! 💪';
         closeBtn.style.cssText = `
-            padding: 11px 28px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 8px;
-            background: white;
-            color: #2180ac;
+            border-radius: 10px;
+            background: var(--color-surface, white);
+            color: #667eea;
             font-weight: 600;
             cursor: pointer;
             font-size: 14px;
-            font-family: 'Inter', -apple-system, sans-serif;
-            letter-spacing: 0.1px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
         `;
         closeBtn.addEventListener('click', () => {
-            quoteModal.style.animation = 'fadeOut 0.25s ease-out';
+            quoteModal.style.animation = 'fadeOut 0.3s ease-out';
             setTimeout(() => {
                 quoteModal.style.display = 'none';
-            }, 250);
+            }, 300);
         });
         closeBtn.addEventListener('mouseover', () => {
-            closeBtn.style.transform = 'translateY(-1px)';
-            closeBtn.style.boxShadow = '0 4px 14px rgba(0,0,0,0.2)';
+            closeBtn.style.transform = 'scale(1.05)';
+            closeBtn.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
         });
         closeBtn.addEventListener('mouseout', () => {
-            closeBtn.style.transform = 'translateY(0)';
-            closeBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            closeBtn.style.transform = 'scale(1)';
+            closeBtn.style.boxShadow = 'none';
         });
-
+        
         const newQuoteBtn = document.createElement('button');
-        newQuoteBtn.textContent = 'Nouvelle citation';
+        newQuoteBtn.textContent = '🔄 Nouvelle';
         newQuoteBtn.style.cssText = `
-            padding: 11px 28px;
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
-            border-radius: 8px;
+            padding: 12px 25px;
+            border: 2px solid white;
+            border-radius: 10px;
             background: transparent;
             color: white;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
             font-size: 14px;
-            font-family: 'Inter', -apple-system, sans-serif;
-            letter-spacing: 0.1px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
         `;
         newQuoteBtn.addEventListener('click', () => {
-            quoteText.style.opacity = '0';
-            quoteText.style.transform = 'translateY(6px)';
+            quoteText.style.animation = 'fadeOut 0.2s ease-out';
             setTimeout(() => {
                 quoteText.textContent = getRandomQuote();
-                quoteText.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-                quoteText.style.opacity = '1';
-                quoteText.style.transform = 'translateY(0)';
+                icon.textContent = icons[Math.floor(Math.random() * icons.length)];
+                quoteText.style.animation = 'fadeIn 0.2s ease-in-out';
             }, 200);
         });
         newQuoteBtn.addEventListener('mouseover', () => {
-            newQuoteBtn.style.background = 'rgba(255, 255, 255, 0.12)';
-            newQuoteBtn.style.borderColor = 'rgba(255, 255, 255, 0.75)';
+            newQuoteBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+            newQuoteBtn.style.transform = 'scale(1.05)';
         });
         newQuoteBtn.addEventListener('mouseout', () => {
             newQuoteBtn.style.background = 'transparent';
-            newQuoteBtn.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            newQuoteBtn.style.transform = 'scale(1)';
         });
-
+        
         buttonContainer.appendChild(closeBtn);
         buttonContainer.appendChild(newQuoteBtn);
-
-        quoteContainer.appendChild(decorQuote);
-        quoteContainer.appendChild(topLine);
+        
+        quoteContainer.appendChild(icon);
         quoteContainer.appendChild(quoteText);
         quoteContainer.appendChild(buttonContainer);
         quoteModal.appendChild(quoteContainer);
         document.body.appendChild(quoteModal);
-
+        
         // Fermer avec Échap
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && quoteModal.style.display !== 'none') {
@@ -279,27 +249,26 @@ function createMotivationButton() {
     btn.id = 'dailyMotivationBtn';
     btn.title = 'Afficher une phrase de motivation';
     btn.style.cssText = `
-        background: #2180ac;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
         color: white;
-        padding: 7px 16px;
-        border-radius: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
         cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        font-family: 'Inter', -apple-system, sans-serif;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(33, 128, 172, 0.3);
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     `;
-    btn.textContent = 'Citation du jour';
+    btn.textContent = '✨ Motivation';
     btn.addEventListener('click', displayMotivationalQuote);
     btn.addEventListener('mouseover', () => {
-        btn.style.background = '#1a6a8e';
-        btn.style.boxShadow = '0 4px 12px rgba(33, 128, 172, 0.4)';
+        btn.style.transform = 'scale(1.08)';
+        btn.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
     });
     btn.addEventListener('mouseout', () => {
-        btn.style.background = '#2180ac';
-        btn.style.boxShadow = '0 2px 8px rgba(33, 128, 172, 0.3)';
+        btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
     });
     
     return btn;

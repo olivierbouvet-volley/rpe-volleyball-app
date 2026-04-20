@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useMatchStore } from '../store/matchStore';
 import { useFilterStore } from '../store/filterStore';
 import { useVideoStore } from '../store/videoStore';
-import { useCumulativeStatsStore } from '../store/cumulativeStatsStore';
+import { ScoreBoard } from '../components/ScoreBoard';
 import { SetSelector } from '../components/SetSelector';
 import { PlayerSelector } from '../components/PlayerSelector';
 import { StatsTable } from '../components/StatsTable';
@@ -15,60 +15,33 @@ import { PlaylistPlayer } from '../components/PlaylistPlayer';
 import { RotationView } from '../components/RotationView';
 import { PlayByPlayChart } from '../components/PlayByPlayChart';
 import { SetterDistribution } from '../components/SetterDistribution';
-import { GamePlanPanel } from '../components/GamePlanPanel';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
+import { usePopOutWindow } from '../hooks/usePopOutWindow';
 import { useLayoutStore } from '../store/layoutStore';
 import { filterStats } from '../utils/statsFilter';
 import { applyFilters } from '../utils/filterEngine';
-
-/**
- * Scroll container that preserves its scroll position across React re-renders.
- * Prevents the player panel from jumping to top when filterStore updates.
- */
-function PlayerPanelScroll({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const savedScroll = useRef(0);
-
-  // Save scroll before any update
-  const onScroll = useCallback(() => {
-    if (ref.current) savedScroll.current = ref.current.scrollTop;
-  }, []);
-
-  // Restore scroll after every render
-  useEffect(() => {
-    if (ref.current) ref.current.scrollTop = savedScroll.current;
-  });
-
-  return (
-    <div ref={ref} className="flex-1 overflow-auto" onScroll={onScroll}>
-      {children}
-    </div>
-  );
-}
+import '../styles/grid-layout.css';
 
 /**
  * Page for analyzing match statistics with modular dashboard layout
  */
 export default function AnalysisPage() {
   const { match, stats, clear } = useMatchStore();
-  const { criteria, playlistIndex, setPlaylistIndex, playlistTabRequest } = useFilterStore();
+  const { criteria, playlistIndex, setPlaylistIndex } = useFilterStore();
   const { seekTo, currentTime, isPlaying, setIsPlaying } = useVideoStore();
-  const cumul = useCumulativeStatsStore();
   const [selectedSet, setSelectedSet] = useState<number | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'timeline' | 'playlist'>('timeline');
-
-  // Switch to playlist tab when a component requests it (AttackComboTable, GamePlanPanel)
-  useEffect(() => {
-    if (playlistTabRequest > 0) {
-      setActiveTab('playlist');
-      useLayoutStore.getState().requestSelectTab('tab-timeline');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playlistTabRequest]);
   const [rightTab, setRightTab] = useState<'stats' | 'rotation' | 'playbyplay' | 'distribution'>('stats');
   const [playerView, setPlayerView] = useState<string | null>(null);
+
+  // Pop-out window for video
+  const { popOut } = usePopOutWindow({
+    title: 'VolleyVision - Video Player',
+    width: 1280,
+    height: 720,
+  });
 
   // Filter stats based on selections
   const filteredStats = useMemo(
@@ -142,8 +115,13 @@ export default function AnalysisPage() {
   // Handler pour ouvrir la fiche joueur
   const handlePlayerClick = (playerId: string) => {
     setPlayerView(playerId);
-    // Sélectionner l'onglet Fiche Joueur dans FlexLayout
-    useLayoutStore.getState().requestSelectTab('tab-player');
+
+    // Rendre le panneau player visible s'il ne l'est pas déjà
+    const { panels, togglePanelVisibility } = useLayoutStore.getState();
+    const playerPanel = panels.find(p => p.id === 'player');
+    if (playerPanel && !playerPanel.visible) {
+      togglePanelVisibility('player');
+    }
   };
 
   // Render content for each panel
@@ -301,71 +279,12 @@ export default function AnalysisPage() {
 
             {/* Tab content */}
             <div className="flex-1 overflow-auto p-4">
-              {rightTab === 'stats' && (() => {
-                // ── Mode multi-matchs ──
-                if (cumul.isActive) {
-                  const teamIds = cumul.selectedTeamForStats
-                    ? new Set(cumul.teamPlayerIds[cumul.selectedTeamForStats] ?? [])
-                    : null;
-                  const cumulStats = teamIds
-                    ? cumul.aggregatedStats.filter((s) => teamIds.has(s.playerId))
-                    : cumul.aggregatedStats;
-
-                  return (
-                    <>
-                      {/* Bannière multi-matchs */}
-                      <div className="mb-3 px-3 py-2 rounded-lg flex flex-col gap-2"
-                        style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--brand-blue)' }}>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold" style={{ color: 'var(--brand-blue)' }}>
-                            📊 Analyse cumulée — {cumul.matchCount} matchs
-                          </span>
-                        </div>
-                        {/* Sélecteur d'équipe */}
-                        <div>
-                          <p className="text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>Équipe à étudier :</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {cumul.teamNames.map((name) => (
-                              <button
-                                key={name}
-                                onClick={() => cumul.setSelectedTeamForStats(name)}
-                                className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
-                                style={{
-                                  backgroundColor: cumul.selectedTeamForStats === name
-                                    ? 'var(--brand-green)' : 'var(--surface-3)',
-                                  color: cumul.selectedTeamForStats === name
-                                    ? '#fff' : 'var(--text-secondary)',
-                                  border: cumul.selectedTeamForStats === name
-                                    ? '1px solid var(--brand-green)' : '1px solid var(--border-strong)',
-                                }}
-                              >
-                                {name}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <StatsTable
-                        stats={cumulStats}
-                        match={match!}
-                        playerNameMap={cumul.playerNameMap}
-                        playerNumberMap={cumul.playerNumberMap}
-                        // Pas de click-through en multi-matchs : les IDs canoniques
-                        // ("TeamName|7") ne sont pas résolvables dans PlayerPage
-                      />
-                    </>
-                  );
-                }
-
-                // ── Mode match unique ──
-                return (
-                  <>
-                    <h2 className="text-lg font-semibold mb-3">Statistiques des joueurs</h2>
-                    <StatsTable stats={filteredStats} match={match!} onPlayerClick={handlePlayerClick} />
-                  </>
-                );
-              })()}
+              {rightTab === 'stats' && (
+                <>
+                  <h2 className="text-lg font-semibold mb-3">Statistiques des joueurs</h2>
+                  <StatsTable stats={filteredStats} match={match} onPlayerClick={handlePlayerClick} />
+                </>
+              )}
               {rightTab === 'rotation' && <RotationView />}
               {rightTab === 'playbyplay' && (
                 <PlayByPlayChart
@@ -410,13 +329,18 @@ export default function AnalysisPage() {
                 selected={playerView}
                 onChange={(id) => {
                   setPlayerView(id);
+                  // Rendre visible si on sélectionne un joueur
                   if (id) {
-                    useLayoutStore.getState().requestSelectTab('tab-player');
+                    const { panels, togglePanelVisibility } = useLayoutStore.getState();
+                    const playerPanel = panels.find(p => p.id === 'player');
+                    if (playerPanel && !playerPanel.visible) {
+                      togglePanelVisibility('player');
+                    }
                   }
                 }}
               />
             </div>
-            <PlayerPanelScroll>
+            <div className="flex-1 overflow-auto">
               {playerView ? (
                 <PlayerPage playerId={playerView} onBack={() => setPlayerView(null)} />
               ) : (
@@ -424,12 +348,9 @@ export default function AnalysisPage() {
                   Sélectionnez un joueur ci-dessus pour voir sa fiche détaillée
                 </div>
               )}
-            </PlayerPanelScroll>
+            </div>
           </div>
         );
-
-      case 'gameplan':
-        return <GamePlanPanel />;
 
       default:
         return <div className="p-4 text-slate-400">Panneau inconnu: {panelId}</div>;
@@ -437,74 +358,28 @@ export default function AnalysisPage() {
   };
 
   return (
-    <div
-      className="flex flex-col"
-      style={{
-        height: '100dvh',
-        backgroundColor: 'var(--surface-root)',
-        color: 'var(--text-primary)',
-        overflow: 'hidden',
-      }}
-    >
-      {/* ── Header ── */}
-      <div
-        className="flex items-center justify-between px-4 py-2 shrink-0 gap-4"
-        style={{
-          backgroundColor: 'var(--surface-1)',
-          borderBottom: '1px solid var(--surface-border)',
-        }}
-      >
-        {/* Logo */}
+    <div className="px-4 py-4">
+      {/* Header with app name */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">
+          <span className="text-primary-green">Volley</span>
+          <span className="text-primary-blue">Vision</span>
+        </h1>
         <button
           onClick={handleClear}
-          className="flex items-center gap-1.5 shrink-0 text-sm font-semibold"
-          style={{ color: 'var(--text-primary)' }}
-          title="Retour à la bibliothèque"
+          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded font-medium transition-colors"
+          type="button"
         >
-          ←
-          <span className="hidden md:inline">
-            <span style={{ color: 'var(--brand-green)' }}>Volley</span>
-            <span style={{ color: 'var(--brand-blue)' }}>Vision</span>
-          </span>
+          ← Import New File
         </button>
-
-        {/* Bannière match compacte */}
-        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-          {/* Compétition + date */}
-          <span className="hidden sm:block text-xs shrink-0" style={{ color: 'var(--text-secondary)' }}>
-            {match.competition && <span className="font-medium" style={{ color: 'var(--brand-green)' }}>{match.competition}</span>}
-            {match.date && <span className="ml-1">{new Date(match.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>}
-          </span>
-
-          <span className="text-slate-600 hidden sm:block">·</span>
-
-          {/* Score inline */}
-          <div className="flex items-center gap-1.5 text-sm font-semibold">
-            <span className="truncate max-w-[120px]" title={match.homeTeam.name}>{match.homeTeam.name}</span>
-            <span className="text-base font-bold tabular-nums" style={{ color: 'var(--brand-green)' }}>{match.result.homeWins}</span>
-            <span style={{ color: 'var(--text-secondary)' }}>–</span>
-            <span className="text-base font-bold tabular-nums" style={{ color: 'var(--brand-blue)' }}>{match.result.awayWins}</span>
-            <span className="truncate max-w-[120px]" title={match.awayTeam.name}>{match.awayTeam.name}</span>
-          </div>
-
-          {/* Scores par set */}
-          <div className="hidden lg:flex items-center gap-1 ml-1">
-            {match.sets.map((s) => (
-              <span
-                key={s.number}
-                className="text-[11px] px-1.5 py-0.5 rounded"
-                style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text-secondary)' }}
-              >
-                {s.homeScore}–{s.awayScore}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* ── Dashboard FlexLayout ── */}
-      <div className="flex-1 min-h-0">
-        <DashboardLayout renderPanelContent={renderPanelContent} />
+      {/* ScoreBoard */}
+      <ScoreBoard match={match} />
+
+      {/* Dashboard modulaire */}
+      <div className="mt-6">
+        <DashboardLayout renderPanelContent={renderPanelContent} onVideoPopOut={popOut} />
       </div>
     </div>
   );

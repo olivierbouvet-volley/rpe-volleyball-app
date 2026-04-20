@@ -1,0 +1,39 @@
+---
+description: Contexte projet rpe-volleyball-app — RPE Gen2 + VolleyVision DVW Parser
+alwaysApply: true
+---
+
+# rpe-volleyball-app — Deux applications dans ce repo
+
+## 1. RPE Gen2 — Suivi condition physique + cycle menstruel
+
+Application pour 14 joueuses de volleyball (15-19 ans) du Pôle Espoir de Sablé-sur-Sarthe.
+
+### Stack : HTML/CSS/JavaScript vanilla, Firebase Firestore + Storage (Blaze), Chart.js, PWA
+### Environnements : prod (`rpe-gen2-eeaee`) + dev (`rpe-volleyball-sable`)
+
+### Fonctionnalités clés
+- Check-in quotidien + RPE après séance
+- Types activités : Volley, Muscu, Muscu+Volley, Match
+- Suivi cycle menstruel + profils hormonaux (Cyclique/Stable/Atypique)
+- Dashboard coach : ATL/CTL/TSB + alertes RED-S
+- Gamification : streaks + stickers
+- Notifications push (12h check-in, 20h RPE)
+
+### Attention
+- Auth simplifiée (mot de passe "pole")
+- Encodage UTF-8 problématique parfois
+- Gérer périodes repos (congés vs vacances)
+
+## 2. VolleyVision — Parseur DVW & Stats
+
+### Stack : React 18 + TypeScript + Vite, Zustand, Tailwind, Vitest, pnpm monorepo
+
+### 3 packages
+- `data-model/` : Types + validation
+- `dvw-parser/` : Parsing fichiers DataVolley
+- `viewer/` : App React avec 5 panneaux modulaires (Vidéo, Calibration, Timeline, Filtres, Stats)
+
+### Attention
+- ⚠️ CSS import error : `react-grid-layout/css/resizable.css`
+- 90+ tests unitaires à maintenir

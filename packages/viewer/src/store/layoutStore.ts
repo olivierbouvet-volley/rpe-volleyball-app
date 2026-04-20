@@ -1,123 +1,191 @@
 /**
- * @file layoutStore.ts — FlexLayout-React v3 (remplace react-grid-layout v2)
+ * @file layoutStore.ts
+ * @description Zustand store for dashboard layout configuration and persistence
  */
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { IJsonModel } from 'flexlayout-react';
+import type { LayoutItem } from 'react-grid-layout';
 
-import videoAnalysisPreset from '../layouts/presets/video-analysis.json';
-import statsFocusPreset from '../layouts/presets/stats-focus.json';
-import singleScreenPreset from '../layouts/presets/single-screen.json';
-import fullscreenVideoPreset from '../layouts/presets/fullscreen-video.json';
-import gamePlanPreset from '../layouts/presets/game-plan.json';
-
-export type BuiltInPresetId = 'video-analysis' | 'stats-focus' | 'single-screen' | 'fullscreen-video' | 'game-plan';
-export interface PresetMeta { label: string; icon: string; model: IJsonModel; }
-
-export const BUILT_IN_PRESETS: Record<BuiltInPresetId, PresetMeta> = {
-  'video-analysis':   { label: 'Analyse',      icon: '🎥', model: videoAnalysisPreset   as IJsonModel },
-  'stats-focus':      { label: 'Stats',         icon: '📊', model: statsFocusPreset      as IJsonModel },
-  'single-screen':    { label: 'Vue simple',    icon: '▪️', model: singleScreenPreset    as IJsonModel },
-  'fullscreen-video': { label: 'Plein écran',   icon: '⛶',  model: fullscreenVideoPreset as IJsonModel },
-  'game-plan':        { label: 'Plan de Match', icon: '🗓', model: gamePlanPreset        as IJsonModel },
-};
-
-export const PRESET_ORDER: BuiltInPresetId[] = ['video-analysis', 'stats-focus', 'single-screen', 'fullscreen-video', 'game-plan'];
-
-interface LayoutState {
-  modelJson: IJsonModel;
-  modelVersion: number;
-  activePreset: string | null;
-  savedPresets: Record<string, IJsonModel>;
-  isVideoDetached: boolean;
-  pendingTabSelect: string | null;
-  // Compat stubs — usePopOutWindow + VideoPlayer lisent isVideoDetached / setVideoDetached
-  panels: { id: string; visible: boolean }[];
-  togglePanelVisibility: (id: string) => void;
-  // Actions
-  setModelJson: (json: IJsonModel) => void;
-  applyPreset: (presetId: BuiltInPresetId) => void;
-  savePreset: (name: string, json: IJsonModel) => void;
-  deletePreset: (name: string) => void;
-  applySavedPreset: (name: string) => void;
-  resetToDefault: () => void;
-  setVideoDetached: (detached: boolean) => void;
-  requestSelectTab: (tabId: string) => void;
-  clearPendingTabSelect: () => void;
+interface PanelConfig {
+  id: string;
+  title: string;
+  icon: string;
+  visible: boolean;
+  collapsed: boolean; // true = panneau réduit à sa barre de titre
 }
 
-export const useLayoutStore = create<LayoutState>()(
-  persist(
-    (set, get) => ({
-      modelJson: videoAnalysisPreset as IJsonModel,
-      modelVersion: 0,
-      activePreset: 'video-analysis' as BuiltInPresetId,
-      savedPresets: {},
+interface LayoutState {
+  // Layouts par breakpoint (lg, md, sm)
+  layouts: { lg: LayoutItem[]; md: LayoutItem[]; sm: LayoutItem[] };
+  panels: PanelConfig[];
+  isVideoDetached: boolean; // true = vidéo dans fenêtre séparée
+
+  // Actions
+  setLayouts: (layouts: { lg: LayoutItem[]; md: LayoutItem[]; sm: LayoutItem[] }) => void;
+  togglePanelVisibility: (panelId: string) => void;
+  togglePanelCollapsed: (panelId: string) => void;
+  setVideoDetached: (detached: boolean) => void;
+  resetToDefault: () => void;
+}
+
+const DEFAULT_PANELS: PanelConfig[] = [
+  { id: 'video', title: 'Vidéo', icon: '🎥', visible: true, collapsed: false },
+  { id: 'calibration', title: 'Calibration', icon: '⚙️', visible: true, collapsed: true },
+  { id: 'timeline', title: 'Timeline / Playlist', icon: '📋', visible: true, collapsed: false },
+  { id: 'filters', title: 'Filtres avancés', icon: '🔍', visible: true, collapsed: false },
+  { id: 'stats', title: 'Statistiques', icon: '📊', visible: true, collapsed: false },
+  { id: 'player', title: 'Fiche Joueur', icon: '👤', visible: false, collapsed: false },
+  // Futurs panneaux (ajoutés par 2D-2H) :
+  // { id: 'playbyplay', title: 'Play-by-Play', icon: '📈', visible: false, collapsed: false },
+  // { id: 'distribution', title: 'Passeuse', icon: '🎯', visible: false, collapsed: false },
+  // { id: 'rotation', title: 'Rotation', icon: '🔄', visible: false, collapsed: false },
+];
+
+const DEFAULT_LAYOUTS = {
+  lg: [ // 12 colonnes, écran >= 1200px
+    // Vidéo à gauche (4 colonnes) avec hauteur confortable
+    { i: 'video', x: 0, y: 0, w: 4, h: 10, minW: 4, minH: 8 },
+    // Calibration en dessous de la vidéo, repliée par défaut (height=1 car collapsed)
+    { i: 'calibration', x: 0, y: 10, w: 4, h: 1, minW: 4, minH: 1 },
+    // Timeline/Playlist au milieu (4 colonnes) avec bonne hauteur
+    { i: 'timeline', x: 4, y: 0, w: 4, h: 14, minW: 4, minH: 10 },
+    // Filtres avancés à droite (4 colonnes) avec hauteur raisonnable
+    { i: 'filters', x: 8, y: 0, w: 4, h: 14, minW: 4, minH: 8 },
+    // Fiche Joueur à droite (4 colonnes), masquée par défaut mais avec bonne taille quand activée
+    { i: 'player', x: 8, y: 0, w: 4, h: 14, minW: 4, minH: 10 },
+    // Stats en bas, toute la largeur avec hauteur confortable
+    { i: 'stats', x: 0, y: 14, w: 12, h: 9, minW: 8, minH: 7 },
+  ],
+  md: [ // 10 colonnes, écran 996-1199px
+    // Vidéo occupe 5 colonnes avec hauteur confortable
+    { i: 'video', x: 0, y: 0, w: 5, h: 10, minW: 4, minH: 8 },
+    { i: 'calibration', x: 0, y: 10, w: 5, h: 1, minW: 4, minH: 1 },
+    // Timeline à droite (5 colonnes)
+    { i: 'timeline', x: 5, y: 0, w: 5, h: 12, minW: 4, minH: 10 },
+    // Filtres en dessous de la vidéo avec hauteur raisonnable
+    { i: 'filters', x: 0, y: 11, w: 5, h: 8, minW: 4, minH: 6 },
+    // Fiche Joueur à droite avec bonne taille
+    { i: 'player', x: 5, y: 0, w: 5, h: 12, minW: 4, minH: 10 },
+    // Stats en bas avec hauteur confortable
+    { i: 'stats', x: 0, y: 19, w: 10, h: 9, minW: 8, minH: 7 },
+  ],
+  sm: [ // 6 colonnes, écran < 996px (mobile/tablette)
+    // Sur mobile, tout empilé verticalement, vidéo en premier
+    { i: 'video', x: 0, y: 0, w: 6, h: 8, minW: 6, minH: 6 },
+    { i: 'calibration', x: 0, y: 8, w: 6, h: 1, minW: 6, minH: 1 },
+    { i: 'timeline', x: 0, y: 9, w: 6, h: 12, minW: 6, minH: 10 },
+    { i: 'filters', x: 0, y: 21, w: 6, h: 8, minW: 6, minH: 6 },
+    // Fiche Joueur empilée avec bonne hauteur
+    { i: 'player', x: 0, y: 29, w: 6, h: 12, minW: 6, minH: 10 },
+    { i: 'stats', x: 0, y: 41, w: 6, h: 9, minW: 6, minH: 7 },
+  ],
+};
+
+/**
+ * Layout store for managing dashboard panel configuration
+ *
+ * Persists panel visibility, collapsed state, and grid positions to localStorage
+ * Supports responsive layouts across different breakpoints (lg, md, sm)
+ */
+
+// Store implementation without persist (for testing)
+const createLayoutStore = () => ({
+  // Initial state
+  layouts: DEFAULT_LAYOUTS,
+  panels: DEFAULT_PANELS,
+  isVideoDetached: false,
+
+  // Actions
+  setLayouts: (layouts: { lg: LayoutItem[]; md: LayoutItem[]; sm: LayoutItem[] }) => {
+    useLayoutStore.setState({ layouts });
+  },
+
+  togglePanelVisibility: (panelId: string) => {
+    useLayoutStore.setState((state) => ({
+      panels: state.panels.map((panel) =>
+        panel.id === panelId ? { ...panel, visible: !panel.visible } : panel
+      ),
+    }));
+  },
+
+  togglePanelCollapsed: (panelId: string) => {
+    useLayoutStore.setState((state) => ({
+      panels: state.panels.map((panel) =>
+        panel.id === panelId ? { ...panel, collapsed: !panel.collapsed } : panel
+      ),
+    }));
+  },
+
+  setVideoDetached: (detached: boolean) => {
+    useLayoutStore.setState({ isVideoDetached: detached });
+  },
+
+  resetToDefault: () => {
+    useLayoutStore.setState({
+      layouts: DEFAULT_LAYOUTS,
+      panels: DEFAULT_PANELS,
       isVideoDetached: false,
-      pendingTabSelect: null,
-      panels: [],
-      togglePanelVisibility: (_id: string) => {},
-      setModelJson: (json) => set({ modelJson: json, activePreset: null }),
-      applyPreset: (presetId) => set((s) => ({
-        modelJson: BUILT_IN_PRESETS[presetId].model,
-        activePreset: presetId,
-        modelVersion: s.modelVersion + 1,
-      })),
-      savePreset: (name, json) => set((s) => ({
-        savedPresets: { ...s.savedPresets, [name]: json },
-        activePreset: name,
-      })),
-      deletePreset: (name) => set((s) => {
-        const { [name]: _r, ...rest } = s.savedPresets;
-        return { savedPresets: rest, activePreset: s.activePreset === name ? 'video-analysis' : s.activePreset };
-      }),
-      applySavedPreset: (name) => {
-        const json = get().savedPresets[name];
-        if (json) set((s) => ({ modelJson: json, activePreset: name, modelVersion: s.modelVersion + 1 }));
-      },
-      resetToDefault: () => set((s) => ({
-        modelJson: videoAnalysisPreset as IJsonModel,
-        activePreset: 'video-analysis',
-        modelVersion: s.modelVersion + 1,
-      })),
-      setVideoDetached: (d) => set({ isVideoDetached: d }),
-      requestSelectTab: (tabId) => set({ pendingTabSelect: tabId }),
-      clearPendingTabSelect: () => set({ pendingTabSelect: null }),
-    }),
-    {
-      name: 'volleyvision-layout-v3',
-      version: 2,
-      migrate: (persisted: unknown, fromVersion: number) => {
-        const state = persisted as Partial<LayoutState>;
-        if (fromVersion < 2) {
-          // Activer tabEnableClose dans le modèle sauvegardé
-          if (state.modelJson && (state.modelJson as any).global) {
-            (state.modelJson as any).global.tabEnableClose = true;
-          }
-          // Même patch pour tous les presets sauvegardés
-          if (state.savedPresets) {
-            for (const key of Object.keys(state.savedPresets)) {
-              const p = (state.savedPresets as any)[key];
-              if (p?.global) p.global.tabEnableClose = true;
-            }
-          }
+    });
+  },
+});
+
+// Check if we're in a test environment
+const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+
+export const useLayoutStore = isTest
+  ? create<LayoutState>()(() => createLayoutStore())
+  : create<LayoutState>()(
+      persist(
+        (set) => ({
+          // Initial state
+          layouts: DEFAULT_LAYOUTS,
+          panels: DEFAULT_PANELS,
+          isVideoDetached: false,
+
+          // Actions
+          setLayouts: (layouts) => {
+            set({ layouts });
+          },
+
+          togglePanelVisibility: (panelId) => {
+            set((state) => ({
+              panels: state.panels.map((panel) =>
+                panel.id === panelId ? { ...panel, visible: !panel.visible } : panel
+              ),
+            }));
+          },
+
+          togglePanelCollapsed: (panelId) => {
+            set((state) => ({
+              panels: state.panels.map((panel) =>
+                panel.id === panelId ? { ...panel, collapsed: !panel.collapsed } : panel
+              ),
+            }));
+          },
+
+          setVideoDetached: (detached) => {
+            set({ isVideoDetached: detached });
+          },
+
+          resetToDefault: () => {
+            set({
+              layouts: DEFAULT_LAYOUTS,
+              panels: DEFAULT_PANELS,
+              isVideoDetached: false,
+            });
+          },
+        }),
+        {
+          name: 'volleyvision-layout-v2', // localStorage key (v2 pour forcer reset avec nouveaux defaults)
         }
-        return state as LayoutState;
-      },
-      partialize: (s) => ({
-        modelJson: s.modelJson,
-        activePreset: s.activePreset,
-        savedPresets: s.savedPresets,
-        isVideoDetached: s.isVideoDetached,
-      }),
-    },
-  ),
-);
+      )
+    );
 
-if (typeof window !== 'undefined') (window as any).layoutStore = useLayoutStore;
+// Expose store to window for debugging
+if (typeof window !== 'undefined') {
+  (window as any).layoutStore = useLayoutStore;
+}
 
-export const DEFAULT_PANELS = [] as { id: string; visible: boolean }[];
-export const DEFAULT_LAYOUTS = {};
-
-
+// Export defaults for testing
+export { DEFAULT_PANELS, DEFAULT_LAYOUTS };

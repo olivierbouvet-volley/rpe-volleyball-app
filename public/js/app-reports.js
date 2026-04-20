@@ -53,13 +53,11 @@ function switchCoachTab(tabName) {
     const tabMap = {
         'team':        { tabId: 'teamTab',        callback: null },
         'weekend':     { tabId: 'weekendTab',      callback: () => typeof loadWeekendMatchRecap === 'function' && loadWeekendMatchRecap() },
-        'injuries':    { tabId: 'injuriesTab',     callback: () => {
-            if (typeof initInjuryTracking === 'function') initInjuryTracking();
-            if (typeof switchMedTab === 'function') switchMedTab('suivi');
-        }},
+        'injuries':    { tabId: 'injuriesTab',     callback: () => typeof initInjuryTracking === 'function' && initInjuryTracking() },
         'messages':    { tabId: 'messagesTab',     callback: () => typeof loadScheduledMessages === 'function' && loadScheduledMessages() },
         'restPeriods': { tabId: 'restPeriodsTab',  callback: () => typeof loadRestPeriods === 'function' && loadRestPeriods() },
-        'weekPlanner': { tabId: 'weekPlannerTab',  callback: () => switchPlanningSubTab('team') },
+        'weekPlanner': { tabId: 'weekPlannerTab',  callback: () => typeof initWeekPlanner === 'function' && initWeekPlanner() },
+        'teamPlanner': { tabId: 'teamPlannerTab',  callback: () => typeof TeamPlanner !== 'undefined' && typeof TeamPlanner.init === 'function' && TeamPlanner.init() },
         'physicalPrep':{ tabId: 'physicalPrepTab', callback: () => typeof initPhysicalPrepTab === 'function' && initPhysicalPrepTab() },
         'management':  { tabId: 'managementTab',   callback: () => typeof loadPlayersTable === 'function' && loadPlayersTable() },
         'engagement':  { tabId: 'engagementTab',   callback: () => { switchEngagementSubTab('stickers'); if (typeof updateFillIndicator === 'function') updateFillIndicator(); } },
@@ -68,51 +66,12 @@ function switchCoachTab(tabName) {
     const entry = tabMap[tabName];
     if (entry) {
         const tabEl = document.getElementById(entry.tabId);
-        if (tabEl) {
-            // weekPlannerTab est un overlay flex (position:fixed + flex-direction:column)
-            tabEl.style.display = (entry.tabId === 'weekPlannerTab') ? 'flex' : 'block';
-        }
+        if (tabEl) tabEl.style.display = 'block';
         const btn = document.querySelector('[data-tab="' + tabName + '"]');
         if (btn) btn.classList.add('active');
         if (entry.callback) entry.callback();
     }
 }
-
-// ─── Sous-onglets Planning ───────────────────────────────────────────────────
-
-function switchPlanningSubTab(sub) {
-    const subTeam   = document.getElementById('planSubTab_team');
-    const subCycles = document.getElementById('planSubTab_cycles');
-    const btnTeam   = document.getElementById('planSubBtn_team');
-    const btnCycles = document.getElementById('planSubBtn_cycles');
-    if (!subTeam) return;
-
-    const isTeam = sub === 'team';
-    subTeam.style.display   = isTeam ? 'flex' : 'none';
-    subCycles.style.display = isTeam ? 'none'  : 'flex';
-
-    [btnTeam, btnCycles].forEach(btn => {
-        if (!btn) return;
-        btn.style.borderBottom = '3px solid transparent';
-        btn.style.color = 'var(--color-text-secondary)';
-        btn.style.fontWeight = '500';
-    });
-    const activeBtn = isTeam ? btnTeam : btnCycles;
-    if (activeBtn) {
-        activeBtn.style.borderBottom = '3px solid var(--color-primary)';
-        activeBtn.style.color = 'var(--color-primary)';
-        activeBtn.style.fontWeight = '600';
-    }
-
-    if (!isTeam && typeof initWeekPlanner === 'function') {
-        initWeekPlanner();
-    }
-    // Si on revient sur l'onglet "team", re-envoyer les données joueuses au planner iframe
-    if (isTeam && window.TeamPlanner && typeof window.TeamPlanner.refresh === 'function') {
-        window.TeamPlanner.refresh();
-    }
-}
-window.switchPlanningSubTab = switchPlanningSubTab;
 
 // Fonction pour gérer les sous-onglets d'Engagement
 function switchEngagementSubTab(subTab) {

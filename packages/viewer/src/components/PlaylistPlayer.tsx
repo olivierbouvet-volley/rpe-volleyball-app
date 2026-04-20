@@ -25,7 +25,7 @@ export function PlaylistPlayer({
   onIndexChange,
   className = '',
 }: PlaylistPlayerProps) {
-  const { currentTime, offset, seekTo, videoId, triggerPlay } = useVideoStore();
+  const { currentTime, offset, seekTo, videoId } = useVideoStore();
   const {
     preRollSeconds,
     postRollSeconds,
@@ -180,9 +180,12 @@ export function PlaylistPlayer({
       : Math.max(0, timestamp + offset - preRollSeconds);
 
     seekTo(startTime);
-    // Lancer la lecture automatiquement après le seek
-    setTimeout(() => triggerPlay(), 150);
-  }, [currentIndex, isActive, currentItem, offset, preRollSeconds, seekTo, triggerPlay]);
+
+    // Petit délai pour que le seek se termine avant de jouer
+    setTimeout(() => {
+      // Note: Le play sera géré par le VideoPlayer lui-même
+    }, 100);
+  }, [currentIndex, isActive, currentItem, offset, preRollSeconds, seekTo]);
 
   // ============================================================================
   // Navigation handlers

@@ -39,9 +39,6 @@ interface FilterState {
   postRollSeconds: number;
   autoAdvance: boolean;
 
-  // Signal to AnalysisPage to switch to the Playlist sub-tab
-  playlistTabRequest: number;
-
   // Actions
   setCriteria: (partial: Partial<FilterCriteria>) => void;
   resetCriteria: () => void;
@@ -55,7 +52,6 @@ interface FilterState {
   selectAllActions: (actionIds: string[]) => void;
   deselectAllActions: () => void;
   setSelectedActions: (actionIds: Set<string>) => void;
-  requestPlaylistSwitch: () => void;
 }
 
 export const DEFAULT_CRITERIA: FilterCriteria = {
@@ -85,7 +81,6 @@ export const useFilterStore = create<FilterState>()(
       preRollSeconds: 2,
       postRollSeconds: 3,
       autoAdvance: false,
-      playlistTabRequest: 0,
 
       setCriteria: (partial) =>
         set((state) => ({
@@ -152,9 +147,6 @@ export const useFilterStore = create<FilterState>()(
 
       setSelectedActions: (actionIds) =>
         set({ selectedActionIds: actionIds }),
-
-      requestPlaylistSwitch: () =>
-        set((state) => ({ playlistTabRequest: state.playlistTabRequest + 1 })),
     }),
     {
       name: 'filter-storage',

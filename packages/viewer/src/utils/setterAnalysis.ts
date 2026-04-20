@@ -15,15 +15,6 @@ export interface ZoneDistribution {
   attackTotal: number;
   comboBreakdown: Record<string, number>;  // PP→5, V5→8, C1→3
   playerBreakdown: Record<string, { count: number; kills: number; errors: number }>;
-  /** Timestamps vidéo de chaque attaque dans cette zone (pour seek vidéo) */
-  videoSecondsList: number[];
-}
-
-/** Setter call disponible dans une rotation avec son nombre d'occurrences */
-export interface SetterCallStat {
-  code: string;
-  description: string;
-  count: number;
 }
 
 export interface SetterDistributionData {
@@ -31,29 +22,14 @@ export interface SetterDistributionData {
   byZone: Map<number, ZoneDistribution>;          // Zone 1-6 + 8(pipe) → distribution
   byReceptionQuality: Map<string, ZoneDistribution[]>;  // K# → distribution par zone
   byRotation: Map<number, ZoneDistribution[]>;    // R1-R6 → distribution par zone
-  /** Distribution par setter call code (K0, K1, K8...) */
-  bySetterCall: Map<string, ZoneDistribution[]>;
-  /** Setter calls trouvés dans les données (triés par count desc) */
-  availableSetterCalls: SetterCallStat[];
 }
 
 export interface SetterAnalysisOptions {
   setFilter?: number;
   rotationFilter?: number;
-  /** Filtre sur UNE qualité de réception (legacy). Préférer receptionQualityFilters */
-  receptionQualityFilter?: string;
-  /** Filtre sur PLUSIEURS qualités de réception (OR logique). Ex: ['#', '+'] pour R#+R+ */
-  receptionQualityFilters?: string[];
+  receptionQualityFilter?: string;   // Quality code: '#', '+', '!', '-', etc.
   receptionZoneFilter?: number;      // Zone 1-9 where reception made contact
   teamSide?: TeamSide;
-  /** Filtre sur un ou plusieurs setter call codes (K0, K1, K8...) */
-  setterCallFilter?: string | string[];
-  /**
-   * Verrou de joueuses : seuls les rallyes où TOUTES ces joueuses (par numéro)
-   * sont simultanément sur le terrain seront inclus dans l'analyse.
-   * Utilisé en mode multi-matchs pour forcer un 6 de référence.
-   */
-  lockedPlayerNumbers?: number[];
 }
 
 /**
@@ -127,34 +103,11 @@ export function analyzeSetterDistribution(
   // Build byRotation distribution
   const byRotation = buildByRotation(attacks);
 
-  // Build bySetterCall distribution
-  const bySetterCall = buildBySetterCall(attacks);
-
-  // Compute available setter calls (sorted by count desc)
-  const callCountMap = new Map<string, { description: string; count: number }>();
-  for (const attack of attacks) {
-    if (!attack.setterCall) continue;
-    const existing = callCountMap.get(attack.setterCall);
-    if (existing) {
-      existing.count++;
-    } else {
-      callCountMap.set(attack.setterCall, {
-        description: getSetterCallLabel(attack.setterCall),
-        count: 1,
-      });
-    }
-  }
-  const availableSetterCalls: SetterCallStat[] = Array.from(callCountMap.entries())
-    .map(([code, data]) => ({ code, description: data.description, count: data.count }))
-    .sort((a, b) => b.count - a.count);
-
   return {
     totalSets: attacks.length,
     byZone,
     byReceptionQuality,
     byRotation,
-    bySetterCall,
-    availableSetterCalls,
   };
 }
 
@@ -169,8 +122,6 @@ interface CollectedAttack {
   setterCall: string | null;
   rotation: number | null;
   playerKey: string;                 // "#{number} {name}"
-  /** Timestamp vidéo de l'attaque (action.videoTimestamp ?? rally.videoTimestamp) */
-  videoSeconds: number | null;
 }
 
 /**
@@ -199,24 +150,9 @@ function collectAttacks(
       const receptionQuality = reception?.quality as string ?? null;
       const receptionZone = reception?.endZone ?? null;
 
-      // Reception quality filter (legacy single)
+      // Reception quality filter
       if (options?.receptionQualityFilter && receptionQuality !== options.receptionQualityFilter) continue;
-
-      // Reception quality filters (array — OR logique). Ex: ['#', '+'] pour R#+R+
-      if (options?.receptionQualityFilters && options.receptionQualityFilters.length > 0) {
-        if (!receptionQuality || !options.receptionQualityFilters.includes(receptionQuality)) continue;
-      }
-
-      // Verrou joueuses : n'inclure que les rallyes où toutes les joueuses verrouillées sont sur le terrain
-      if (options?.lockedPlayerNumbers && options.lockedPlayerNumbers.length > 0) {
-        const pos = teamSide === 'home' ? rally.positions?.home : rally.positions?.away;
-        if (!pos) continue;
-        const onCourt = [pos.P1, pos.P2, pos.P3, pos.P4, pos.P5, pos.P6].filter(
-          (n): n is number => n != null,
-        );
-        if (!options.lockedPlayerNumbers.every((n) => onCourt.includes(n))) continue;
-      }
-
+      
       // Reception zone filter
       if (options?.receptionZoneFilter && receptionZone !== options.receptionZoneFilter) continue;
 
@@ -225,14 +161,6 @@ function collectAttacks(
         a => a.skill === 'set' && a.player.team === teamSide
       );
       const setterCall = setAction?.setterCall ?? null;
-
-      // Setter call filter
-      if (options?.setterCallFilter) {
-        const filterCalls = Array.isArray(options.setterCallFilter)
-          ? options.setterCallFilter
-          : [options.setterCallFilter];
-        if (!setterCall || !filterCalls.includes(setterCall)) continue;
-      }
 
       // Collect all attacks for this team
       const teamAttacks = rally.actions.filter(
@@ -262,7 +190,6 @@ function collectAttacks(
           setterCall,
           rotation: rotation ?? null,
           playerKey: `#${attack.player.number} ${player}`,
-          videoSeconds: attack.videoTimestamp ?? rally.videoTimestamp ?? null,
         });
       }
     }
@@ -336,35 +263,10 @@ function buildZoneDistribution(attacks: CollectedAttack[]): Map<number, ZoneDist
       attackTotal: count,
       comboBreakdown,
       playerBreakdown,
-      videoSecondsList: zoneAttacks
-        .map(a => a.videoSeconds)
-        .filter((v): v is number => v !== null),
     });
   }
 
   return byZone;
-}
-
-/**
- * Build distribution grouped by setter call code (K0, K1, K8...)
- */
-function buildBySetterCall(attacks: CollectedAttack[]): Map<string, ZoneDistribution[]> {
-  const byCall = new Map<string, CollectedAttack[]>();
-
-  for (const attack of attacks) {
-    const key = attack.setterCall ?? 'unknown';
-    const arr = byCall.get(key) ?? [];
-    arr.push(attack);
-    byCall.set(key, arr);
-  }
-
-  const result = new Map<string, ZoneDistribution[]>();
-  for (const [call, callAttacks] of byCall) {
-    const zoneDist = buildZoneDistribution(callAttacks);
-    result.set(call, Array.from(zoneDist.values()));
-  }
-
-  return result;
 }
 
 /**
