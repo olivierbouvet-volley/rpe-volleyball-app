@@ -155,13 +155,14 @@ async function loadCoachWeeklyChart(selectedWeek = null) {
             const selectorDiv = document.createElement('div');
             selectorDiv.style.cssText = 'display: flex; align-items: center; gap: 10px; margin-bottom: 15px;';
             selectorDiv.innerHTML = `
-                <label for="weekSelector" style="font-weight: 500; color: #374151;">Sélectionner :</label>
+                <label for="weekSelector" style="font-weight: 500; color: var(--color-text);">Sélectionner :</label>
                 <select id="weekSelector" style="
                     padding: 8px 12px;
-                    border: 1px solid #d1d5db;
+                    border: 1px solid var(--color-border);
                     border-radius: 6px;
                     font-size: 14px;
-                    background: white;
+                    background: var(--color-surface);
+                    color: var(--color-text);
                     cursor: pointer;
                     min-width: 200px;
                 ">
@@ -360,13 +361,14 @@ async function loadCoachMonthlyChart(selectedMonth = null) {
             const selectorDiv = document.createElement('div');
             selectorDiv.style.cssText = 'display: flex; align-items: center; gap: 10px; margin-bottom: 15px;';
             selectorDiv.innerHTML = `
-                <label for="monthSelector" style="font-weight: 500; color: #374151;">Sélectionner :</label>
+                <label for="monthSelector" style="font-weight: 500; color: var(--color-text);">Sélectionner :</label>
                 <select id="monthSelector" style="
                     padding: 8px 12px;
-                    border: 1px solid #d1d5db;
+                    border: 1px solid var(--color-border);
                     border-radius: 6px;
                     font-size: 14px;
-                    background: white;
+                    background: var(--color-surface);
+                    color: var(--color-text);
                     cursor: pointer;
                     min-width: 200px;
                 ">

@@ -1,8 +1,6 @@
 {
   "projects": {
-    "default": "rpe-gen2-eeaee",
-    "dev": "rpe-gen2-eeaee",
-    "prod": "rpe-volleyball-sable"
+    "default": "rpe-volleyball-sable"
   },
   "targets": {},
   "etags": {}

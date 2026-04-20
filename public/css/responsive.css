@@ -1,0 +1,428 @@
+/**
+ * responsive.css — Améliorations responsive pour RPE Volleyball
+ * Breakpoints : 768px (tablette), 480px (grand mobile), 375px (petit mobile)
+ */
+
+/* ============================================================
+   TABLETTE — ≤ 768px
+   ============================================================ */
+@media (max-width: 768px) {
+
+    /* --- Container --- */
+    .container {
+        padding: 0 var(--space-12);
+    }
+
+    /* --- Header player --- */
+    #playerHeaderPhoto {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    .header {
+        padding: var(--space-12) var(--space-16);
+        margin-bottom: var(--space-16);
+    }
+
+    .header-content {
+        flex-wrap: wrap;
+        gap: var(--space-8);
+    }
+
+    .header-left {
+        gap: var(--space-12);
+    }
+
+    .header-title {
+        font-size: var(--font-size-base) !important;
+    }
+
+    /* --- Login card --- */
+    .login-card {
+        padding: var(--space-32) var(--space-20);
+    }
+
+    /* --- Navigation tabs --- */
+    .nav-tabs {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: var(--space-4) var(--space-8);
+        gap: var(--space-4);
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-tab {
+        padding: var(--space-8) var(--space-12);
+        font-size: var(--font-size-sm);
+        min-width: max-content;
+    }
+
+    /* --- Cards --- */
+    .card {
+        padding: var(--space-16);
+        margin-bottom: var(--space-16);
+        border-radius: var(--radius-base);
+    }
+
+    /* --- Metrics grid : 2 colonnes sur tablette --- */
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-12);
+    }
+
+    /* --- Team grid coach : 1 colonne --- */
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* --- Boutons d'activité (2 colonnes déjà, OK) --- */
+    .activity-btn-rattrapage {
+        padding: 12px 8px !important;
+        font-size: 13px !important;
+    }
+
+    /* --- Roue de durée : réduire légèrement les boutons --- */
+    .duration-btn {
+        width: 54px !important;
+        height: 54px !important;
+        font-size: 13px !important;
+    }
+
+    /* --- Graphiques : hauteurs réduites --- */
+    #formTrendChart,
+    canvas#formTrendChart {
+        max-height: 200px;
+    }
+
+    #weeklyTrainingChart,
+    canvas#weeklyTrainingChart {
+        max-height: 220px;
+    }
+
+    #monthlyTrainingChart,
+    canvas#monthlyTrainingChart {
+        max-height: 220px;
+    }
+
+    /* Conteneurs inline style="height: Xpx" → on plafonne via max-height */
+    .card div[style*="height: 250px"],
+    .card div[style*="height: 300px"],
+    .card div[style*="height: 320px"] {
+        height: auto !important;
+        max-height: 240px;
+    }
+
+    /* --- Navigation cycle (Actuel / C-1 / C-2 / C-3) --- */
+    #cycleNavigation {
+        flex-wrap: wrap;
+        gap: var(--space-8);
+    }
+
+    #cycleNavigation .btn {
+        flex: 1;
+        min-width: 0;
+        padding: var(--space-8) var(--space-8);
+        font-size: var(--font-size-sm);
+        text-align: center;
+    }
+
+    /* --- Modal correction J1 --- */
+    #correctCycleModal > div {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: var(--space-16) !important;
+        margin: var(--space-16) auto;
+    }
+
+    /* --- Filter buttons --- */
+    .filter-buttons {
+        gap: var(--space-8);
+    }
+
+    .filter-btn {
+        padding: var(--space-8) var(--space-12);
+        font-size: var(--font-size-sm);
+    }
+
+    /* --- Tableau Excel (coach) : scroll horizontal --- */
+    .table-scroll-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #playersTable {
+        min-width: 600px;
+    }
+
+    /* --- Blessures grid --- */
+    .injury-grid,
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* --- Bouton export PDF --- */
+    .btn-export-pdf {
+        padding: var(--space-8) var(--space-16);
+        font-size: var(--font-size-sm);
+    }
+
+    /* --- Metric value plus petit --- */
+    .metric-value {
+        font-size: var(--font-size-2xl);
+    }
+
+    /* --- Logout / settings buttons --- */
+    .header-right {
+        display: flex;
+        gap: var(--space-8);
+    }
+}
+
+
+/* ============================================================
+   GRAND MOBILE — ≤ 480px
+   ============================================================ */
+@media (max-width: 480px) {
+
+    /* --- Container padding minimal --- */
+    .container {
+        padding: 0 var(--space-8);
+    }
+
+    /* --- Header : photo encore plus petite --- */
+    #playerHeaderPhoto {
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+    .header {
+        padding: var(--space-8) var(--space-12);
+        margin-bottom: var(--space-12);
+    }
+
+    /* --- Login card full width --- */
+    .login-card {
+        padding: var(--space-24) var(--space-16);
+        max-width: 100%;
+        border-radius: var(--radius-base);
+    }
+
+    .login-title {
+        font-size: var(--font-size-2xl) !important;
+    }
+
+    /* --- Nav tabs : texte encore plus petit --- */
+    .nav-tab {
+        padding: var(--space-8) var(--space-8);
+        font-size: 11px;
+    }
+
+    /* --- Cards padding réduit --- */
+    .card {
+        padding: var(--space-12);
+        margin-bottom: var(--space-12);
+    }
+
+    /* --- Metrics grid : 1 colonne --- */
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-8);
+    }
+
+    /* --- Roue de durée : petits téléphones --- */
+    .duration-btn {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 12px !important;
+    }
+
+    /* --- Boutons d'activité --- */
+    .activity-btn-rattrapage {
+        padding: 10px 6px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
+    }
+
+    /* --- Graphiques : encore plus plats --- */
+    .card div[style*="height: 250px"],
+    .card div[style*="height: 300px"],
+    .card div[style*="height: 320px"] {
+        height: auto !important;
+        max-height: 200px;
+    }
+
+    /* --- Metric value compact --- */
+    .metric-value {
+        font-size: var(--font-size-xl);
+    }
+
+    /* --- Cycle navigation : 2×2 grid --- */
+    #cycleNavigation {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-8);
+    }
+
+    #cycleNavigation .btn {
+        width: 100%;
+        padding: var(--space-8);
+        font-size: 12px;
+    }
+
+    /* --- Modal J1 full screen --- */
+    #correctCycleModal > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto;
+        border-radius: var(--radius-base) !important;
+        margin: var(--space-12) !important;
+    }
+
+    /* --- Filter buttons wrap compact --- */
+    .filter-buttons {
+        gap: var(--space-4);
+    }
+
+    .filter-btn,
+    .cycle-filter-btn {
+        padding: 6px var(--space-8);
+        font-size: 11px;
+    }
+
+    /* --- Header boutons action compacts --- */
+    .header-right .btn {
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+    }
+
+    /* --- Card title plus compact --- */
+    .card-title {
+        font-size: var(--font-size-base) !important;
+        margin-bottom: var(--space-12);
+    }
+
+    /* --- Formulaire RPE : pleine largeur --- */
+    #rpeStep3 .duration-wheel {
+        gap: var(--space-8) !important;
+        justify-content: space-evenly !important;
+    }
+
+    /* --- Sticker widget compact --- */
+    #stickerWidget .card {
+        padding: var(--space-12) !important;
+    }
+
+    /* --- Supprimer les transforms hover sur mobile (performance) --- */
+    .player-card:hover,
+    .metric-card:hover,
+    .card:hover {
+        transform: none !important;
+    }
+}
+
+
+/* ============================================================
+   PETIT MOBILE — ≤ 375px (iPhone SE, Galaxy A series)
+   ============================================================ */
+@media (max-width: 375px) {
+
+    /* --- Roue durée : 5 colonnes sur 2 lignes --- */
+    .duration-btn {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 11px !important;
+    }
+
+    /* --- Nav tab emoji seulement --- */
+    .nav-tab {
+        font-size: 10px;
+        padding: var(--space-8) 6px;
+    }
+
+    /* --- Filter buttons encore plus compacts --- */
+    .filter-btn,
+    .cycle-filter-btn {
+        padding: 5px 6px;
+        font-size: 10px;
+    }
+
+    /* --- Login title compact --- */
+    .login-title {
+        font-size: var(--font-size-xl) !important;
+    }
+
+    .login-subtitle {
+        font-size: var(--font-size-sm);
+    }
+}
+
+
+/* ============================================================
+   MODE PAYSAGE MOBILE — orientation landscape + hauteur < 500px
+   ============================================================ */
+@media (orientation: landscape) and (max-height: 500px) {
+
+    .header {
+        padding: var(--space-8) var(--space-16);
+        margin-bottom: var(--space-8);
+    }
+
+    #playerHeaderPhoto {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .nav-tabs {
+        margin-bottom: var(--space-12);
+    }
+
+    /* Graphiques encore plus plats en paysage --- */
+    .card div[style*="height: 250px"],
+    .card div[style*="height: 300px"],
+    .card div[style*="height: 320px"] {
+        height: auto !important;
+        max-height: 160px;
+    }
+
+    #cycleChartContainer {
+        height: 160px !important;
+        min-height: 160px;
+    }
+}
+
+
+/* ============================================================
+   AMÉLIORATIONS TACTILES GLOBALES
+   ============================================================ */
+
+/* Zones de tap minimum 44px (recommandation Apple/Google) */
+@media (hover: none) and (pointer: coarse) {
+
+    .btn,
+    .nav-tab,
+    .filter-btn,
+    .cycle-filter-btn,
+    .duration-btn,
+    .activity-btn-rattrapage {
+        min-height: 44px;
+    }
+
+    /* Désactiver les effets hover sur mobile tactile */
+    .player-card:hover,
+    .metric-card:hover,
+    .card:hover {
+        transform: none;
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Feedback tactile actif */
+    .btn:active,
+    .nav-tab:active,
+    .filter-btn:active {
+        opacity: 0.75;
+        transform: scale(0.97);
+    }
+}

@@ -436,13 +436,11 @@
     }
 }
 
-/* ========== MODAL DE DÉTAIL (GALERIE) ========== */
+/* ========== MODAL DE DÉTAIL — Sticker en vedette ========== */
+
 .sticker-detail-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 11000;
     display: flex;
     align-items: center;
@@ -450,6 +448,7 @@
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
+    padding: 16px;
 }
 
 .sticker-detail-modal.active {
@@ -459,173 +458,225 @@
 
 .detail-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(10px);
+    inset: 0;
+    background: rgba(4, 8, 16, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
+/* ---- Carte centrée, focus sticker ---- */
 .detail-card {
     position: relative;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 25px;
-    padding: 40px;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-    animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border: 3px solid;
-    overflow-y: auto;
-}
-
-.detail-card::-webkit-scrollbar {
-    width: 8px;
-}
-
-.detail-card::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-}
-
-.detail-card::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-}
-
-.detail-card::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-.detail-card[data-rarity="common"] {
-    border-color: #4CAF50;
-}
-
-.detail-card[data-rarity="rare"] {
-    border-color: #2196F3;
-}
-
-.detail-card[data-rarity="legendary"] {
-    border-color: #FFD700;
-    box-shadow: 0 30px 80px rgba(255, 215, 0, 0.3);
-}
-
-@keyframes zoomIn {
-    from {
-        transform: scale(0.5);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-.detail-close {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    font-size: 28px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-}
-
-.detail-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
-}
-
-.detail-image-container {
+    z-index: 1;
     width: 100%;
-    max-width: 350px;
-    max-height: 500px;
-    margin: 0 auto 25px auto;
-    border-radius: 20px;
+    max-width: 420px;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    animation: stickerReveal 0.5s cubic-bezier(0.22, 1.4, 0.36, 1);
+    max-height: 92vh;
 }
+
+.detail-card::-webkit-scrollbar { width: 0; }
+
+/* Rareté — fond et bordure */
+.detail-card[data-rarity="common"] {
+    border-color: rgba(16,185,129,0.6);
+    background: radial-gradient(ellipse at top, #0a2018 0%, #080f0c 100%);
+    box-shadow: 0 0 40px rgba(16,185,129,0.12), 0 32px 80px rgba(0,0,0,0.7);
+}
+.detail-card[data-rarity="rare"] {
+    border-color: rgba(59,130,246,0.7);
+    background: radial-gradient(ellipse at top, #081428 0%, #040a14 100%);
+    box-shadow: 0 0 50px rgba(59,130,246,0.18), 0 32px 80px rgba(0,0,0,0.7);
+}
+.detail-card[data-rarity="legendary"] {
+    border-color: rgba(251,191,36,0.8);
+    background: radial-gradient(ellipse at top, #1a1000 0%, #0c0800 100%);
+    box-shadow: 0 0 60px rgba(251,191,36,0.22), 0 32px 80px rgba(0,0,0,0.8);
+}
+
+/* Animation révélation — comme une carte qu'on retourne */
+@keyframes stickerReveal {
+    0%   { transform: scale(0.7) rotateY(25deg) translateY(20px); opacity: 0; }
+    60%  { transform: scale(1.02) rotateY(-3deg) translateY(-4px); opacity: 1; }
+    100% { transform: scale(1) rotateY(0deg) translateY(0); opacity: 1; }
+}
+
+/* ---- Image : HÉRO ---- */
+.detail-sticker-wrap {
+    position: relative;
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+    flex-shrink: 0;
+    max-height: 52vh; /* limite la hauteur de l'image pour laisser de la place au texte */
+}
+
+.detail-card[data-rarity="common"]    .detail-sticker-wrap { box-shadow: inset 0 -60px 60px rgba(16,185,129,0.08); }
+.detail-card[data-rarity="rare"]      .detail-sticker-wrap { box-shadow: inset 0 -60px 60px rgba(59,130,246,0.1); }
+.detail-card[data-rarity="legendary"] .detail-sticker-wrap { box-shadow: inset 0 -60px 60px rgba(251,191,36,0.12); }
 
 .detail-image {
     width: 100%;
-    height: auto;
-    max-height: 500px;
+    height: 100%;
     display: block;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: top;
+    transition: transform 0.6s ease;
 }
 
+.detail-card:hover .detail-image {
+    transform: scale(1.025);
+}
+
+/* Shimmer légendaire sur l'image */
+.detail-card[data-rarity="legendary"] .detail-sticker-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 20%,
+        rgba(251,191,36,0.14) 50%,
+        transparent 80%
+    );
+    background-size: 250% 100%;
+    animation: shimmerGold 2.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmerGold {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ---- Texte sous le sticker ---- */
 .detail-info {
+    padding: 20px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
     text-align: center;
+    overflow-y: auto; /* seule la partie texte défile si besoin */
+    flex-shrink: 1;
 }
 
+/* Badge rareté */
 .detail-rarity {
-    display: inline-block;
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    margin-bottom: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
 }
 
-.detail-rarity.common {
-    background: #4CAF50;
-    color: white;
-}
+.detail-rarity.common    { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+.detail-rarity.rare      { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.4); }
+.detail-rarity.legendary { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.5); box-shadow: 0 0 10px rgba(251,191,36,0.2); }
 
-.detail-rarity.rare {
-    background: #2196F3;
-    color: white;
-}
-
-.detail-rarity.legendary {
-    background: linear-gradient(90deg, #FFD700, #FFA500);
-    color: #000;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-}
-
+/* Nom du sticker */
 .detail-name {
-    font-size: 32px;
-    font-weight: bold;
-    color: white;
-    margin: 0 0 15px 0;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
 }
 
+/* Citation / texte du sticker — vedette */
 .detail-description {
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0 0 25px 0;
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.92);
+    font-style: italic;
+    margin: 0;
+    position: relative;
+    padding: 0 8px;
+    max-width: 360px;
+}
+
+.detail-description::before {
+    content: '\201C';
+    font-size: 48px;
+    line-height: 0;
+    position: absolute;
+    left: -10px;
+    top: 18px;
+    opacity: 0.2;
+    font-family: Georgia, serif;
+}
+
+/* Séparateur */
+.detail-divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 2px 0;
+}
+
+/* Critère — discret, secondaire */
+.detail-criteria {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
     line-height: 1.5;
 }
 
-.detail-criteria {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 20px;
-    border-radius: 15px;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 16px;
-    line-height: 1.8;
-    text-align: left;
+.detail-criteria-label {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-size: 9px;
+    color: rgba(255,255,255,0.25);
+    margin-bottom: 2px;
 }
 
-.detail-criteria strong {
+.detail-criteria-value {
+    display: block;
+}
+
+/* Bouton fermer */
+.detail-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.8);
+    font-size: 18px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.detail-close:hover {
+    background: rgba(255,255,255,0.15);
     color: white;
+    transform: rotate(90deg);
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 480px) {
+    .detail-card { max-width: 98vw; border-radius: 18px; }
+    .detail-info  { padding: 16px 18px 20px; }
+    .detail-name  { font-size: 19px; }
+    .detail-description { font-size: 14px; }
 }
 
 /* Indicateur de clic sur les stickers */
@@ -671,4 +722,56 @@
     max-height: none !important;
     overflow: visible !important;
     height: auto !important;
+}
+
+/* ---- Hint clic sur l'image héro ---- */
+.detail-sticker-wrap {
+    cursor: zoom-in;
+}
+.detail-image-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ---- Plein écran sticker ---- */
+.sticker-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0,0,0,0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.sticker-fullscreen.active {
+    opacity: 1;
+}
+.sticker-fullscreen-img {
+    max-width: 100vw;
+    max-height: 100dvh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 0;
+}
+@media (orientation: portrait) {
+    .sticker-fullscreen-img {
+        width: 100vw;
+        height: auto;
+    }
 }

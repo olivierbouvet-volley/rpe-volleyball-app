@@ -1,0 +1,108 @@
+/**
+ * @file flexlayout-theme.css
+ * @description Override des variables CSS FlexLayout-React avec les tokens VolleyVision
+ * Importé dans DashboardLayout.tsx après 'flexlayout-react/style/dark.css'
+ */
+
+/* ── Variables FlexLayout (dark theme override) ───────────────────────────── */
+.flexlayout__layout {
+  --color-1: var(--surface-border);     /* séparateur / splitter */
+  --color-2: var(--surface-root);       /* fond général */
+  --color-3: var(--surface-1);          /* fond tabset header */
+  --color-4: var(--surface-2);          /* fond onglet actif */
+  --color-5: var(--text-secondary);     /* texte onglet inactif */
+  --color-6: var(--brand-blue);         /* onglet sélectionné */
+}
+
+/* ── Tabset header ───────────────────────────────────────────────────────── */
+.flexlayout__tabset_header {
+  background-color: var(--surface-1) !important;
+  border-bottom: 1px solid var(--surface-border) !important;
+  padding: 0 2px !important;
+}
+
+.flexlayout__tabset_header_inner {
+  height: 32px !important;
+}
+
+/* ── Onglets (tabs) ──────────────────────────────────────────────────────── */
+.flexlayout__tab_button {
+  color: var(--text-muted) !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  transition: all 0.15s !important;
+  white-space: nowrap;
+}
+
+.flexlayout__tab_button:hover {
+  color: var(--text-secondary) !important;
+  background-color: var(--surface-2) !important;
+}
+
+.flexlayout__tab_button--selected {
+  color: var(--text-primary) !important;
+  background-color: var(--surface-2) !important;
+  border-bottom: 2px solid var(--brand-blue) !important;
+}
+
+.flexlayout__tab_button_content {
+  font-family: var(--font-sans, system-ui) !important;
+}
+
+/* ── Panneau (tab content area) ─────────────────────────────────────────── */
+.flexlayout__tab {
+  background-color: var(--surface-root) !important;
+  overflow: hidden;
+}
+
+/* ── Splitter (diviseur redimensionnable) ───────────────────────────────── */
+.flexlayout__splitter {
+  background-color: var(--surface-border) !important;
+  transition: background-color 0.15s !important;
+}
+
+.flexlayout__splitter:hover,
+.flexlayout__splitter_drag {
+  background-color: var(--brand-blue) !important;
+}
+
+/* ── Drag & drop ─────────────────────────────────────────────────────────── */
+.flexlayout__outline_rect {
+  border: 2px solid var(--brand-blue) !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
+.flexlayout__drag_rect {
+  background-color: var(--surface-2) !important;
+  border: 1px solid var(--brand-blue) !important;
+  color: var(--text-primary) !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+}
+
+/* ── Empty tabset placeholder ────────────────────────────────────────────── */
+.flexlayout__tabset_tabbar_outer {
+  background-color: var(--surface-1) !important;
+}
+
+/* ── Overflow button (+) ─────────────────────────────────────────────────── */
+.flexlayout__tab_overflow_button {
+  color: var(--text-muted) !important;
+}
+
+/* ── Scrollbar dans les panneaux ─────────────────────────────────────────── */
+.flexlayout__tab::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.flexlayout__tab::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+.flexlayout__tab::-webkit-scrollbar-thumb {
+  background: var(--surface-4);
+  border-radius: 3px;
+}

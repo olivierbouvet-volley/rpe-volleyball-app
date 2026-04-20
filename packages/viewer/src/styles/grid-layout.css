@@ -1,0 +1,74 @@
+/**
+ * Custom styles for react-grid-layout
+ * Adapted for dark theme (slate-900 background)
+ */
+
+/* Handles de resize */
+.react-grid-item > .react-resizable-handle {
+  background: none;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(148, 163, 184, 0.4); /* slate-400 */
+  border-bottom: 2px solid rgba(148, 163, 184, 0.4);
+}
+
+/* Highlight du handle au hover */
+.react-grid-item:hover > .react-resizable-handle::after {
+  border-right-color: rgba(148, 163, 184, 0.7);
+  border-bottom-color: rgba(148, 163, 184, 0.7);
+}
+
+/* Placeholder pendant le drag */
+.react-grid-item.react-grid-placeholder {
+  background: rgba(59, 130, 246, 0.15) !important; /* primary-blue with transparency */
+  border: 2px dashed rgba(59, 130, 246, 0.5) !important;
+  border-radius: 8px;
+  opacity: 1;
+  z-index: 2;
+}
+
+/* Animation de transition des panneaux */
+.react-grid-item {
+  transition: all 200ms ease;
+}
+
+.react-grid-item.cssTransforms {
+  transition: transform 200ms ease;
+}
+
+/* Panneau en cours de drag */
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 100;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  opacity: 0.9;
+}
+
+/* Panneau en cours de resize */
+.react-grid-item.resizing {
+  opacity: 0.9;
+  z-index: 50;
+}
+
+/* Désactiver la sélection de texte pendant le drag */
+.react-grid-layout {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Ré-activer la sélection dans le contenu des panneaux */
+.react-grid-item > * {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}

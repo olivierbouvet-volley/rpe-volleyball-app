@@ -1,0 +1,53 @@
+{
+  "global": {
+    "tabEnableRename": false,
+    "tabEnableClose": true,
+    "tabSetEnableDeleteWhenEmpty": false,
+    "tabSetMinWidth": 80,
+    "tabSetMinHeight": 80
+  },
+  "borders": [],
+  "layout": {
+    "type": "row",
+    "id": "root",
+    "children": [
+      {
+        "type": "row",
+        "id": "col-left",
+        "weight": 30,
+        "children": [
+          {
+            "type": "tabset",
+            "id": "ts-video",
+            "weight": 55,
+            "selected": 0,
+            "children": [
+              { "type": "tab", "id": "tab-video", "name": "Vidéo", "component": "video" }
+            ]
+          },
+          {
+            "type": "tabset",
+            "id": "ts-sidebar",
+            "weight": 45,
+            "selected": 0,
+            "children": [
+              { "type": "tab", "id": "tab-timeline", "name": "Timeline", "component": "timeline" },
+              { "type": "tab", "id": "tab-filters", "name": "Filtres", "component": "filters" },
+              { "type": "tab", "id": "tab-calibration", "name": "Calibration", "component": "calibration" }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "id": "ts-stats",
+        "weight": 70,
+        "selected": 0,
+        "children": [
+          { "type": "tab", "id": "tab-stats", "name": "Statistiques", "component": "stats" },
+          { "type": "tab", "id": "tab-player", "name": "Fiche Joueur", "component": "player" }
+        ]
+      }
+    ]
+  }
+}

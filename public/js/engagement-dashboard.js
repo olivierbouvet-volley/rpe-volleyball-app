@@ -117,7 +117,7 @@ async function loadEngagementDashboard() {
                     <h4 style="color: #dc2626; margin-bottom: 12px; font-size: 14px;">⚠️ Joueuses à risque</h4>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                         ${atRiskPlayers.slice(0, 5).map(p => `
-                            <span style="background: white; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
+                            <span style="background: var(--color-surface, white); border: 1px solid #fecaca; padding: 6px 12px; border-radius: 20px; font-size: 13px;">
                                 ${p.name}
                             </span>
                         `).join('')}
@@ -127,7 +127,7 @@ async function loadEngagementDashboard() {
             ` : ''}
             
             <!-- Classement des streaks -->
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+            <div style="background: var(--color-surface, white); border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
                 <div style="background: #f8fafc; padding: 16px; border-bottom: 1px solid #e5e7eb;">
                     <h4 style="margin: 0; font-size: 16px; color: #1f2937;">🔥 Classement Streaks Check-in</h4>
                 </div>
@@ -181,7 +181,7 @@ async function loadEngagementDashboard() {
             </div>
             
             <!-- Progression hebdomadaire entraînement -->
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-top: 24px;">
+            <div style="background: var(--color-surface, white); border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-top: 24px;">
                 <div style="background: #f8fafc; padding: 16px; border-bottom: 1px solid #e5e7eb;">
                     <h4 style="margin: 0; font-size: 16px; color: #1f2937;">💪 Progression Entraînement (Semaine)</h4>
                 </div>

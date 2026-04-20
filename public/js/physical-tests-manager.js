@@ -465,7 +465,7 @@ async function loadTestSessions() {
         
         // Afficher les sessions
         container.innerHTML = sessions.map(session => `
-            <div style="background: white; border: 1px solid var(--color-border); border-radius: var(--radius-base); padding: var(--space-16); margin-bottom: var(--space-12); display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: var(--color-surface, white); border: 1px solid var(--color-border); border-radius: var(--radius-base); padding: var(--space-16); margin-bottom: var(--space-12); display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <div style="font-weight: var(--font-weight-semibold); color: var(--color-text); margin-bottom: 4px;">
                         📊 Session du ${session.date}

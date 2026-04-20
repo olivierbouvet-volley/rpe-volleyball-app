@@ -607,96 +607,111 @@ async function updatePopupLastCheckin(playerId) {
 /**
  * Charge le graphique du cycle menstruel dans le popup
  * Code complet copié depuis player-dashboard-charts.js
+ * @param {string} playerId - ID de la joueuse
+ * @param {number} cycleOffset - Décalage du cycle (0 = actuel, -1 = précédent, etc.)
  */
 let popupCycleChartInstance = null;
+let currentPopupCycleOffset = 0;
 
-async function loadPopupCycleChart(playerId) {
+async function loadPopupCycleChart(playerId, cycleOffset = 0) {
     const canvas = document.getElementById('popupCycleChart');
     const emptyDiv = document.getElementById('popupCycleChartEmpty');
-    
+
     if (!canvas) {
         console.log('Popup: Canvas popupCycleChart non trouvé');
         return;
     }
-    
+
+    // Stocker l'offset actuel
+    currentPopupCycleOffset = cycleOffset;
+
+    // Mettre à jour les boutons de navigation
+    updatePopupCycleNavButtons(cycleOffset);
+
     try {
         // Récupérer les données du cycle
         const cycleDoc = await db.collection('menstrualCycle').doc(playerId).get();
         const cycleData = cycleDoc.data();
-        
+
         if (!cycleData || !cycleData.cycleStartDate) {
             console.log('Popup: Pas de données de cycle disponibles');
             canvas.style.display = 'none';
             emptyDiv.style.display = 'block';
             return;
         }
-        
-        // Récupérer tous les checkins avec données de cycle
+
+        // Récupérer tous les checkins avec données de cycle (les 100 plus RÉCENTS, comme le dashboard)
         const checkinsSnapshot = await db.collection('checkins')
             .where('playerId', '==', playerId)
-            .orderBy('date', 'asc')
+            .orderBy('date', 'desc')
             .limit(100)
             .get();
-        
-        // Récupérer tous les RPE de la joueuse
+
+        // Récupérer tous les RPE de la joueuse (les 100 plus RÉCENTS)
         const rpeSnapshot = await db.collection('rpe')
             .where('playerId', '==', playerId)
-            .orderBy('date', 'asc')
+            .orderBy('date', 'desc')
             .limit(100)
             .get();
-        
-        console.log(`Popup: ${checkinsSnapshot.docs.length} check-ins, ${rpeSnapshot.docs.length} RPE`);
-        
+
+        console.log(`Popup: ${checkinsSnapshot.docs.length} check-ins, ${rpeSnapshot.docs.length} RPE, cycleOffset=${cycleOffset}`);
+
         const cycleLength = cycleData.cycleLength || 28;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
-        // Calculer le J1 le plus proche d'aujourd'hui
+
+        // Calculer le J1 du cycle actuel
         let lastJ1 = new Date(cycleData.cycleStartDate);
         lastJ1.setHours(0, 0, 0, 0);
-        
-        // Si le J1 initial est dans le futur, reculer pour trouver le cycle actuel
-        if (lastJ1 > today) {
-            while (lastJ1 > today) {
-                lastJ1.setDate(lastJ1.getDate() - cycleLength);
-            }
-        } else if (lastJ1 <= today) {
-            const daysDiff = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
-            const cyclesElapsed = Math.floor(daysDiff / cycleLength);
-            lastJ1 = new Date(cycleData.cycleStartDate);
-            lastJ1.setHours(0, 0, 0, 0);
-            lastJ1.setDate(lastJ1.getDate() + (cyclesElapsed * cycleLength));
-        }
-        
+
+        // Appliquer l'offset du cycle (pour C-1, C-2, etc.)
+        lastJ1.setDate(lastJ1.getDate() + (cycleOffset * cycleLength));
+
+        // Calculer le jour actuel du cycle (peut dépasser cycleLength)
+        const daysSinceJ1 = Math.floor((today - lastJ1) / (1000 * 60 * 60 * 24));
+        const actualTodayDayOfCycle = daysSinceJ1 + 1;
+        const isExtendedCycle = cycleOffset === 0 && actualTodayDayOfCycle > cycleLength;
+
+        // Pour les cycles prolongés (cycle actuel uniquement), étendre la durée affichée
+        // Pour les cycles passés, afficher le cycle complet théorique
+        const displayLength = (cycleOffset < 0) ? cycleLength : (isExtendedCycle ? actualTodayDayOfCycle + 3 : cycleLength);
+
         // Dates clés
         const cycleEndDate = new Date(lastJ1);
         cycleEndDate.setDate(cycleEndDate.getDate() + cycleLength - 1);
-        
+
         const ovulationDay = Math.round(cycleLength * 0.5);
         const ovulationDate = new Date(lastJ1);
         ovulationDate.setDate(ovulationDate.getDate() + ovulationDay - 1);
-        
-        // Créer les données pour le cycle complet
+
+        console.log(`Popup: Cycle J1=${lastJ1.toISOString().split('T')[0]}, Aujourd'hui=J${actualTodayDayOfCycle}, Prolongé=${isExtendedCycle}`);
+
+        // Créer les données pour le cycle complet (y compris prolongé)
         const data = [];
         const menstrualEnd = Math.round(cycleLength * 0.18);
         const ovulationStart = Math.round(cycleLength * 0.42);
         const ovulationEnd = Math.round(cycleLength * 0.58);
-        
+
+        // Pour les cycles passés, "aujourd'hui" n'est pas dans le cycle affiché
+        // Pour le cycle actuel, montrer "today" seulement si on est dans le cycle
         let todayDayOfCycle = null;
-        for (let i = 0; i < cycleLength; i++) {
+        if (cycleOffset === 0 && actualTodayDayOfCycle > 0) {
+            todayDayOfCycle = actualTodayDayOfCycle;
+        }
+
+        // Boucle sur TOUT le cycle (y compris les jours prolongés)
+        for (let i = 0; i < displayLength; i++) {
             const date = new Date(lastJ1);
             date.setDate(date.getDate() + i);
-            
-            if (date.toDateString() === today.toDateString()) {
-                todayDayOfCycle = i + 1;
-            }
-            
+
             const dayOfCycle = i + 1;
             const dateStr = date.toISOString().split('T')[0];
-            
+
             // Déterminer la phase
             let phase = 'follicular';
-            if (dayOfCycle <= menstrualEnd) {
+            if (dayOfCycle > cycleLength) {
+                phase = 'extended'; // Cycle prolongé
+            } else if (dayOfCycle <= menstrualEnd) {
                 phase = 'menstrual';
             } else if (dayOfCycle >= ovulationStart && dayOfCycle <= ovulationEnd) {
                 phase = 'ovulation';
@@ -785,21 +800,67 @@ async function loadPopupCycleChart(playerId) {
             });
         }
         
-        // Interpolation simple pour les gaps
+        // Interpolation avancée pour les gaps (même logique que dashboard joueuse)
         function interpolateEnergyGaps(dataArray, maxDay) {
-            return dataArray.map((d, i) => {
-                if (d.x > maxDay) {
-                    d.energy = null;
-                    d.symptoms = null;
-                    d.performance = null;
+            // Trouver tous les jours avec énergie > 0, jusqu'à maxDay (aujourd'hui)
+            const daysWithEnergy = dataArray.filter(d => d.energy > 0 && d.x <= maxDay);
+
+            if (daysWithEnergy.length >= 2) {
+                // Pour chaque gap de 1-2 jours, interpoler linéairement
+                for (let i = 0; i < daysWithEnergy.length - 1; i++) {
+                    const current = daysWithEnergy[i];
+                    const next = daysWithEnergy[i + 1];
+                    const dayGap = next.x - current.x;
+
+                    // Si gap de 1-2 jours seulement, interpoler
+                    if (dayGap > 1 && dayGap <= 3) {
+                        const energyDiff = next.energy - current.energy;
+                        const daysDiff = dayGap;
+
+                        for (let d = current.x + 1; d < next.x; d++) {
+                            if (d > maxDay) break;
+                            const progress = (d - current.x) / daysDiff;
+                            const interpolatedEnergy = current.energy + (energyDiff * progress);
+                            const dayIndex = dataArray.findIndex(item => item.x === d);
+                            if (dayIndex !== -1) {
+                                dataArray[dayIndex].energy = Math.round(interpolatedEnergy * 10) / 10;
+                            }
+                        }
+                    }
                 }
-                return d;
-            });
+            }
+
+            // Interpoler aussi la performance
+            const daysWithPerformance = dataArray.filter(d => d.performance > 0 && d.x <= maxDay);
+            if (daysWithPerformance.length >= 2) {
+                for (let i = 0; i < daysWithPerformance.length - 1; i++) {
+                    const current = daysWithPerformance[i];
+                    const next = daysWithPerformance[i + 1];
+                    const dayGap = next.x - current.x;
+
+                    if (dayGap > 1 && dayGap <= 3) {
+                        const performanceDiff = next.performance - current.performance;
+                        const daysDiff = dayGap;
+
+                        for (let d = current.x + 1; d < next.x; d++) {
+                            if (d > maxDay) break;
+                            const progress = (d - current.x) / daysDiff;
+                            const interpolatedPerformance = current.performance + (performanceDiff * progress);
+                            const dayIndex = dataArray.findIndex(item => item.x === d);
+                            if (dayIndex !== -1) {
+                                dataArray[dayIndex].performance = Math.round(interpolatedPerformance * 10) / 10;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return dataArray;
         }
-        
-        const interpolatedData = interpolateEnergyGaps(data, todayDayOfCycle || cycleLength);
-        
-        // Mettre à null les énergies après aujourd'hui
+
+        const interpolatedData = interpolateEnergyGaps(data, todayDayOfCycle || displayLength);
+
+        // Mettre à null les énergies après aujourd'hui (pour ne pas les afficher)
         if (todayDayOfCycle) {
             interpolatedData.forEach(d => {
                 if (d.x > todayDayOfCycle) {
@@ -809,6 +870,11 @@ async function loadPopupCycleChart(playerId) {
                 }
             });
         }
+
+        // Logs de debug (même que dashboard)
+        const energyWithData = interpolatedData.filter(d => d.energy !== null && d.energy > 0);
+        const performanceWithData = interpolatedData.filter(d => d.performance !== null && d.performance > 0);
+        console.log(`Popup: ${energyWithData.length} jours avec énergie, ${performanceWithData.length} jours avec performance`);
         
         // Datasets
         const datasets = [
@@ -849,19 +915,20 @@ async function loadPopupCycleChart(playerId) {
                 pointBackgroundColor: '#10b981',
                 yAxisID: 'y1'
             },
-            // Symptômes
+            // Symptômes (même style que dashboard)
             {
                 label: 'Symptômes (0-10)',
                 data: interpolatedData.map(d => ({ x: d.x, y: d.symptoms })),
                 borderColor: '#f59e0b',
                 backgroundColor: 'transparent',
-                borderWidth: 2,
+                borderWidth: 3,
                 fill: false,
                 tension: 0.3,
                 spanGaps: true,
-                pointRadius: 2,
+                pointRadius: 5,
                 pointBackgroundColor: '#f59e0b',
-                borderDash: [5, 5],
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
                 yAxisID: 'y1'
             },
             // Performance
@@ -949,9 +1016,9 @@ async function loadPopupCycleChart(playerId) {
                         type: 'linear',
                         position: 'bottom',
                         min: 1,
-                        max: cycleLength,
+                        max: displayLength,
                         ticks: {
-                            stepSize: Math.max(1, Math.floor(cycleLength / 10)),
+                            stepSize: Math.max(1, Math.floor(displayLength / 10)),
                             callback: (value) => 'J' + Math.round(value)
                         },
                         title: { display: true, text: 'Jour du Cycle' }
@@ -976,16 +1043,23 @@ async function loadPopupCycleChart(playerId) {
             }
         });
         
-        // Ajouter les annotations
+        // Ajouter les annotations (avec support cycle prolongé)
         const annotationDiv = document.getElementById('popupCycleAnnotations');
         if (annotationDiv) {
+            const cycleStatusHtml = isExtendedCycle
+                ? `<div style="margin-top: 12px; padding: 10px 12px; background-color: rgba(249, 115, 22, 0.15); border-left: 4px solid #f97316; font-size: 13px;">
+                    <strong>⚠️ Cycle prolongé</strong> - Jour ${todayDayOfCycle} sur ${cycleLength} théoriques<br>
+                    <span style="font-size: 11px; color: #9a3412;">Pas de règles déclarées depuis ${todayDayOfCycle} jours</span>
+                   </div>`
+                : (todayDayOfCycle ? `<div style="margin-top: 12px; padding: 8px 12px; background-color: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; font-weight: 600; font-size: 13px;">📍 Aujourd'hui: Jour ${todayDayOfCycle} sur ${cycleLength}</div>` : '');
+
             annotationDiv.innerHTML = `
-                <div style=\"display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #667eea;\">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 12px; padding: 12px; background: #f9fafb; border-radius: 8px; border-left: 4px solid ${isExtendedCycle ? '#f97316' : '#667eea'};">
                     <div><strong>📅 Début du cycle</strong><br>${lastJ1.toLocaleDateString('fr-FR')}</div>
-                    <div><strong>🔴 Ovulation</strong><br>${ovulationDate.toLocaleDateString('fr-FR')}</div>
-                    <div><strong>📆 Fin du cycle</strong><br>${cycleEndDate.toLocaleDateString('fr-FR')}</div>
+                    <div><strong>🔴 Ovulation</strong><br>${ovulationDate.toLocaleDateString('fr-FR')}${isExtendedCycle ? ' (théo.)' : ''}</div>
+                    <div><strong>📆 Fin théorique</strong><br>${cycleEndDate.toLocaleDateString('fr-FR')}</div>
                 </div>
-                ${todayDayOfCycle ? `<div style=\"margin-top: 12px; padding: 8px 12px; background-color: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; font-weight: 600; font-size: 13px;\">📍 Aujourd'hui: Jour ${todayDayOfCycle} (J${todayDayOfCycle})</div>` : ''}
+                ${cycleStatusHtml}
             `;
         }
         
@@ -1398,8 +1472,66 @@ function getWeekNumberPopup(date) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
+// ============================================
+// NAVIGATION CYCLES (flèches ◀ ▶)
+// ============================================
+
+/**
+ * Met à jour le label et les boutons de navigation du cycle
+ */
+function updatePopupCycleNavButtons(activeOffset) {
+    const label = document.getElementById('popupCycleLabel');
+    const prevBtn = document.getElementById('popupCyclePrev');
+    const nextBtn = document.getElementById('popupCycleNext');
+
+    if (label) {
+        if (activeOffset === 0) {
+            label.textContent = 'Cycle Actuel';
+        } else {
+            label.textContent = `C${activeOffset}`; // C-1, C-2, etc.
+        }
+    }
+
+    // Désactiver le bouton ▶ si on est au cycle actuel
+    if (nextBtn) {
+        if (activeOffset >= 0) {
+            nextBtn.disabled = true;
+            nextBtn.style.opacity = '0.3';
+            nextBtn.style.cursor = 'not-allowed';
+        } else {
+            nextBtn.disabled = false;
+            nextBtn.style.opacity = '1';
+            nextBtn.style.cursor = 'pointer';
+        }
+    }
+
+    // Le bouton ◀ est toujours actif (on peut toujours remonter)
+    if (prevBtn) {
+        prevBtn.style.opacity = '1';
+        prevBtn.style.cursor = 'pointer';
+    }
+}
+
+/**
+ * Navigue vers le cycle précédent (-1) ou suivant (+1)
+ */
+function navigatePopupCycle(direction) {
+    const newOffset = currentPopupCycleOffset + direction;
+
+    // Ne pas aller au-delà du cycle actuel (offset 0)
+    if (newOffset > 0) return;
+
+    if (window.currentPopupPlayerId) {
+        loadPopupCycleChart(window.currentPopupPlayerId, newOffset);
+    }
+}
+
+// Export global pour les onclick dans le HTML
+window.navigatePopupCycle = navigatePopupCycle;
+
 // Exports globaux
 window.showPlayerDetail = showPlayerDetail;
 window.closePlayerDetailModal = closePlayerDetailModal;
+window.loadPopupCycleChart = loadPopupCycleChart;
 
 console.log('✅ Module Player Popup chargé - showPlayerDetail exporté:', typeof window.showPlayerDetail);

@@ -21,22 +21,22 @@ function createCycleFilters() {
     
     // Créer le conteneur des filtres cycle
     const cycleFilterHTML = `
-        <div id="cycleFilterContainer" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">🌸 Filtres Cycle</div>
+        <div id="cycleFilterContainer" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px; text-transform: uppercase;">🌸 Filtres Cycle</div>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                <button class="cycle-phase-filter active" data-phase="all" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: #f3f4f6; cursor: pointer; font-size: 12px;">Toutes</button>
-                <button class="cycle-phase-filter" data-phase="Menstruelle" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ef4444; background: white; cursor: pointer; font-size: 12px;">🩸 Menstruelle</button>
-                <button class="cycle-phase-filter" data-phase="Folliculaire" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #10b981; background: white; cursor: pointer; font-size: 12px;">🌱 Folliculaire</button>
-                <button class="cycle-phase-filter" data-phase="Ovulatoire" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #8b5cf6; background: white; cursor: pointer; font-size: 12px;">🌸 Ovulatoire</button>
-                <button class="cycle-phase-filter" data-phase="Lutéale" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #f59e0b; background: white; cursor: pointer; font-size: 12px;">🍂 Lutéale</button>
+                <button class="cycle-phase-filter active" data-phase="all" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-background); cursor: pointer; font-size: 12px;">Toutes</button>
+                <button class="cycle-phase-filter" data-phase="Menstruelle" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ef4444; background: var(--color-surface); cursor: pointer; font-size: 12px;">🩸 Menstruelle</button>
+                <button class="cycle-phase-filter" data-phase="Folliculaire" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #10b981; background: var(--color-surface); cursor: pointer; font-size: 12px;">🌱 Folliculaire</button>
+                <button class="cycle-phase-filter" data-phase="Ovulatoire" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #8b5cf6; background: var(--color-surface); cursor: pointer; font-size: 12px;">🌸 Ovulatoire</button>
+                <button class="cycle-phase-filter" data-phase="Lutéale" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #f59e0b; background: var(--color-surface); cursor: pointer; font-size: 12px;">🍂 Lutéale</button>
             </div>
-            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase;">💡 Recommandation</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px; text-transform: uppercase;">💡 Recommandation</div>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <button class="cycle-icon-filter active" data-icon="all" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; background: #f3f4f6; cursor: pointer; font-size: 12px;">Toutes</button>
-                <button class="cycle-icon-filter" data-icon="Intensité" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #10b981; background: white; cursor: pointer; font-size: 12px;">⚡ Intensité</button>
-                <button class="cycle-icon-filter" data-icon="Volume" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #3b82f6; background: white; cursor: pointer; font-size: 12px;">📊 Volume</button>
-                <button class="cycle-icon-filter" data-icon="Repos" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ef4444; background: white; cursor: pointer; font-size: 12px;">🛌 Repos</button>
-                <button class="cycle-icon-filter" data-icon="Attention" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #f59e0b; background: white; cursor: pointer; font-size: 12px;">⚠️ Attention</button>
+                <button class="cycle-icon-filter active" data-icon="all" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-background); cursor: pointer; font-size: 12px;">Toutes</button>
+                <button class="cycle-icon-filter" data-icon="Intensité" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #10b981; background: var(--color-surface); cursor: pointer; font-size: 12px;">⚡ Intensité</button>
+                <button class="cycle-icon-filter" data-icon="Volume" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #3b82f6; background: var(--color-surface); cursor: pointer; font-size: 12px;">📊 Volume</button>
+                <button class="cycle-icon-filter" data-icon="Repos" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ef4444; background: var(--color-surface); cursor: pointer; font-size: 12px;">🛌 Repos</button>
+                <button class="cycle-icon-filter" data-icon="Attention" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #f59e0b; background: var(--color-surface); cursor: pointer; font-size: 12px;">⚠️ Attention</button>
             </div>
         </div>
     `;
@@ -48,10 +48,10 @@ function createCycleFilters() {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.cycle-phase-filter').forEach(b => {
                 b.classList.remove('active');
-                b.style.background = 'white';
+                b.style.background = 'var(--color-surface)';
             });
             e.target.classList.add('active');
-            e.target.style.background = '#f3f4f6';
+            e.target.style.background = 'var(--color-background)';
             cycleFilterState.phase = e.target.dataset.phase;
             
             // Recharger le dashboard avec le filtre
@@ -66,10 +66,10 @@ function createCycleFilters() {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.cycle-icon-filter').forEach(b => {
                 b.classList.remove('active');
-                b.style.background = 'white';
+                b.style.background = 'var(--color-surface)';
             });
             e.target.classList.add('active');
-            e.target.style.background = '#f3f4f6';
+            e.target.style.background = 'var(--color-background)';
             cycleFilterState.iconType = e.target.dataset.icon;
             
             // Recharger le dashboard avec le filtre
@@ -728,6 +728,13 @@ window.saveNewPlayer = async function() {
     }
     
     try {
+        // Vérifier si une joueuse avec cet ID existe déjà pour éviter d'écraser ses données
+        const existingPlayer = await db.collection('players').doc(playerId).get();
+        if (existingPlayer.exists) {
+            alert('Une joueuse avec cet ID existe déjà. Veuillez choisir un autre ID.');
+            return;
+        }
+
         // Sauvegarder la joueuse dans Firestore SANS photo
         await db.collection('players').doc(playerId).set({
             name: fullName,
@@ -738,7 +745,7 @@ window.saveNewPlayer = async function() {
             photoURL: null,  // Pas de photo
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        
+
         alert('Joueuse ajoutée avec succès !');
         closeAddPlayerModal();
         await loadCoachDashboard();

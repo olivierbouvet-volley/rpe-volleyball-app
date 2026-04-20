@@ -33,32 +33,106 @@ function showCheckinSubTab(tab) {
 function showRpeSubTab(tab) {
     // Masquer toutes les cartes
     document.getElementById('rpeTodayCard').style.display = 'none';
-    document.getElementById('rpeYesterdayCard').style.display = 'none';
-    document.getElementById('rpeDayBeforeCard').style.display = 'none';
-    
+    const rattrapageCard = document.getElementById('rpeRattrapageCard');
+    if (rattrapageCard) rattrapageCard.style.display = 'none';
+    const deleteCard = document.getElementById('rpeDeleteCard');
+    if (deleteCard) deleteCard.style.display = 'none';
+
     // Réinitialiser les styles des boutons
     document.getElementById('rpeTodayBtn').style.background = '';
     document.getElementById('rpeTodayBtn').style.color = '';
-    document.getElementById('rpeYesterdayBtn').style.background = '';
-    document.getElementById('rpeYesterdayBtn').style.color = '';
-    document.getElementById('rpeDayBeforeBtn').style.background = '';
-    document.getElementById('rpeDayBeforeBtn').style.color = '';
-    
+    const rattrapageBtn = document.getElementById('rpeRattrapageBtn');
+    if (rattrapageBtn) {
+        rattrapageBtn.style.background = '';
+        rattrapageBtn.style.color = '';
+    }
+    const deleteBtn = document.getElementById('rpeDeleteBtn');
+    if (deleteBtn) {
+        deleteBtn.style.background = '#e74c3c';
+        deleteBtn.style.color = 'white';
+    }
+
     // Afficher la carte sélectionnée et mettre en surbrillance le bouton
     if (tab === 'today') {
         document.getElementById('rpeTodayCard').style.display = 'block';
         document.getElementById('rpeTodayBtn').style.background = 'var(--color-primary)';
         document.getElementById('rpeTodayBtn').style.color = 'white';
-    } else if (tab === 'yesterday') {
-        document.getElementById('rpeYesterdayCard').style.display = 'block';
-        document.getElementById('rpeYesterdayBtn').style.background = 'var(--color-primary)';
-        document.getElementById('rpeYesterdayBtn').style.color = 'white';
-    } else if (tab === 'daybefore') {
-        document.getElementById('rpeDayBeforeCard').style.display = 'block';
-        document.getElementById('rpeDayBeforeBtn').style.background = 'var(--color-primary)';
-        document.getElementById('rpeDayBeforeBtn').style.color = 'white';
+    } else if (tab === 'rattrapage') {
+        if (rattrapageCard) {
+            rattrapageCard.style.display = 'block';
+            // Initialiser le calendrier avec la date d'hier par défaut
+            initRattrapageCalendar();
+        }
+        if (rattrapageBtn) {
+            rattrapageBtn.style.background = 'var(--color-primary)';
+            rattrapageBtn.style.color = 'white';
+        }
+    } else if (tab === 'delete') {
+        if (deleteCard) {
+            deleteCard.style.display = 'block';
+            // Charger l'historique si la fonction existe
+            if (typeof loadRpeHistoryForDelete === 'function') {
+                loadRpeHistoryForDelete();
+            }
+        }
+        if (deleteBtn) {
+            deleteBtn.style.background = '#c0392b';
+        }
     }
 }
+
+// Initialiser le calendrier de rattrapage
+function initRattrapageCalendar() {
+    const dateInput = document.getElementById('rattrapageDate');
+    if (!dateInput) return;
+
+    // Définir la date max (hier) et min (30 jours avant)
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const minDate = new Date(today);
+    minDate.setDate(minDate.getDate() - 30);
+
+    dateInput.max = yesterday.toISOString().split('T')[0];
+    dateInput.min = minDate.toISOString().split('T')[0];
+    dateInput.value = yesterday.toISOString().split('T')[0];
+
+    // Afficher le label de la date
+    updateRattrapageDateLabel(yesterday);
+
+    // Afficher l'étape 1 (type de session)
+    document.getElementById('rpeRattrapageStep1').style.display = 'block';
+}
+window.initRattrapageCalendar = initRattrapageCalendar;
+
+// Mettre à jour le label de la date sélectionnée
+function updateRattrapageDateLabel(date) {
+    const label = document.getElementById('rattrapageDateLabel');
+    if (!label) return;
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = date.toLocaleDateString('fr-FR', options);
+    label.textContent = '📅 ' + formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+    label.style.display = 'block';
+}
+
+// Réinitialiser le formulaire Rattrapage
+function resetRpeFormRattrapage() {
+    document.getElementById('sessionTypeRattrapage').value = '';
+    document.getElementById('rpeRattrapageStep1').style.display = 'block';
+    document.getElementById('rpeRattrapageStep2').style.display = 'none';
+    document.getElementById('rpeRattrapageStep3').style.display = 'none';
+    document.getElementById('rpeRattrapageStep4').style.display = 'none';
+    document.getElementById('rpeRattrapageStep5').style.display = 'none';
+
+    // Réinitialiser les boutons d'activité
+    document.querySelectorAll('.activity-btn-rattrapage').forEach(btn => {
+        btn.style.opacity = '1';
+        btn.style.transform = 'scale(1)';
+    });
+}
+window.resetRpeFormRattrapage = resetRpeFormRattrapage;
 
 // Fonction pour obtenir la date de J-1 ou J-2
 function getDateOffset(daysAgo) {
@@ -143,35 +217,92 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // RPE Yesterday sliders
-    const rpeYesterday = document.getElementById('rpeValueYesterday');
-    const rpeCommentYesterday = document.getElementById('rpeCommentYesterday');
-    
-    if (rpeYesterday) {
-        rpeYesterday.addEventListener('input', (e) => {
-            document.getElementById('rpeValueDisplayYesterday').textContent = e.target.value;
+    // RPE Rattrapage - Date change listener
+    const rattrapageDate = document.getElementById('rattrapageDate');
+    if (rattrapageDate) {
+        rattrapageDate.addEventListener('change', (e) => {
+            const selectedDate = new Date(e.target.value + 'T12:00:00');
+            updateRattrapageDateLabel(selectedDate);
         });
     }
-    
-    if (rpeCommentYesterday) {
-        rpeCommentYesterday.addEventListener('input', (e) => {
-            document.getElementById('rpeCommentCountYesterday').textContent = e.target.value.length;
+
+    // RPE Rattrapage - Activity buttons
+    document.querySelectorAll('.activity-btn-rattrapage').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const value = this.dataset.value;
+            document.getElementById('sessionTypeRattrapage').value = value;
+
+            // Animation de sélection
+            document.querySelectorAll('.activity-btn-rattrapage').forEach(b => {
+                b.style.opacity = '0.5';
+                b.style.transform = 'scale(0.95)';
+            });
+            this.style.opacity = '1';
+            this.style.transform = 'scale(1.05)';
+
+            // Afficher l'étape 2
+            document.getElementById('rpeRattrapageStep2').style.display = 'block';
+
+            // Mettre à jour le badge
+            const badge = document.getElementById('selectedActivityBadgeRattrapage');
+            const colors = {
+                'Entrainement': '#3b82f6',
+                'Match': '#ef4444',
+                'Preparation Physique': '#10b981',
+                'Muscu+Volley': '#10b981',
+                'Recuperation Active': '#8b5cf6',
+                'Activite Physique Annexe': '#f59e0b'
+            };
+            const labels = {
+                'Entrainement': '🏐 Entraînement',
+                'Match': '🏆 Match',
+                'Preparation Physique': '💪 Prépa Physique',
+                'Muscu+Volley': '💪🏐 Muscu + Volley',
+                'Recuperation Active': '🧘 Récupération',
+                'Activite Physique Annexe': '🚴 Activité Annexe'
+            };
+            badge.textContent = labels[value] || value;
+            badge.style.background = colors[value] || '#666';
+            badge.style.color = 'white';
+
+            // Initialiser les pastilles RPE pour rattrapage
+            if (typeof initRatingBadgesForForm === 'function') {
+                initRatingBadgesForForm('rpeRattrapageStep2', 'rpeValueRattrapage', 'rpeRattrapageStep3');
+            }
         });
-    }
-    
-    // RPE Day Before sliders
-    const rpeDayBefore = document.getElementById('rpeValueDayBefore');
-    const rpeCommentDayBefore = document.getElementById('rpeCommentDayBefore');
-    
-    if (rpeDayBefore) {
-        rpeDayBefore.addEventListener('input', (e) => {
-            document.getElementById('rpeValueDisplayDayBefore').textContent = e.target.value;
+    });
+
+    // RPE Rattrapage - Duration buttons
+    document.querySelectorAll('.duration-btn-rattrapage').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const minutes = this.dataset.minutes;
+            document.getElementById('durationRattrapage').value = minutes;
+
+            // Animation de sélection
+            document.querySelectorAll('.duration-btn-rattrapage').forEach(b => {
+                b.style.border = '3px solid #e5e7eb';
+                b.style.background = 'white';
+                b.style.color = 'inherit';
+            });
+            this.style.border = '3px solid var(--color-primary)';
+            this.style.background = 'var(--color-primary)';
+            this.style.color = 'white';
+
+            // Afficher l'étape 4
+            document.getElementById('rpeRattrapageStep4').style.display = 'block';
+
+            // Initialiser les pastilles performance pour rattrapage
+            if (typeof initRatingBadgesForForm === 'function') {
+                initRatingBadgesForForm('rpeRattrapageStep4', 'performanceRattrapage', 'rpeRattrapageStep5');
+            }
         });
-    }
-    
-    if (rpeCommentDayBefore) {
-        rpeCommentDayBefore.addEventListener('input', (e) => {
-            document.getElementById('rpeCommentCountDayBefore').textContent = e.target.value.length;
+    });
+
+    // RPE Rattrapage - Comment counter
+    const rpeCommentRattrapage = document.getElementById('rpeCommentRattrapage');
+    if (rpeCommentRattrapage) {
+        rpeCommentRattrapage.addEventListener('input', (e) => {
+            document.getElementById('rpeCommentCountRattrapage').textContent = e.target.value.length;
         });
     }
 
@@ -307,130 +438,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // === Gestion des formulaires RPE ===
-    
-    // Gestion du formulaire RPE Yesterday
-    const rpeYesterdayForm = document.getElementById('rpeYesterdayForm');
-    if (rpeYesterdayForm) {
-        rpeYesterdayForm.addEventListener('submit', async (e) => {
+    // === Gestion du formulaire RPE Rattrapage ===
+    const rpeRattrapageForm = document.getElementById('rpeRattrapageForm');
+    if (rpeRattrapageForm) {
+        rpeRattrapageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const sessionType = document.getElementById('sessionTypeYesterday').value;
-            const rpe = parseInt(document.getElementById('rpeValueYesterday').value);
-            const duration = parseInt(document.getElementById('durationYesterday').value);
-            const performance = parseInt(document.getElementById('performanceYesterday').value);
-            const comment = document.getElementById('rpeCommentYesterday').value.trim();
-            
-            // Validations
-            if (!sessionType) {
-                alert('Veuillez sélectionner un type de session.');
-                return;
-            }
-            if (rpe === 0 || isNaN(rpe)) {
-                alert('Veuillez sélectionner une valeur pour l\'effort ressenti (cliquez sur une pastille).');
-                return;
-            }
-            if (!duration || duration <= 0) {
-                alert('Veuillez entrer une durée valide.');
-                return;
-            }
-            if (performance === 0 || isNaN(performance)) {
-                alert('Veuillez sélectionner une valeur pour votre performance (cliquez sur une pastille).');
-                return;
-            }
-            
-            const yesterday = getDateOffset(1);
-            
-            try {
-                // CAS SPÉCIAL: Muscu+Volley → Créer 2 entrées RPE
-                if (sessionType === 'Muscu+Volley') {
-                    const muscuDuration = 45;
-                    const volleyDuration = duration - muscuDuration;
-                    
-                    if (volleyDuration <= 0) {
-                        alert('La durée totale doit être supérieure à 45 minutes pour Muscu + Volley.');
-                        return;
-                    }
-                    
-                    // 1. Entrée Prépa Physique (45 min)
-                    await db.collection('rpe').add({
-                        playerId: appState.currentUser,
-                        date: yesterday,
-                        sessionType: 'Preparation Physique',
-                        rpe: rpe,
-                        duration: muscuDuration,
-                        load: rpe * muscuDuration,
-                        performance: performance,
-                        comment: comment ? `[Muscu+Volley] ${comment}` : '[Muscu+Volley]',
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    // 2. Entrée Entraînement Volley
-                    await db.collection('rpe').add({
-                        playerId: appState.currentUser,
-                        date: yesterday,
-                        sessionType: 'Entrainement',
-                        rpe: rpe,
-                        duration: volleyDuration,
-                        load: rpe * volleyDuration,
-                        performance: performance,
-                        comment: comment ? `[Muscu+Volley] ${comment}` : '[Muscu+Volley]',
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    console.log('✅ RPE Muscu+Volley J-1 enregistré');
-                    alert(`RPE Muscu + Volley (J-1) enregistré !\n• Prépa Physique: 45 min\n• Entraînement: ${volleyDuration} min`);
-                    
-                } else {
-                    // CAS NORMAL
-                    const rpeData = {
-                        playerId: appState.currentUser,
-                        date: yesterday,
-                        sessionType: sessionType,
-                        rpe: rpe,
-                        duration: duration,
-                        load: rpe * duration,
-                        performance: performance,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    if (comment) {
-                        rpeData.comment = comment;
-                    }
-                    
-                    await db.collection('rpe').add(rpeData);
-                    console.log('✅ RPE J-1 enregistré:', rpeData);
-                    alert('RPE de la veille enregistré avec succès !');
-                }
-                
-                document.getElementById('rpeYesterdayForm').reset();
-                if (typeof resetRpeFormYesterday === 'function') {
-                    resetRpeFormYesterday();
-                }
-                if (typeof refreshRatingBadges === 'function') {
-                    refreshRatingBadges();
-                }
-                document.getElementById('rpeCommentCountYesterday').textContent = '0';
-            } catch (error) {
-                console.error('Erreur lors de l\'enregistrement du RPE:', error);
-                alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
-            }
-        });
-    }
 
-    // Gestion du formulaire RPE Day Before
-    const rpeDayBeforeForm = document.getElementById('rpeDayBeforeForm');
-    if (rpeDayBeforeForm) {
-        rpeDayBeforeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const sessionType = document.getElementById('sessionTypeDayBefore').value;
-            const rpe = parseInt(document.getElementById('rpeValueDayBefore').value);
-            const duration = parseInt(document.getElementById('durationDayBefore').value);
-            const performance = parseInt(document.getElementById('performanceDayBefore').value);
-            const comment = document.getElementById('rpeCommentDayBefore').value.trim();
-            
+            const selectedDate = document.getElementById('rattrapageDate').value;
+            const sessionType = document.getElementById('sessionTypeRattrapage').value;
+            const rpe = parseInt(document.getElementById('rpeValueRattrapage').value);
+            const duration = parseInt(document.getElementById('durationRattrapage').value);
+            const performance = parseInt(document.getElementById('performanceRattrapage').value);
+            const comment = document.getElementById('rpeCommentRattrapage').value.trim();
+
             // Validations
+            if (!selectedDate) {
+                alert('Veuillez sélectionner une date.');
+                return;
+            }
             if (!sessionType) {
                 alert('Veuillez sélectionner un type de session.');
                 return;
@@ -447,24 +472,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Veuillez sélectionner une valeur pour votre performance (cliquez sur une pastille).');
                 return;
             }
-            
-            const dayBefore = getDateOffset(2);
-            
+
+            // Formater la date pour l'affichage
+            const dateObj = new Date(selectedDate + 'T12:00:00');
+            const dateFormatted = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
             try {
                 // CAS SPÉCIAL: Muscu+Volley → Créer 2 entrées RPE
                 if (sessionType === 'Muscu+Volley') {
                     const muscuDuration = 45;
                     const volleyDuration = duration - muscuDuration;
-                    
+
                     if (volleyDuration <= 0) {
                         alert('La durée totale doit être supérieure à 45 minutes pour Muscu + Volley.');
                         return;
                     }
-                    
+
                     // 1. Entrée Prépa Physique (45 min)
                     await db.collection('rpe').add({
                         playerId: appState.currentUser,
-                        date: dayBefore,
+                        date: selectedDate,
                         sessionType: 'Preparation Physique',
                         rpe: rpe,
                         duration: muscuDuration,
@@ -473,11 +500,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         comment: comment ? `[Muscu+Volley] ${comment}` : '[Muscu+Volley]',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    
+
                     // 2. Entrée Entraînement Volley
                     await db.collection('rpe').add({
                         playerId: appState.currentUser,
-                        date: dayBefore,
+                        date: selectedDate,
                         sessionType: 'Entrainement',
                         rpe: rpe,
                         duration: volleyDuration,
@@ -486,15 +513,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         comment: comment ? `[Muscu+Volley] ${comment}` : '[Muscu+Volley]',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    
-                    console.log('✅ RPE Muscu+Volley J-2 enregistré');
-                    alert(`RPE Muscu + Volley (J-2) enregistré !\n• Prépa Physique: 45 min\n• Entraînement: ${volleyDuration} min`);
-                    
+
+                    console.log('✅ RPE Muscu+Volley enregistré pour', selectedDate);
+                    alert(`RPE Muscu + Volley enregistré pour ${dateFormatted} !\n• Prépa Physique: 45 min\n• Entraînement: ${volleyDuration} min`);
+
                 } else {
                     // CAS NORMAL
                     const rpeData = {
                         playerId: appState.currentUser,
-                        date: dayBefore,
+                        date: selectedDate,
                         sessionType: sessionType,
                         rpe: rpe,
                         duration: duration,
@@ -502,24 +529,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         performance: performance,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     };
-                    
+
                     if (comment) {
                         rpeData.comment = comment;
                     }
-                    
+
                     await db.collection('rpe').add(rpeData);
-                    console.log('✅ RPE J-2 enregistré:', rpeData);
-                    alert('RPE de l\'avant-veille enregistré avec succès !');
+                    console.log('✅ RPE enregistré pour', selectedDate, ':', rpeData);
+                    alert(`RPE enregistré avec succès pour ${dateFormatted} !`);
                 }
-                
-                document.getElementById('rpeDayBeforeForm').reset();
-                if (typeof resetRpeFormDayBefore === 'function') {
-                    resetRpeFormDayBefore();
-                }
+
+                // Réinitialiser le formulaire
+                document.getElementById('rpeRattrapageForm').reset();
+                resetRpeFormRattrapage();
                 if (typeof refreshRatingBadges === 'function') {
                     refreshRatingBadges();
                 }
-                document.getElementById('rpeCommentCountDayBefore').textContent = '0';
+                document.getElementById('rpeCommentCountRattrapage').textContent = '0';
+
+                // Réinitialiser le calendrier
+                initRattrapageCalendar();
+
             } catch (error) {
                 console.error('Erreur lors de l\'enregistrement du RPE:', error);
                 alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');

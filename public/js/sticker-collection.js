@@ -3,8 +3,8 @@
  * Interface pour visualiser et explorer la collection de stickers
  */
 
-// Ouvrir le modal de collection
-async function openStickerCollection(playerId) {
+// Ouvrir le modal de collection (filterRarity optionnel : 'common' | 'rare' | 'legendary')
+async function openStickerCollection(playerId, filterRarity) {
     try {
         const playerDoc = await db.collection('players').doc(playerId).get();
         if (!playerDoc.exists) return;
@@ -12,14 +12,14 @@ async function openStickerCollection(playerId) {
         const playerData = playerDoc.data();
         const unlockedStickers = playerData.stickers || [];
 
-        showCollectionModal(unlockedStickers);
+        showCollectionModal(unlockedStickers, filterRarity);
     } catch (error) {
         console.error('Erreur chargement collection:', error);
     }
 }
 
 // Créer et afficher le modal de collection
-function showCollectionModal(unlockedStickers) {
+function showCollectionModal(unlockedStickers, filterRarity) {
     // Vérifier si l'utilisateur est coach (Olivier ou Alexis)
     const currentPlayerName = window.currentPlayer?.name?.toLowerCase() || '';
     const isCoach = currentPlayerName.includes('olivier') || currentPlayerName.includes('alexis');
@@ -65,6 +65,21 @@ function showCollectionModal(unlockedStickers) {
     tabButtons.forEach(btn => {
         btn.addEventListener('click', () => switchCollectionTab(btn.dataset.tab));
     });
+
+    // Scroll vers la catégorie filtrée si spécifiée
+    if (filterRarity) {
+        setTimeout(() => {
+            const target = modal.querySelector(`.collection-category[data-rarity="${filterRarity}"]`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Highlight bref de la section
+                target.style.transition = 'outline 0s';
+                target.style.outline = '2px solid rgba(255,255,255,0.6)';
+                target.style.borderRadius = '8px';
+                setTimeout(() => { target.style.outline = 'none'; }, 1200);
+            }
+        }, 350);
+    }
 }
 
 // Afficher la grille de collection
@@ -74,10 +89,10 @@ function renderCollectionGrid(unlockedStickers) {
     html += '</div>';
 
     // Stickers communs
-    html += '<div class="collection-category">';
+    html += '<div class="collection-category" data-rarity="common">';
     html += '<h3>⚪ Stickers Communs (27)</h3>';
     html += '<div class="collection-grid">';
-    
+
     Object.entries(STICKER_DEFINITIONS).forEach(([id, sticker]) => {
         if (sticker.rarity === 'common') {
             const isUnlocked = unlockedStickers.includes(id);
@@ -87,10 +102,10 @@ function renderCollectionGrid(unlockedStickers) {
     html += '</div></div>';
 
     // Stickers rares
-    html += '<div class="collection-category">';
+    html += '<div class="collection-category" data-rarity="rare">';
     html += '<h3>🔵 Stickers Rares (5)</h3>';
     html += '<div class="collection-grid">';
-    
+
     Object.entries(STICKER_DEFINITIONS).forEach(([id, sticker]) => {
         if (sticker.rarity === 'rare') {
             const isUnlocked = unlockedStickers.includes(id);
@@ -100,10 +115,10 @@ function renderCollectionGrid(unlockedStickers) {
     html += '</div></div>';
 
     // Stickers légendaires
-    html += '<div class="collection-category">';
+    html += '<div class="collection-category" data-rarity="legendary">';
     html += '<h3>🌟 Stickers Légendaires (16)</h3>';
     html += '<div class="collection-grid">';
-    
+
     Object.entries(STICKER_DEFINITIONS).forEach(([id, sticker]) => {
         if (sticker.rarity === 'legendary') {
             const isUnlocked = unlockedStickers.includes(id);
@@ -332,28 +347,38 @@ function showStickerDetail(stickerId) {
     const sticker = STICKER_DEFINITIONS[stickerId];
     if (!sticker) return;
 
-    // Créer un modal de détail
+    const rarityLabel = sticker.rarity === 'common' ? 'Commun'
+                      : sticker.rarity === 'rare'   ? 'Rare'
+                      : 'Légendaire';
+
     const detailModal = document.createElement('div');
     detailModal.className = 'sticker-detail-modal';
     detailModal.innerHTML = `
         <div class="detail-overlay" onclick="closeStickerDetail()"></div>
         <div class="detail-card" data-rarity="${sticker.rarity}">
             <button class="detail-close" onclick="closeStickerDetail()">&times;</button>
-            
-            <div class="detail-image-container">
+
+            <!-- Image — héro (clic = plein écran) -->
+            <div class="detail-sticker-wrap" onclick="openStickerFullscreen('${sticker.image}', '${sticker.name}')">
                 <img src="${sticker.image}" alt="${sticker.name}" class="detail-image">
+                <div class="detail-image-hint">🔍</div>
             </div>
-            
+
+            <!-- Texte sous le sticker -->
             <div class="detail-info">
                 <div class="detail-rarity ${sticker.rarity}">
-                    ${sticker.rarity === 'common' ? 'COMMUN' : sticker.rarity === 'rare' ? 'RARE' : 'LÉGENDAIRE'}
+                    ${sticker.emoji}&nbsp; ${rarityLabel.toUpperCase()}
                 </div>
+
                 <h2 class="detail-name">${sticker.name}</h2>
+
                 <p class="detail-description">${sticker.description}</p>
-                
+
+                <div class="detail-divider"></div>
+
                 <div class="detail-criteria">
-                    <strong>🎯 Critère de déblocage:</strong><br>
-                    ${formatCriteria(sticker.criteria)}
+                    <span class="detail-criteria-label">Débloqué en réalisant</span>
+                    <span class="detail-criteria-value">${formatCriteria(sticker.criteria)}</span>
                 </div>
             </div>
         </div>
@@ -361,6 +386,19 @@ function showStickerDetail(stickerId) {
 
     document.body.appendChild(detailModal);
     setTimeout(() => detailModal.classList.add('active'), 10);
+}
+
+// Plein écran image sticker
+function openStickerFullscreen(src, alt) {
+    const fs = document.createElement('div');
+    fs.className = 'sticker-fullscreen';
+    fs.innerHTML = `<img src="${src}" alt="${alt}" class="sticker-fullscreen-img">`;
+    fs.onclick = () => {
+        fs.classList.remove('active');
+        setTimeout(() => fs.remove(), 250);
+    };
+    document.body.appendChild(fs);
+    setTimeout(() => fs.classList.add('active'), 10);
 }
 
 // Fermer le modal de détail

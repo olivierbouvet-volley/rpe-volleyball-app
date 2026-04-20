@@ -49,7 +49,7 @@ window.openCycleQuestionnaireModal = function() {
 
     const content = document.createElement('div');
     content.style.cssText = `
-        background: white;
+        background: var(--color-surface, white);
         border-radius: 16px;
         padding: 30px;
         width: 95%;
@@ -62,23 +62,23 @@ window.openCycleQuestionnaireModal = function() {
 
     content.innerHTML = `
         <style>
-            .cycle-question { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid #e5e7eb; }
+            .cycle-question { margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--color-border, #e5e7eb); }
             .cycle-question:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-            .cycle-question-title { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 8px; }
-            .cycle-question-subtitle { font-size: 13px; color: #6b7280; margin-bottom: 12px; font-style: italic; }
+            .cycle-question-title { font-size: 16px; font-weight: 600; color: var(--color-text, #1f2937); margin-bottom: 8px; }
+            .cycle-question-subtitle { font-size: 13px; color: var(--color-text-secondary, #6b7280); margin-bottom: 12px; font-style: italic; }
             .cycle-pills-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-            .cycle-pill { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #e5e7eb; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+            .cycle-pill { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--color-border, #e5e7eb); background: var(--color-surface, white); cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; color: var(--color-text, inherit); }
             .cycle-pill:hover { transform: scale(1.1); border-color: #667eea; }
             .cycle-pill.selected { background: #667eea; color: white; border-color: #667eea; }
             .cycle-binary-buttons { display: flex; gap: 12px; }
-            .cycle-binary-btn { flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
-            .cycle-binary-btn:hover { border-color: #667eea; background: #f3f4f6; }
+            .cycle-binary-btn { flex: 1; padding: 12px; border: 2px solid var(--color-border, #e5e7eb); border-radius: 8px; background: var(--color-surface, white); cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; color: var(--color-text, inherit); }
+            .cycle-binary-btn:hover { border-color: #667eea; background: var(--color-background, #f3f4f6); }
             .cycle-binary-btn.selected { background: #667eea; color: white; border-color: #667eea; }
-            .cycle-select { width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
+            .cycle-select { width: 100%; padding: 10px; border: 2px solid var(--color-border, #e5e7eb); border-radius: 8px; font-size: 14px; background: var(--color-surface, white); cursor: pointer; color: var(--color-text, inherit); }
             .cycle-section { margin-bottom: 30px; }
-            .cycle-section-title { font-size: 18px; font-weight: 700; color: #1f2937; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+            .cycle-section-title { font-size: 18px; font-weight: 700; color: var(--color-text, #1f2937); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
             .cycle-section-number { background: #667eea; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-            .cycle-modal-header { font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 30px; text-align: center; }
+            .cycle-modal-header { font-size: 24px; font-weight: 700; color: var(--color-text, #1f2937); margin-bottom: 30px; text-align: center; }
             .cycle-modal-buttons { display: flex; gap: 12px; margin-top: 30px; }
             .cycle-save-btn { flex: 1; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
             .cycle-save-btn:hover { background: #059669; }

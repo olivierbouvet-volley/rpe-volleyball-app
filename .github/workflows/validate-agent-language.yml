@@ -1,0 +1,24 @@
+name: Validate agent language
+
+on:
+  push:
+    paths:
+      - '.github/**'
+      - 'scripts/**'
+  pull_request:
+    paths:
+      - '.github/**'
+      - 'scripts/**'
+
+jobs:
+  validate-language:
+    name: Validate agent language rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run language validation script
+        run: |
+          chmod +x ./scripts/validate_agent_language.sh
+          ./scripts/validate_agent_language.sh

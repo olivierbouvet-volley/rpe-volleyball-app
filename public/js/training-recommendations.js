@@ -315,23 +315,25 @@ async function calculateCycleDayInfo(playerId) {
             lastPeriod = new Date(lastPeriodDate);
         }
         
-        // Calculer le jour du cycle
+        // Calculer le jour du cycle SANS modulo - pas de reset automatique
         const today = new Date();
         const diffTime = today - lastPeriod;
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        // Ajuster pour les cycles de longueur variable
-        let cycleDay = (diffDays % cycleLength) + 1;
+
+        // Pas de modulo - on continue à compter (J34, J45, etc.)
+        let cycleDay = diffDays + 1;
         if (cycleDay <= 0) cycleDay = 1;
-        if (cycleDay > cycleLength) cycleDay = cycleLength;
-        
+
+        const isExtended = cycleDay > cycleLength;
+
         return {
             playerId,
             cycleDay,
             cycleLength,
             lastPeriodDate: lastPeriod,
             daysInCurrentCycle: diffDays,
-            isIrregular: cycleData.isIrregular || false
+            isIrregular: cycleData.isIrregular || false,
+            isExtended
         };
         
     } catch (error) {
@@ -531,7 +533,7 @@ function generateRecommendationsWidget(recommendations) {
             <!-- Hormones -->
             <div style="
                 padding: 16px 20px;
-                background: white;
+                background: var(--color-surface, white);
                 display: flex;
                 gap: 24px;
                 flex-wrap: wrap;
@@ -568,7 +570,7 @@ function generateRecommendationsWidget(recommendations) {
                         flex: 1;
                         padding: 10px;
                         border: 2px solid ${phase.color};
-                        background: white;
+                        background: var(--color-surface, white);
                         color: ${phase.color};
                         border-radius: 8px;
                         font-weight: 600;
@@ -583,7 +585,7 @@ function generateRecommendationsWidget(recommendations) {
                         ${recs.ppg.exercises.map(ex => `
                             <li style="
                                 padding: 8px 12px;
-                                background: white;
+                                background: var(--color-surface, white);
                                 border-radius: 6px;
                                 margin-bottom: 6px;
                                 font-size: 14px;
@@ -596,19 +598,19 @@ function generateRecommendationsWidget(recommendations) {
                         gap: 8px;
                         margin-top: 12px;
                     ">
-                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+                        <div style="background: var(--color-surface, white); padding: 8px; border-radius: 6px; text-align: center;">
                             <div style="font-size: 12px; color: #6b7280;">Séries</div>
                             <div style="font-weight: 600; color: ${phase.color};">${recs.ppg.sets}</div>
                         </div>
-                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+                        <div style="background: var(--color-surface, white); padding: 8px; border-radius: 6px; text-align: center;">
                             <div style="font-size: 12px; color: #6b7280;">Répétitions</div>
                             <div style="font-weight: 600; color: ${phase.color};">${recs.ppg.reps}</div>
                         </div>
-                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+                        <div style="background: var(--color-surface, white); padding: 8px; border-radius: 6px; text-align: center;">
                             <div style="font-size: 12px; color: #6b7280;">Repos</div>
                             <div style="font-weight: 600; color: ${phase.color};">${recs.ppg.rest}</div>
                         </div>
-                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+                        <div style="background: var(--color-surface, white); padding: 8px; border-radius: 6px; text-align: center;">
                             <div style="font-size: 12px; color: #6b7280;">RPE Cible</div>
                             <div style="font-weight: 600; color: ${phase.color};">${recs.ppg.rpe_target}</div>
                         </div>
@@ -622,7 +624,7 @@ function generateRecommendationsWidget(recommendations) {
                         ${recs.terrain.exercises.map(ex => `
                             <li style="
                                 padding: 8px 12px;
-                                background: white;
+                                background: var(--color-surface, white);
                                 border-radius: 6px;
                                 margin-bottom: 6px;
                                 font-size: 14px;
@@ -635,11 +637,11 @@ function generateRecommendationsWidget(recommendations) {
                         gap: 8px;
                         margin-top: 12px;
                     ">
-                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+                        <div style="background: var(--color-surface, white); padding: 8px; border-radius: 6px; text-align: center;">
                             <div style="font-size: 12px; color: #6b7280;">Durée</div>
                             <div style="font-weight: 600; color: ${phase.color};">${recs.terrain.duration}</div>
                         </div>
-                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center;">
+                        <div style="background: var(--color-surface, white); padding: 8px; border-radius: 6px; text-align: center;">
                             <div style="font-size: 12px; color: #6b7280;">Intensité</div>
                             <div style="font-weight: 600; color: ${phase.color};">${recs.terrain.intensity}</div>
                         </div>
@@ -662,7 +664,7 @@ function generateRecommendationsWidget(recommendations) {
             <!-- Focus / À éviter -->
             <div style="
                 padding: 16px 20px;
-                background: white;
+                background: var(--color-surface, white);
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 16px;

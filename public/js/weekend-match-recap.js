@@ -1,9 +1,13 @@
 /**
  * WEEKEND MATCH RECAP - Dashboard Coach
  * Récapitulatif des matchs du week-end avec résultats et temps de jeu
+ * + Historique des 8 derniers week-ends avec graphique
  */
 
 console.log('🏐 Chargement weekend-match-recap.js');
+
+// Instance du graphique historique (pour éviter les fuites mémoire)
+let weekendHistoryChartInstance = null;
 
 /**
  * Charge et affiche le récap des matchs du week-end
@@ -17,24 +21,16 @@ async function loadWeekendMatchRecap() {
 
         // Récupérer les matchs du dernier week-end
         const weekendMatches = await getLastWeekendMatches();
-        
-        if (weekendMatches.length === 0) {
-            container.innerHTML = `
-                <div class="no-matches">
-                    <div class="no-matches-icon">🏐</div>
-                    <p>Aucun match ce week-end</p>
-                </div>
-            `;
-            return;
-        }
 
-        // Grouper par date
+        // Grouper par date (même si vide)
         const matchesByDate = groupMatchesByDate(weekendMatches);
-        
-        // Calculer les statistiques globales
-        const globalStats = calculateGlobalStats(weekendMatches);
-        
-        // Générer le HTML
+
+        // Calculer les statistiques globales (même si vide)
+        const globalStats = weekendMatches.length > 0
+            ? calculateGlobalStats(weekendMatches)
+            : { totalMatches: 0, totalVictories: 0, totalDefeats: 0, playerStats: [] };
+
+        // Générer le HTML avec les onglets (toujours, même sans matchs ce WE)
         container.innerHTML = generateWeekendRecapHTML(matchesByDate, globalStats, weekendMatches);
         
     } catch (error) {
@@ -70,7 +66,8 @@ async function getLastWeekendMatches() {
             lastSunday.setDate(lastSunday.getDate() + 1);
         } else {
             // Lundi à vendredi → week-end précédent
-            const daysToLastSunday = dayOfWeek === 1 ? 1 : (dayOfWeek + 6) % 7;
+            // dayOfWeek = nombre de jours écoulés depuis dimanche (1=lundi, 2=mardi, etc.)
+            const daysToLastSunday = dayOfWeek;
             lastSunday = new Date(now);
             lastSunday.setDate(lastSunday.getDate() - daysToLastSunday);
             lastSunday.setHours(0, 0, 0, 0);
@@ -78,8 +75,15 @@ async function getLastWeekendMatches() {
             lastSaturday.setDate(lastSaturday.getDate() - 1);
         }
         
-        const saturdayStr = lastSaturday.toISOString().split('T')[0];
-        const sundayStr = lastSunday.toISOString().split('T')[0];
+        // Formater en local (pas UTC) pour éviter décalage de fuseau horaire
+        const formatDateLocal = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const saturdayStr = formatDateLocal(lastSaturday);
+        const sundayStr = formatDateLocal(lastSunday);
         
         console.log('Recherche matchs:', saturdayStr, 'et', sundayStr);
         
@@ -125,6 +129,145 @@ async function getLastWeekendMatches() {
         
     } catch (error) {
         console.error('Erreur getLastWeekendMatches:', error);
+        return [];
+    }
+}
+
+/**
+ * Calcule les dates d'un week-end (samedi + dimanche) pour N semaines en arrière
+ * @param {number} weeksAgo - Nombre de semaines en arrière (0 = ce week-end/dernier WE)
+ * @returns {Object} { saturday, sunday, label }
+ */
+function getWeekendDates(weeksAgo = 0) {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = dimanche, 6 = samedi
+
+    // Trouver le dernier dimanche
+    let lastSunday;
+    if (dayOfWeek === 0) {
+        lastSunday = new Date(now);
+    } else {
+        lastSunday = new Date(now);
+        lastSunday.setDate(lastSunday.getDate() - dayOfWeek);
+    }
+    lastSunday.setHours(12, 0, 0, 0);
+
+    // Reculer de weeksAgo semaines
+    const targetSunday = new Date(lastSunday);
+    targetSunday.setDate(targetSunday.getDate() - (weeksAgo * 7));
+
+    const targetSaturday = new Date(targetSunday);
+    targetSaturday.setDate(targetSaturday.getDate() - 1);
+
+    // Créer le label "WE 8-9 fév"
+    const satDay = targetSaturday.getDate();
+    const sunDay = targetSunday.getDate();
+    const monthNames = ['jan', 'fév', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
+    const month = monthNames[targetSaturday.getMonth()];
+    const label = `${satDay}-${sunDay} ${month}`;
+
+    // Formater en local (pas UTC) pour éviter décalage de fuseau horaire
+    const formatDateLocal = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    return {
+        saturday: formatDateLocal(targetSaturday),
+        sunday: formatDateLocal(targetSunday),
+        label: label
+    };
+}
+
+/**
+ * Récupère l'historique des matchs des N derniers week-ends
+ * @param {number} weeksBack - Nombre de week-ends à récupérer (défaut: 8)
+ * @returns {Array} Tableau de données par week-end
+ */
+async function getWeekendHistoryData(weeksBack = 8) {
+    console.log(`📊 Chargement historique ${weeksBack} week-ends...`);
+
+    try {
+        const weekendsData = [];
+
+        // Collecter toutes les dates de tous les week-ends
+        const allDates = [];
+        const weekendDateMap = {}; // Pour retrouver quel week-end correspond à quelle date
+
+        for (let i = 0; i < weeksBack; i++) {
+            const weekend = getWeekendDates(i);
+            allDates.push(weekend.saturday, weekend.sunday);
+            weekendDateMap[weekend.saturday] = i;
+            weekendDateMap[weekend.sunday] = i;
+            weekendsData.push({
+                index: i,
+                label: weekend.label,
+                dates: weekend,
+                matches: [],
+                stats: {
+                    playerCount: 0,
+                    victories: 0,
+                    defeats: 0,
+                    winRate: 0,
+                    avgPlayingTime: 0,
+                    totalMatches: 0
+                }
+            });
+        }
+
+        // Query Firestore pour tous les matchs de ces dates
+        // Note: Firestore 'in' query supporte max 30 valeurs, on est bon avec 16 dates
+        const matchesSnapshot = await db.collection('rpe')
+            .where('sessionType', '==', 'Match')
+            .where('date', 'in', allDates)
+            .get();
+
+        // Distribuer les matchs dans les bons week-ends
+        matchesSnapshot.forEach(doc => {
+            const data = doc.data();
+            const weekendIndex = weekendDateMap[data.date];
+            if (weekendIndex !== undefined) {
+                weekendsData[weekendIndex].matches.push(data);
+            }
+        });
+
+        // Calculer les stats pour chaque week-end
+        weekendsData.forEach(weekend => {
+            const matches = weekend.matches;
+            const playerIds = new Set();
+            let totalTime = 0;
+            let timeCount = 0;
+
+            matches.forEach(match => {
+                playerIds.add(match.playerId);
+
+                if (match.matchWon === true) {
+                    weekend.stats.victories++;
+                } else if (match.matchWon === false) {
+                    weekend.stats.defeats++;
+                }
+
+                if (match.timePlayed) {
+                    totalTime += parseInt(match.timePlayed) || 0;
+                    timeCount++;
+                }
+            });
+
+            weekend.stats.playerCount = playerIds.size;
+            weekend.stats.totalMatches = matches.length;
+            weekend.stats.avgPlayingTime = timeCount > 0 ? Math.round(totalTime / timeCount) : 0;
+            weekend.stats.winRate = matches.length > 0
+                ? Math.round((weekend.stats.victories / matches.length) * 100)
+                : 0;
+        });
+
+        console.log('📊 Historique chargé:', weekendsData);
+        return weekendsData;
+
+    } catch (error) {
+        console.error('Erreur getWeekendHistoryData:', error);
         return [];
     }
 }
@@ -227,17 +370,22 @@ function generateWeekendRecapHTML(matchesByDate, globalStats, allMatches) {
         <div class="weekend-tabs">
             <button class="weekend-tab active" data-tab="matches">Matchs</button>
             <button class="weekend-tab" data-tab="stats">Statistiques</button>
+            <button class="weekend-tab" data-tab="history">Historique</button>
         </div>
-        
+
         <div class="weekend-tab-content active" id="matches-tab">
             ${generateMatchesTabHTML(matchesByDate)}
         </div>
-        
+
         <div class="weekend-tab-content" id="stats-tab">
             ${generateStatsTabHTML(globalStats)}
         </div>
+
+        <div class="weekend-tab-content" id="history-tab">
+            ${generateHistoryTabHTML()}
+        </div>
     `;
-    
+
     // Ajouter les event listeners après insertion
     setTimeout(() => {
         const tabs = document.querySelectorAll('.weekend-tab');
@@ -253,9 +401,22 @@ function generateWeekendRecapHTML(matchesByDate, globalStats, allMatches) {
  * Génère l'onglet Matchs
  */
 function generateMatchesTabHTML(matchesByDate) {
-    let html = '';
-    
     const dates = Object.keys(matchesByDate).sort();
+
+    // Si aucun match ce week-end, afficher un message
+    if (dates.length === 0) {
+        return `
+            <div class="no-matches">
+                <div class="no-matches-icon">🏐</div>
+                <p>Aucun match ce week-end</p>
+                <p style="font-size: 14px; color: #94a3b8; margin-top: 10px;">
+                    Consultez l'onglet <strong>Historique</strong> pour voir les week-ends précédents
+                </p>
+            </div>
+        `;
+    }
+
+    let html = '';
     
     dates.forEach(date => {
         const matches = matchesByDate[date];
@@ -273,15 +434,17 @@ function generateMatchesTabHTML(matchesByDate) {
         
         matches.forEach(match => {
             const resultClass = match.matchWon === true ? 'victory' : match.matchWon === false ? 'defeat' : 'unknown';
-            const resultIcon = match.matchWon === true ? '✅' : match.matchWon === false ? '❌' : '❓';
+            const resultIcon = match.matchWon === true ? '✅' : match.matchWon === false ? '❌' : '—';
             const resultText = match.matchWon === true ? 'Victoire' : match.matchWon === false ? 'Défaite' : 'Non renseigné';
             
-            const timePlayed = match.timePlayed ? parseInt(match.timePlayed) : 0;
+            const timePlayedRaw = match.timePlayed;
+            const timePlayedSaisi = timePlayedRaw !== null && timePlayedRaw !== undefined && timePlayedRaw !== '';
+            const timePlayed = timePlayedSaisi ? parseInt(timePlayedRaw) : null;
             let timeText = 'Non renseigné';
-            if (timePlayed > 0) {
-                // Convertir le pourcentage en texte descriptif
+            if (timePlayed === 0) {
+                timeText = 'Juste la chauffe';
+            } else if (timePlayed > 0) {
                 const timeLabels = {
-                    0: '0 set',
                     20: '1/5 set',
                     25: '1/4 set',
                     33: '1/3 set',
@@ -375,6 +538,248 @@ function generateStatsTabHTML(globalStats) {
 }
 
 /**
+ * Génère le HTML de l'onglet Historique
+ */
+function generateHistoryTabHTML() {
+    return `
+        <div class="history-container">
+            <div class="history-header">
+                <h4>📈 Historique des 8 derniers week-ends</h4>
+                <p class="history-subtitle">Évolution des victoires, joueuses et temps de jeu</p>
+            </div>
+            <div class="history-chart-container">
+                <canvas id="weekendHistoryChart"></canvas>
+            </div>
+            <div id="historyLoadingIndicator" class="history-loading">
+                <span>Chargement des données...</span>
+            </div>
+            <div id="historySummary" class="history-summary"></div>
+        </div>
+    `;
+}
+
+/**
+ * Charge et affiche le graphique d'historique
+ */
+async function loadHistoryChart() {
+    const loadingEl = document.getElementById('historyLoadingIndicator');
+    const summaryEl = document.getElementById('historySummary');
+    const canvas = document.getElementById('weekendHistoryChart');
+
+    if (!canvas) return;
+
+    // Afficher le chargement
+    if (loadingEl) loadingEl.style.display = 'block';
+
+    try {
+        // Récupérer les données
+        const historyData = await getWeekendHistoryData(8);
+
+        // Masquer le chargement
+        if (loadingEl) loadingEl.style.display = 'none';
+
+        if (historyData.length === 0) {
+            if (summaryEl) {
+                summaryEl.innerHTML = '<p class="no-history">Aucun historique disponible</p>';
+            }
+            return;
+        }
+
+        // Inverser pour avoir le plus ancien à gauche
+        const reversedData = [...historyData].reverse();
+
+        // Préparer les données pour Chart.js
+        const labels = reversedData.map(w => w.label);
+        const victoriesData = reversedData.map(w => w.stats.victories);
+        const defeatsData = reversedData.map(w => w.stats.defeats);
+        const playerCountData = reversedData.map(w => w.stats.playerCount);
+        const avgTimeData = reversedData.map(w => w.stats.avgPlayingTime);
+
+        // Détruire l'ancien graphique s'il existe
+        if (weekendHistoryChartInstance) {
+            weekendHistoryChartInstance.destroy();
+            weekendHistoryChartInstance = null;
+        }
+
+        const ctx = canvas.getContext('2d');
+
+        // Créer le graphique
+        weekendHistoryChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Victoires',
+                        data: victoriesData,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1,
+                        stack: 'stack1',
+                        order: 2
+                    },
+                    {
+                        label: 'Défaites',
+                        data: defeatsData,
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: 'rgb(239, 68, 68)',
+                        borderWidth: 1,
+                        stack: 'stack1',
+                        order: 2
+                    },
+                    {
+                        label: 'Joueuses',
+                        data: playerCountData,
+                        type: 'line',
+                        borderColor: 'rgb(139, 92, 246)',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgb(139, 92, 246)',
+                        fill: false,
+                        yAxisID: 'y1',
+                        order: 1
+                    },
+                    {
+                        label: 'Temps de jeu moyen (%)',
+                        data: avgTimeData,
+                        type: 'line',
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        fill: false,
+                        yAxisID: 'y2',
+                        order: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            afterTitle: function(context) {
+                                const idx = context[0].dataIndex;
+                                const data = reversedData[idx];
+                                return `${data.stats.totalMatches} matchs joués`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    },
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Matchs (V/D)',
+                            font: { size: 11 }
+                        },
+                        ticks: { stepSize: 2 }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        max: 14,
+                        grid: { drawOnChartArea: false },
+                        title: {
+                            display: true,
+                            text: 'Joueuses',
+                            font: { size: 11 }
+                        },
+                        ticks: { stepSize: 2 }
+                    },
+                    y2: {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: true,
+                        max: 100,
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Générer le résumé
+        generateHistorySummary(reversedData, summaryEl);
+
+    } catch (error) {
+        console.error('Erreur loadHistoryChart:', error);
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (summaryEl) {
+            summaryEl.innerHTML = '<p class="history-error">Erreur lors du chargement</p>';
+        }
+    }
+}
+
+/**
+ * Génère le résumé des statistiques historiques
+ */
+function generateHistorySummary(data, container) {
+    if (!container || data.length === 0) return;
+
+    // Calculer les totaux
+    let totalVictories = 0;
+    let totalDefeats = 0;
+    let totalMatches = 0;
+    let avgPlayers = 0;
+
+    data.forEach(w => {
+        totalVictories += w.stats.victories;
+        totalDefeats += w.stats.defeats;
+        totalMatches += w.stats.totalMatches;
+        avgPlayers += w.stats.playerCount;
+    });
+
+    avgPlayers = Math.round(avgPlayers / data.length);
+    const winRate = totalMatches > 0 ? Math.round((totalVictories / totalMatches) * 100) : 0;
+
+    container.innerHTML = `
+        <div class="history-summary-grid">
+            <div class="summary-stat">
+                <span class="summary-value">${totalVictories}</span>
+                <span class="summary-label">Victoires totales</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-value">${totalDefeats}</span>
+                <span class="summary-label">Défaites totales</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-value ${winRate >= 50 ? 'positive' : ''}">${winRate}%</span>
+                <span class="summary-label">Taux de victoire</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-value">${avgPlayers}</span>
+                <span class="summary-label">Joueuses/WE (moy.)</span>
+            </div>
+        </div>
+    `;
+}
+
+/**
  * Change d'onglet
  */
 function switchWeekendTab(tabName) {
@@ -382,22 +787,34 @@ function switchWeekendTab(tabName) {
     document.querySelectorAll('.weekend-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
-    
+
     // Mettre à jour le contenu
     document.querySelectorAll('.weekend-tab-content').forEach(content => {
         content.classList.toggle('active', content.id === `${tabName}-tab`);
     });
+
+    // Charger le graphique historique si nécessaire
+    if (tabName === 'history' && !weekendHistoryChartInstance) {
+        loadHistoryChart();
+    }
 }
 
 /**
  * Bouton refresh
  */
 function refreshWeekendRecap() {
+    // Réinitialiser le graphique historique
+    if (weekendHistoryChartInstance) {
+        weekendHistoryChartInstance.destroy();
+        weekendHistoryChartInstance = null;
+    }
     loadWeekendMatchRecap();
 }
 
 // Exposer les fonctions globalement
 window.loadWeekendMatchRecap = loadWeekendMatchRecap;
 window.refreshWeekendRecap = refreshWeekendRecap;
+window.loadHistoryChart = loadHistoryChart;
+window.getWeekendHistoryData = getWeekendHistoryData;
 
-console.log('✅ Weekend match recap loaded');
+console.log('✅ Weekend match recap loaded (avec historique)');

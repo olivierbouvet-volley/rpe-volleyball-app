@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPE Gen2 — Présentation Pôle Espoir</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d1a;
+    --bg2: #1a1a2e;
+    --indigo: #6366f1;
+    --indigo-light: #818cf8;
+    --indigo-dark: #4338ca;
+    --amber: #f59e0b;
+    --amber-light: #fcd34d;
+    --green: #10b981;
+    --red: #ef4444;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.1);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* ── SLIDES ── */
+  .slides-container {
+    width: 100%; height: 100%;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 6rem;
+    background: linear-gradient(135deg, var(--bg2) 0%, var(--bg) 100%);
+    opacity: 0;
+    transform: translateY(24px);
+    pointer-events: none;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  /* ── NAVIGATION ── */
+  #progress {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+
+  .dot.active {
+    background: var(--indigo);
+    transform: scale(1.4);
+  }
+
+  #slide-num {
+    position: fixed;
+    bottom: 22px;
+    right: 28px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    z-index: 100;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #nav-hint {
+    position: fixed;
+    bottom: 22px;
+    left: 28px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.2);
+    z-index: 100;
+  }
+
+  /* ── COMPOSANTS COMMUNS ── */
+  .slide-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--indigo-light);
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: clamp(2.8rem, 5vw, 5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    text-align: center;
+  }
+
+  h2 {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    color: var(--muted);
+    text-align: center;
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+
+  .accent { color: var(--indigo-light); }
+  .amber  { color: var(--amber); }
+  .green  { color: var(--green); }
+  .red-c  { color: var(--red); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.6rem 2rem;
+  }
+
+  .cards-row {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .cards-row .card {
+    flex: 1;
+  }
+
+  .card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-body {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .pill {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    color: var(--indigo-light);
+    border-radius: 999px;
+    padding: 0.25rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  /* ── SLIDE 1 — TITRE ── */
+  #s1 {
+    background: linear-gradient(135deg, #1a1a3e 0%, #0d0d1a 60%, #0f0a1e 100%);
+  }
+
+  #s1 h1 {
+    font-size: clamp(4rem, 7vw, 7rem);
+    background: linear-gradient(135deg, #fff 0%, var(--indigo-light) 60%, var(--amber) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.3rem;
+  }
+
+  #s1 .gen2-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--indigo-dark) 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 0.15rem 0.7rem;
+    font-size: 1.6rem;
+    font-weight: 900;
+    vertical-align: middle;
+    margin-left: 0.3rem;
+    -webkit-text-fill-color: white;
+  }
+
+  #s1 .s1-detail {
+    margin-top: 2rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+  }
+
+  .s1-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 999px;
+    padding: 0.4rem 1.2rem;
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  #s1 .deco-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(99,102,241,0.15);
+    pointer-events: none;
+  }
+
+  /* ── SLIDE 2 — PROBLÉMATIQUE ── */
+  #s2 .problem-card {
+    border-left: 4px solid;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+  }
+
+  #s2 .problem-card:nth-child(1) { border-color: var(--amber); }
+  #s2 .problem-card:nth-child(2) { border-color: var(--indigo); }
+  #s2 .problem-card:nth-child(3) { border-color: var(--red); }
+
+  #s2 .problem-icon { font-size: 2rem; flex-shrink: 0; margin-top: 2px; }
+  #s2 .problem-text strong { display: block; font-size: 1.05rem; margin-bottom: 0.3rem; }
+  #s2 .problem-text span { font-size: 0.9rem; color: var(--muted); }
+
+  #s2 .source-note {
+    margin-top: 1.5rem;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.25);
+    text-align: center;
+  }
+
+  /* ── SLIDE 3 — 3 PILIERS ── */
+  #s3 .pilier-card {
+    flex: 1;
+    border-top: 3px solid;
+    padding-top: 2rem;
+  }
+
+  #s3 .pilier-card:nth-child(1) { border-color: var(--indigo); }
+  #s3 .pilier-card:nth-child(2) { border-color: var(--green); }
+  #s3 .pilier-card:nth-child(3) { border-color: var(--amber); }
+
+  #s3 .pilier-num {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  #s3 .pilier-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+  }
+
+  #s3 .pilier-items {
+    list-style: none;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 2;
+  }
+
+  #s3 .pilier-items li::before { content: '→ '; color: var(--indigo-light); }
+
+  #s3 .pwa-badge {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ── SLIDE 4 — INTERFACE JOUEUSE ── */
+  #s4 .layout-2col {
+    display: flex;
+    gap: 4rem;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* Mockup téléphone */
+  .phone-mockup {
+    width: 240px;
+    flex-shrink: 0;
+    background: #111827;
+    border-radius: 36px;
+    border: 3px solid rgba(255,255,255,0.15);
+    padding: 20px 16px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+    position: relative;
+  }
+
+  .phone-mockup::before {
+    content: '';
+    display: block;
+    width: 60px; height: 6px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 999px;
+    margin: 0 auto 16px;
+  }
+
+  .phone-score-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(var(--green) 0% 78%, rgba(255,255,255,0.08) 78%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    font-weight: 900;
+    font-size: 1.3rem;
+    position: relative;
+  }
+
+  .phone-score-ring::after {
+    content: '';
+    position: absolute; inset: 6px;
+    background: #111827;
+    border-radius: 50%;
+    z-index: 0;
+  }
+
+  .phone-score-label {
+    position: relative; z-index: 1;
+    font-size: 1.1rem; font-weight: 900;
+    color: var(--green);
+  }
+
+  .phone-cycle-tag {
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    color: var(--indigo-light);
+    text-align: center;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .phone-streak {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--amber);
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .phone-indicators {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .phone-ind {
+    flex: 1;
+    height: 36px;
+    border-radius: 6px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 0.55rem;
+    gap: 2px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .phone-ind-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .phone-checkin-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--indigo), var(--indigo-dark));
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: default;
+    margin-top: 4px;
+  }
+
+  .key-points {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .kp-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .kp-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    background: rgba(99,102,241,0.15);
+  }
+
+  .kp-text strong { display: block; font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .kp-text span { font-size: 0.88rem; color: var(--muted); }
+
+  /* ── SLIDE 5 — INTERFACE COACH ── */
+  #s5 .coach-layout {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .team-table {
+    flex: 1.2;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    font-size: 0.82rem;
+  }
+
+  .tt-header {
+    display: grid;
+    grid-template-columns: 1fr 60px 60px 60px;
+    padding: 8px 12px;
+    background: rgba(99,102,241,0.15);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .tt-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 60px 60px;
+    padding: 7px 12px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    align-items: center;
+  }
+
+  .tt-row:hover { background: rgba(255,255,255,0.03); }
+
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .status-green { background: var(--green); }
+  .status-orange { background: #f97316; }
+  .status-red { background: var(--red); }
+
+  .tt-name { display: flex; align-items: center; font-size: 0.8rem; }
+  .tt-val { text-align: center; color: var(--muted); font-size: 0.78rem; }
+
+  .coach-features {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cf-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+
+  .cf-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .cf-text strong { display: block; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .cf-text span { font-size: 0.83rem; color: var(--muted); }
+
+  /* ── SLIDE 6 — RED-S ── */
+  #s6 {
+    background: linear-gradient(135deg, #1a0a0a 0%, #0d0d1a 100%);
+  }
+
+  .reds-definition {
+    max-width: 780px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 14px;
+    padding: 1.4rem 2rem;
+    font-size: 1.05rem;
+    font-style: italic;
+    text-align: center;
+    color: #fca5a5;
+    margin-bottom: 2.5rem;
+  }
+
+  .reds-cols {
+    display: flex;
+    gap: 3rem;
+    width: 100%;
+    max-width: 1000px;
+    align-items: flex-start;
+  }
+
+  .reds-col { flex: 1; }
+  .reds-col-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 1rem;
+  }
+
+  .reds-item {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 0.9rem;
+    align-items: flex-start;
+  }
+
+  .reds-bullet {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+
+  .reds-item-text {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .reds-action {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.88rem;
+    color: #fca5a5;
+    line-height: 1.5;
+  }
+
+  .reds-stat {
+    font-size: clamp(3rem, 5vw, 5rem);
+    font-weight: 900;
+    color: var(--red);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ── SLIDE 7 — DONNÉES ── */
+  .data-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 2rem;
+  }
+
+  .data-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    text-align: center;
+  }
+
+  .data-number {
+    font-size: clamp(2.5rem, 4vw, 3.8rem);
+    font-weight: 900;
+    color: var(--indigo-light);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .data-label {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .data-insight {
+    max-width: 800px;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 12px;
+    padding: 1.2rem 2rem;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--amber-light);
+    font-style: italic;
+  }
+
+  /* ── SLIDE 8 — ROADMAP ── */
+  .timeline {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    max-width: 1050px;
+    position: relative;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 36px;
+    left: 60px;
+    right: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--indigo) 50%, var(--amber) 100%);
+    z-index: 0;
+  }
+
+  .tl-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tl-dot {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+    border: 3px solid;
+    background: var(--bg);
+  }
+
+  .tl-dot.done { border-color: var(--green); background: rgba(16,185,129,0.15); }
+  .tl-dot.wip  { border-color: var(--indigo); background: rgba(99,102,241,0.15); }
+  .tl-dot.future { border-color: var(--amber); background: rgba(245,158,11,0.15); }
+
+  .tl-phase {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .tl-done-label { color: var(--green); }
+  .tl-wip-label  { color: var(--indigo-light); }
+  .tl-future-label { color: var(--amber); }
+
+  .tl-title { font-size: 1rem; font-weight: 800; margin-bottom: 0.6rem; }
+  .tl-items { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+  /* ── SLIDE 9 — IA ── */
+  #s9 {
+    background: linear-gradient(135deg, #0d0a1e 0%, #0d0d1a 100%);
+  }
+
+  .ia-layout {
+    display: flex;
+    gap: 4rem;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .ia-principle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ia-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+  }
+
+  .ia-step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .ia-step-text { font-size: 0.9rem; line-height: 1.5; color: var(--muted); }
+  .ia-step-text strong { color: var(--text); }
+
+  .ia-examples {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ia-example {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-left: 3px solid var(--indigo);
+    border-radius: 0 12px 12px 0;
+    padding: 1rem 1.2rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--indigo-light);
+  }
+
+  /* Graphique prédiction stylisé */
+  .ia-chart {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 1rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ia-chart-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+  }
+
+  .ia-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 80px;
+  }
+
+  .ia-bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .ia-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+  }
+
+  .ia-bar.real { background: var(--indigo); }
+  .ia-bar.pred { background: rgba(99,102,241,0.4); border: 1px dashed var(--indigo-light); }
+
+  .ia-bar-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .ia-legend {
+    margin-top: 8px;
+    display: flex;
+    gap: 12px;
+    font-size: 0.65rem;
+    color: var(--muted);
+    align-items: center;
+  }
+
+  .ia-legend-item {
+    display: flex; gap: 4px; align-items: center;
+  }
+
+  .ia-legend-box {
+    width: 10px; height: 10px; border-radius: 2px;
+  }
+
+  .tech-badge {
+    margin-top: 1rem;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── SLIDE 10 — CONCLUSION ── */
+  #s10 {
+    background: linear-gradient(135deg, #1a1a3e 0%, #0d0d1a 100%);
+  }
+
+  .conclu-benefits {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1050px;
+    margin-bottom: 2.5rem;
+  }
+
+  .benefit-card {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: transform 0.3s;
+  }
+
+  .benefit-icon {
+    font-size: 2.8rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .benefit-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 0.6rem;
+    color: var(--text);
+  }
+
+  .benefit-body {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .cta-block {
+    background: linear-gradient(135deg, var(--indigo) 0%, var(--indigo-dark) 100%);
+    border-radius: 16px;
+    padding: 1.5rem 3rem;
+    text-align: center;
+    max-width: 700px;
+  }
+
+  .cta-block h3 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+  }
+
+  .cta-block p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  /* Responsive minimal */
+  @media (max-width: 900px) {
+    .slide { padding: 2rem 2.5rem; }
+    .cards-row, #s4 .layout-2col, #s5 .coach-layout, .ia-layout, .conclu-benefits {
+      flex-direction: column;
+    }
+    .phone-mockup { width: 200px; }
+    .timeline::before { display: none; }
+    .timeline { flex-direction: column; gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="slides-container">
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 1 — TITRE
+  ═══════════════════════════════════════ -->
+  <section class="slide active" id="s1">
+    <!-- Anneaux déco -->
+    <div class="deco-ring" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+    <div class="deco-ring" style="width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+
+    <div class="slide-label">Pôle Espoir Volleyball · Sablé-sur-Sarthe</div>
+
+    <h1>RPE<span class="gen2-badge">Gen2</span></h1>
+
+    <p class="subtitle" style="font-size:clamp(1.2rem,2vw,1.7rem); color: var(--indigo-light); margin-top:0.8rem;">
+      Suivi Athlétique Intelligent
+    </p>
+    <p class="subtitle" style="margin-top:0.4rem;">
+      Condition physique · Bien-être · Cycle menstruel · Prévention
+    </p>
+
+    <div class="s1-detail">
+      <span class="s1-chip">📅 Saison 2024–2025</span>
+      <span class="s1-chip">👩 14 joueuses</span>
+      <span class="s1-chip">🎂 15–19 ans</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 2 — PROBLÉMATIQUE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s2">
+    <div class="slide-label">Le Problème</div>
+    <h2>Un défi spécifique au sport<br>féminin de haut niveau</h2>
+
+    <div style="display:flex; flex-direction:column; gap:1.2rem; width:100%; max-width:860px;">
+      <div class="card problem-card">
+        <span class="problem-icon">⚠️</span>
+        <div class="problem-text">
+          <strong>La charge d'entraînement n'est pas individualisée</strong>
+          <span>La même séance crée des charges très différentes selon chaque athlète — la surcharge devient invisible jusqu'à la blessure.</span>
+        </div>
+      </div>
+
+      <div class="card problem-card">
+        <span class="problem-icon">🌙</span>
+        <div class="problem-text">
+          <strong>Le cycle menstruel impacte la performance jusqu'à 30 %</strong>
+          <span>Hormones, énergie, récupération, blessures ligamentaires — ces variations sont réelles et mesurées scientifiquement, mais ignorées dans la planification.</span>
+        </div>
+      </div>
+
+      <div class="card problem-card">
+        <span class="problem-icon">🏥</span>
+        <div class="problem-text">
+          <strong>RED-S : 1 athlète féminine sur 3 concernée — non détecté</strong>
+          <span>Le déficit énergétique relatif dans le sport est la 1ère cause de blessures de surcharge chez la femme sportive. Il se développe silencieusement sur des mois.</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="source-note">Sources : British Journal of Sports Medicine · IOC RED-S Task Force · Mountjoy et al. 2018</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 3 — 3 PILIERS
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s3">
+    <div class="slide-label">Notre réponse</div>
+    <h2>3 piliers pour un suivi holistique</h2>
+
+    <div class="cards-row" style="max-width:1100px;">
+
+      <div class="card pilier-card">
+        <div class="pilier-num">Pilier 01</div>
+        <div class="card-icon">📋</div>
+        <div class="pilier-title accent">Charge d'entraînement</div>
+        <ul class="pilier-items">
+          <li>RPE × Durée = score de charge quotidien</li>
+          <li>5 types d'activités (Volley, Muscu, Match…)</li>
+          <li>ATL · CTL · TSB (forme / fatigue)</li>
+          <li>Historique 7 / 14 / 30 jours</li>
+        </ul>
+      </div>
+
+      <div class="card pilier-card">
+        <div class="pilier-num">Pilier 02</div>
+        <div class="card-icon">💤</div>
+        <div class="pilier-title" style="color: var(--green);">Bien-être quotidien</div>
+        <ul class="pilier-items">
+          <li>5 indicateurs : sommeil, courbatures</li>
+          <li>Stress, humeur, niveau d'énergie</li>
+          <li>Score de préparation 0–100</li>
+          <li>Alertes automatiques coach</li>
+        </ul>
+      </div>
+
+      <div class="card pilier-card">
+        <div class="pilier-num">Pilier 03</div>
+        <div class="card-icon">🌙</div>
+        <div class="pilier-title amber">Cycle menstruel</div>
+        <ul class="pilier-items">
+          <li>4 phases identifiées (Folliculaire…)</li>
+          <li>13 données par cycle</li>
+          <li>Profils : Cyclique / Stable / Atypique</li>
+          <li>Corrélations cycle ↔ performance</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="pwa-badge">
+      <span class="pill">📱 PWA installable sur smartphone · 2 min/jour</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 4 — INTERFACE JOUEUSE
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s4">
+    <div class="slide-label">Côté joueuse</div>
+    <h2>L'application du quotidien</h2>
+
+    <div class="layout-2col">
+
+      <!-- Mockup téléphone -->
+      <div class="phone-mockup">
+        <!-- Score ring -->
+        <div class="phone-score-ring">
+          <span class="phone-score-label">78</span>
+        </div>
+        <p style="text-align:center; font-size:0.65rem; color:var(--muted); margin-bottom:10px;">Score de préparation</p>
+
+        <!-- Phase cycle -->
+        <div class="phone-cycle-tag">
+          🌱 Phase Folliculaire<br>
+          <span style="color:var(--green); font-weight:700;">Semaine idéale pour l'intensité</span>
+        </div>
+
+        <!-- Streak -->
+        <div class="phone-streak">🔥 12 jours consécutifs</div>
+
+        <!-- 5 indicateurs -->
+        <div class="phone-indicators">
+          <div class="phone-ind" style="background:rgba(16,185,129,0.15);">
+            <div class="phone-ind-dot" style="background:#10b981;"></div>
+            <span>Sommeil</span>
+          </div>
+          <div class="phone-ind" style="background:rgba(99,102,241,0.15);">
+            <div class="phone-ind-dot" style="background:#6366f1;"></div>
+            <span>Crbtr</span>
+          </div>
+          <div class="phone-ind" style="background:rgba(245,158,11,0.15);">
+            <div class="phone-ind-dot" style="background:#f59e0b;"></div>
+            <span>Stress</span>
+          </div>
+          <div class="phone-ind" style="background:rgba(16,185,129,0.15);">
+            <div class="phone-ind-dot" style="background:#10b981;"></div>
+            <span>Humeur</span>
+          </div>
+          <div class="phone-ind" style="background:rgba(99,102,241,0.15);">
+            <div class="phone-ind-dot" style="background:#6366f1;"></div>
+            <span>Énergie</span>
+          </div>
+        </div>
+
+        <button class="phone-checkin-btn">✓ Check-in du jour</button>
+      </div>
+
+      <!-- Points clés -->
+      <div class="key-points">
+        <div class="kp-item">
+          <div class="kp-icon">⏱</div>
+          <div class="kp-text">
+            <strong>2 minutes par jour</strong>
+            <span>Check-in rapide le matin (bien-être) + saisie RPE après chaque séance</span>
+          </div>
+        </div>
+        <div class="kp-item">
+          <div class="kp-icon">🔔</div>
+          <div class="kp-text">
+            <strong>Notifications intelligentes</strong>
+            <span>12h → rappel check-in · 20h → rappel RPE · Jamais intrusif</span>
+          </div>
+        </div>
+        <div class="kp-item">
+          <div class="kp-icon">🌙</div>
+          <div class="kp-text">
+            <strong>Suivi du cycle complet</strong>
+            <span>Questionnaire mensuel de 13 points · Profil hormonal personnalisé · Phase affichée chaque jour</span>
+          </div>
+        </div>
+        <div class="kp-item">
+          <div class="kp-icon" style="background:rgba(245,158,11,0.15);">🏆</div>
+          <div class="kp-text">
+            <strong>Gamification = engagement</strong>
+            <span>Streaks de régularité · Stickers · Historique personnel → les joueuses deviennent actrices de leur suivi</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 5 — INTERFACE COACH
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s5">
+    <div class="slide-label">Côté coach</div>
+    <h2>La vision globale de l'équipe</h2>
+
+    <div class="coach-layout">
+
+      <!-- Tableau joueuses -->
+      <div class="team-table">
+        <div class="tt-header">
+          <span>Joueuse</span>
+          <span style="text-align:center;">Prépa</span>
+          <span style="text-align:center;">RPE</span>
+          <span style="text-align:center;">Phase</span>
+        </div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-green"></span>Léa M.</span><span class="tt-val">87</span><span class="tt-val">68</span><span class="tt-val">🌱</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-green"></span>Emma R.</span><span class="tt-val">82</span><span class="tt-val">72</span><span class="tt-val">🌕</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-orange"></span>Rose T.</span><span class="tt-val">61</span><span class="tt-val">89</span><span class="tt-val">🍂</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-red"></span>Julie B.</span><span class="tt-val">44</span><span class="tt-val">94</span><span class="tt-val">🌊</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-green"></span>Manon C.</span><span class="tt-val">79</span><span class="tt-val">55</span><span class="tt-val">🌱</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-green"></span>Clara V.</span><span class="tt-val">91</span><span class="tt-val">61</span><span class="tt-val">🌕</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-orange"></span>Sarah K.</span><span class="tt-val">58</span><span class="tt-val">82</span><span class="tt-val">🍂</span></div>
+        <div class="tt-row"><span class="tt-name"><span class="status-dot status-green"></span>Jade P.</span><span class="tt-val">88</span><span class="tt-val">58</span><span class="tt-val">🌱</span></div>
+        <div class="tt-row" style="opacity:0.5; font-style:italic; font-size:0.72rem; justify-content:center; padding:6px; color:var(--muted);">… 6 autres joueuses</div>
+      </div>
+
+      <!-- 3 fonctions clés -->
+      <div class="coach-features">
+        <div class="cf-card">
+          <span class="cf-icon">🟢</span>
+          <div class="cf-text">
+            <strong>Filtrage en temps réel</strong>
+            <span>Optimal · Attention · Critique — vue instantanée de qui nécessite une adaptation de charge avant la séance</span>
+          </div>
+        </div>
+        <div class="cf-card">
+          <span class="cf-icon">🔔</span>
+          <div class="cf-text">
+            <strong>Alertes automatiques</strong>
+            <span>Sommeil &lt; 5h · Stress &gt; 7 · Aménorrhée détectée · RPE excessif 3 jours consécutifs</span>
+          </div>
+        </div>
+        <div class="cf-card">
+          <span class="cf-icon">📊</span>
+          <div class="cf-text">
+            <strong>Graphiques individuels</strong>
+            <span>Évolution forme / charge / cycle sur 7–14–30 jours · Fiche détaillée par joueuse en un clic</span>
+          </div>
+        </div>
+        <div class="cf-card">
+          <span class="cf-icon">💡</span>
+          <div class="cf-text">
+            <strong>Planification éclairée</strong>
+            <span>Adapter l'intensité des séances en fonction de l'état réel de l'équipe, pas d'un planning théorique</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 6 — RED-S
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s6">
+    <div class="slide-label">Santé · Prévention</div>
+    <h2>Détection automatique du <span class="red-c">RED-S</span></h2>
+
+    <div class="reds-definition">
+      "Le Relative Energy Deficiency in Sport est la 1ère cause de blessures de surcharge chez l'athlète féminine.
+      Il se développe sur des mois, en silence."
+    </div>
+
+    <div class="reds-cols">
+
+      <div class="reds-col">
+        <div class="reds-col-title">Comment RPE Gen2 détecte</div>
+
+        <div class="reds-item">
+          <div class="reds-bullet"></div>
+          <div class="reds-item-text"><strong>Aménorrhée &gt; 90 jours</strong> → alerte coach immédiate</div>
+        </div>
+        <div class="reds-item">
+          <div class="reds-bullet"></div>
+          <div class="reds-item-text"><strong>Combinaison signaux faibles</strong> : fatigue chronique + SPM sévère + énergie basse</div>
+        </div>
+        <div class="reds-item">
+          <div class="reds-bullet"></div>
+          <div class="reds-item-text"><strong>Score énergie &lt; 4/10</strong> sur 7 jours consécutifs → signal d'alarme</div>
+        </div>
+        <div class="reds-item">
+          <div class="reds-bullet"></div>
+          <div class="reds-item-text"><strong>Charge cumulée excessive</strong> (CTL élevé + bien-être bas simultanément)</div>
+        </div>
+      </div>
+
+      <div class="reds-col">
+        <div class="reds-col-title">Conséquences et action</div>
+
+        <div style="margin-bottom:1.2rem;">
+          <div class="reds-stat">1/3</div>
+          <div style="font-size:0.88rem; color:var(--muted);">des athlètes féminines concernées,<br>souvent à leur insu</div>
+        </div>
+
+        <div class="reds-action">
+          🔔 <strong>Notification coach</strong> + recommandation consultation médicale (médecin du sport / gynécologue)<br><br>
+          🛡 Intervention précoce avant blessure de stress osseux ou trouble du comportement alimentaire
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 7 — LES DONNÉES
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s7">
+    <div class="slide-label">Capital de données</div>
+    <h2>Un patrimoine scientifique<br><span class="accent">unique en France</span></h2>
+
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="data-number">~2 500</div>
+        <div class="data-label">check-ins quotidiens<br>14 joueuses × ~180 jours</div>
+      </div>
+      <div class="data-card">
+        <div class="data-number">~1 800</div>
+        <div class="data-label">séances RPE enregistrées<br>avec durée et type d'activité</div>
+      </div>
+      <div class="data-card">
+        <div class="data-number">14</div>
+        <div class="data-label">profils de cycle complets<br>13 questions chacun · données hormonales</div>
+      </div>
+      <div class="data-card">
+        <div class="data-number">~350</div>
+        <div class="data-label">cycles menstruels documentés<br>sur une saison complète</div>
+      </div>
+    </div>
+
+    <div class="data-insight">
+      "Ces données n'existent nulle part ailleurs dans le volleyball féminin U20 en France.<br>
+      Elles constituent un actif scientifique propriétaire du <strong>Pôle Espoir de Sablé-sur-Sarthe</strong>."
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 8 — ROADMAP
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s8">
+    <div class="slide-label">Stratégie d'évolution</div>
+    <h2>Roadmap sur 18 mois</h2>
+
+    <div class="timeline">
+
+      <div class="tl-step">
+        <div class="tl-dot done">✅</div>
+        <div class="tl-phase tl-done-label">Phase 1 — Actuel</div>
+        <div class="tl-title">Collecte &amp; Alertes</div>
+        <div class="tl-items">
+          Suivi RPE quotidien<br>
+          Bien-être 5 indicateurs<br>
+          Cycle menstruel complet<br>
+          Alertes temps réel<br>
+          Dashboard coach
+        </div>
+      </div>
+
+      <div class="tl-step">
+        <div class="tl-dot wip">🔨</div>
+        <div class="tl-phase tl-wip-label">Phase 2 — 6 mois</div>
+        <div class="tl-title">Recommandations</div>
+        <div class="tl-items">
+          Conseils personnalisés<br>
+          par phase du cycle<br>
+          Recommandations nutritionnelles<br>
+          Corrélations RPE ↔ Cycle<br>
+          Visualisations avancées
+        </div>
+      </div>
+
+      <div class="tl-step">
+        <div class="tl-dot future">🤖</div>
+        <div class="tl-phase tl-future-label">Phase 3 — 12–18 mois</div>
+        <div class="tl-title">IA Prédictive</div>
+        <div class="tl-items">
+          Modèle IA individuel<br>
+          Prédiction de forme J+3 à J+7<br>
+          Planification automatique<br>
+          Souveraineté des données Pôle
+        </div>
+      </div>
+
+    </div>
+
+    <p style="margin-top:2.5rem; font-size:0.85rem; color:var(--muted); text-align:center; max-width:700px;">
+      Chaque phase s'appuie sur les données accumulées de la précédente.
+      Plus la base de données grandit, plus les recommandations seront précises et individualisées.
+    </p>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 9 — VISION IA
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s9">
+    <div class="slide-label">Vision Phase 3</div>
+    <h2>Prédire l'état de forme<br><span class="amber">3 à 7 jours à l'avance</span></h2>
+
+    <div class="ia-layout">
+
+      <!-- Principe IA -->
+      <div class="ia-principle">
+        <div class="ia-step">
+          <div class="ia-step-num">1</div>
+          <div class="ia-step-text">
+            <strong>Apprentissage des patterns individuels</strong><br>
+            L'IA apprend les réponses uniques de chaque joueuse à la charge, au sommeil, à son cycle menstruel
+          </div>
+        </div>
+        <div class="ia-step">
+          <div class="ia-step-num">2</div>
+          <div class="ia-step-text">
+            <strong>Corrélation multi-facteurs</strong><br>
+            RPE cumulé + bien-être + phase du cycle + récupération + charge des 14 derniers jours
+          </div>
+        </div>
+        <div class="ia-step">
+          <div class="ia-step-num">3</div>
+          <div class="ia-step-text">
+            <strong>Prédiction J+3, J+5, J+7</strong><br>
+            Score de forme prévisible → planification des séances intensives ou de récupération
+          </div>
+        </div>
+
+        <!-- Graphique -->
+        <div class="ia-chart">
+          <div class="ia-chart-title">Prévision forme — Léa M.</div>
+          <div class="ia-bars">
+            <div class="ia-bar-group">
+              <div class="ia-bar real" style="height:65px;"></div>
+              <div class="ia-bar-label">J-3</div>
+            </div>
+            <div class="ia-bar-group">
+              <div class="ia-bar real" style="height:52px;"></div>
+              <div class="ia-bar-label">J-2</div>
+            </div>
+            <div class="ia-bar-group">
+              <div class="ia-bar real" style="height:70px;"></div>
+              <div class="ia-bar-label">J-1</div>
+            </div>
+            <div class="ia-bar-group">
+              <div class="ia-bar real" style="height:78px; background:var(--amber);"></div>
+              <div class="ia-bar-label" style="color:var(--amber);">Auj.</div>
+            </div>
+            <div class="ia-bar-group">
+              <div class="ia-bar pred" style="height:82px;"></div>
+              <div class="ia-bar-label">J+1</div>
+            </div>
+            <div class="ia-bar-group">
+              <div class="ia-bar pred" style="height:88px;"></div>
+              <div class="ia-bar-label">J+3</div>
+            </div>
+            <div class="ia-bar-group">
+              <div class="ia-bar pred" style="height:85px;"></div>
+              <div class="ia-bar-label">J+5</div>
+            </div>
+          </div>
+          <div class="ia-legend">
+            <div class="ia-legend-item">
+              <div class="ia-legend-box" style="background:var(--indigo);"></div> Réel
+            </div>
+            <div class="ia-legend-item">
+              <div class="ia-legend-box" style="background:rgba(99,102,241,0.4); border:1px dashed var(--indigo-light);"></div> Prédit
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-badge">
+          🤖 Claude AI (Anthropic) · Données hébergées en France · Souveraineté Pôle Espoir
+        </div>
+      </div>
+
+      <!-- Exemples d'usage -->
+      <div class="ia-examples">
+        <div style="font-size:0.78rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">Exemples concrets</div>
+
+        <div class="ia-example">
+          "Léa sera à <strong>85 % de forme samedi</strong> → planifier un entraînement intensif, idéal pour travailler la puissance"
+        </div>
+        <div class="ia-example">
+          "Rose entre en <strong>phase lutéale + surcharge chronique</strong> → réduire l'intensité cette semaine, risque de blessure élevé"
+        </div>
+        <div class="ia-example">
+          "L'<strong>équipe pic à 78 %</strong> en moyenne mercredi prochain → idéal pour le match ou le test de condition physique"
+        </div>
+        <div class="ia-example">
+          "Emma présente un <strong>profil hormonal Atypique</strong> → son pic de forme est décalé de 5 jours par rapport au cycle standard"
+        </div>
+
+        <div class="card" style="margin-top:0.5rem; border-color:rgba(245,158,11,0.3); background:rgba(245,158,11,0.08);">
+          <div class="card-title amber">Résultat attendu</div>
+          <div class="card-body">Gains de performance de <strong>10 à 15 %</strong> par adaptation de la charge d'entraînement au moment optimal de chaque joueuse — documenté dans la littérature scientifique.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 10 — CONCLUSION
+  ═══════════════════════════════════════ -->
+  <section class="slide" id="s10">
+    <div class="slide-label">Conclusion</div>
+    <h2>Un outil unique.<br><span class="accent">Une opportunité pour le Pôle.</span></h2>
+
+    <div class="conclu-benefits">
+
+      <div class="benefit-card">
+        <span class="benefit-icon">🛡</span>
+        <div class="benefit-title">Prévention</div>
+        <div class="benefit-body">
+          Moins de blessures de surcharge.<br>
+          Détection précoce du RED-S.<br>
+          Suivi médico-sportif renforcé,<br>
+          recommandations ciblées.
+        </div>
+      </div>
+
+      <div class="benefit-card">
+        <span class="benefit-icon">📈</span>
+        <div class="benefit-title">Performance</div>
+        <div class="benefit-body">
+          Entraînements adaptés au cycle<br>
+          et à l'état réel de chaque joueuse.<br>
+          Gains 10–15 % documentés.<br>
+          Planification basée sur la donnée.
+        </div>
+      </div>
+
+      <div class="benefit-card">
+        <span class="benefit-icon">🔬</span>
+        <div class="benefit-title">Capital scientifique</div>
+        <div class="benefit-body">
+          Données propriétaires du Pôle.<br>
+          Actif unique en volleyball U20 F.<br>
+          Base pour la recherche appliquée.<br>
+          Rayonnement FFVB / Insep.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cta-block">
+      <h3>Soutenir le développement Phase 2 &amp; 3</h3>
+      <p>Permettre à l'IA de prédire l'état de forme · Étendre à d'autres Pôles Espoir · Partenariat recherche</p>
+    </div>
+
+    <div style="margin-top:1.5rem; display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;">
+      <span class="s1-chip" style="font-size:0.85rem;">👤 Olivier Bouvet — Entraîneur Pôle Espoir</span>
+      <span class="s1-chip" style="font-size:0.85rem;">🏐 Pôle Espoir Volleyball · Sablé-sur-Sarthe</span>
+    </div>
+  </section>
+
+</div><!-- /slides-container -->
+
+<!-- Indicateurs de navigation -->
+<div id="progress"></div>
+<div id="slide-num">1 / 10</div>
+<div id="nav-hint">← → Naviguer · Espace → Slide suivant</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let current  = 0;
+
+  // ── Créer les dots de progression
+  const progressEl = document.getElementById('progress');
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    progressEl.appendChild(dot);
+  }
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    progressEl.children[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    progressEl.children[current].classList.add('active');
+    document.getElementById('slide-num').textContent = (current + 1) + ' / ' + total;
+  }
+
+  // ── Navigation clavier
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goTo(current - 1);
+    } else if (e.key === 'Home') {
+      goTo(0);
+    } else if (e.key === 'End') {
+      goTo(total - 1);
+    }
+  });
+
+  // ── Navigation tactile (swipe)
+  let touchX = null;
+  document.addEventListener('touchstart', (e) => { touchX = e.changedTouches[0].screenX; }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].screenX - touchX;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+    touchX = null;
+  }, { passive: true });
+</script>
+</body>
+</html>

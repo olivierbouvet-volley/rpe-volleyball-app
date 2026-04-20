@@ -582,36 +582,33 @@ async function checkAndAwardStickers(playerId, triggerType = 'rpe') {
  * Vérifie les stickers liés aux RPE
  */
 async function checkRPEStickers(playerId, playerData, trainingStats, currentStickers, newStickers) {
-    // Streak 5 jours
-    if (!currentStickers.includes('consistent_player') && trainingStats.weeklyStreak >= 1) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 5) {
-            newStickers.push(STICKER_DEFINITIONS.consistent_player);
-        }
+    const totalSessions = trainingStats.totalSessions || 0;
+    const weeksComplete = trainingStats.weeksCompleteCount || 0;
+    const weeksPerfect = trainingStats.weeksPerfectCount || 0;
+
+    // "Joueuse Assidue" : 5 jours consécutifs → proxy : 5 séances totales
+    if (!currentStickers.includes('consistent_player') && totalSessions >= 5) {
+        newStickers.push(STICKER_DEFINITIONS.consistent_player);
     }
 
-    // Streak 7 jours
-    if (!currentStickers.includes('streak_7')) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 7) {
-            newStickers.push(STICKER_DEFINITIONS.streak_7);
-        }
+    // "Semaine Parfaite" (streak 7j) → proxy : 1 semaine complète (9 RPE)
+    if (!currentStickers.includes('streak_7') && weeksComplete >= 1) {
+        newStickers.push(STICKER_DEFINITIONS.streak_7);
     }
 
-    // Streak 14 jours
-    if (!currentStickers.includes('streak_14')) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 14) {
-            newStickers.push(STICKER_DEFINITIONS.streak_14);
-        }
+    // "Deux Semaines Implacable" (streak 14j) → proxy : 2 semaines complètes
+    if (!currentStickers.includes('streak_14') && weeksComplete >= 2) {
+        newStickers.push(STICKER_DEFINITIONS.streak_14);
     }
 
-    // Coach Alexis (Streak 30 jours)
-    if (!currentStickers.includes('coach_alexis')) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 30) {
-            newStickers.push(STICKER_DEFINITIONS.coach_alexis);
-        }
+    // "RPE Régulier" : 50 RPE soumis au total
+    if (!currentStickers.includes('rpe_regular') && totalSessions >= 50) {
+        newStickers.push(STICKER_DEFINITIONS.rpe_regular);
+    }
+
+    // "Expert RPE" : 200 RPE soumis au total
+    if (!currentStickers.includes('rpe_expert') && totalSessions >= 200) {
+        newStickers.push(STICKER_DEFINITIONS.rpe_expert);
     }
 }
 
@@ -625,8 +622,10 @@ async function checkCheckinStickers(playerId, playerData, currentStickers, newSt
         if (!engagementDoc.exists) return;
         
         const engagement = engagementDoc.data();
-        const currentStreak = engagement.currentStreak || 0;
-        
+        // Utiliser le streak maximum jamais atteint (longestStreak) pour ne jamais perdre
+        // les stickers gagnés, même si le streak courant a baissé depuis
+        const bestStreak = Math.max(engagement.currentStreak || 0, engagement.longestStreak || 0);
+
         // Paliers : 7, 14, 21, 28, 35, 42, 49, 56
         const streakPaliers = [
             { days: 7, stickers: ['checkin_7_1', 'checkin_7_2', 'checkin_7_3'] },
@@ -638,10 +637,10 @@ async function checkCheckinStickers(playerId, playerData, currentStickers, newSt
             { days: 49, stickers: ['checkin_49_1', 'checkin_49_2', 'checkin_49_3'] },
             { days: 56, stickers: ['checkin_56_1', 'checkin_56_2', 'checkin_56_3', 'checkin_56_4', 'checkin_56_5', 'checkin_56_6'] }
         ];
-        
-        // Vérifier chaque palier atteint
+
+        // Vérifier chaque palier atteint (basé sur le meilleur streak historique)
         for (const palier of streakPaliers) {
-            if (currentStreak >= palier.days) {
+            if (bestStreak >= palier.days) {
                 for (const stickerId of palier.stickers) {
                     if (!currentStickers.includes(stickerId) && STICKER_DEFINITIONS[stickerId]) {
                         newStickers.push(STICKER_DEFINITIONS[stickerId]);
@@ -649,7 +648,12 @@ async function checkCheckinStickers(playerId, playerData, currentStickers, newSt
                 }
             }
         }
-        
+
+        // "Check-in Master" : 100 check-ins au total
+        if (!currentStickers.includes('checkin_master') && (engagement.totalCheckIns || 0) >= 100) {
+            newStickers.push(STICKER_DEFINITIONS.checkin_master);
+        }
+
     } catch (error) {
         console.error('Erreur checkCheckinStickers:', error);
     }
@@ -670,18 +674,18 @@ async function checkWeeklyStickers(playerId, playerData, trainingStats, currentS
         currentStickers: currentStickers.filter(s => s.includes('week')).join(', ') || 'aucun'
     });
 
-    // Semaine complète (9/9)
-    if (!currentStickers.includes('week_complete') && weekSessions >= 9) {
+    // Semaine complète (9/9) — utilise weeksCompleteCount (cumulatif, jamais remis à 0)
+    if (!currentStickers.includes('week_complete') && weeksCompleteCount >= 1) {
         console.log('🎯 Déblocage sticker week_complete !');
         newStickers.push(STICKER_DEFINITIONS.week_complete);
-    } else if (weekSessions >= 9) {
+    } else if (weeksCompleteCount >= 1) {
         console.log('ℹ️ Sticker week_complete déjà obtenu');
     } else {
-        console.log(`ℹ️ Semaine incomplète: ${weekSessions}/9 RPE`);
+        console.log(`ℹ️ Aucune semaine complète (${weeksCompleteCount} semaines complètes)`);
     }
 
     // Semaine parfaite (13/13)
-    if (!currentStickers.includes('week_perfect') && weekSessions >= 13) {
+    if (!currentStickers.includes('week_perfect') && weeksPerfectCount >= 1) {
         console.log('🎯 Déblocage sticker week_perfect !');
         newStickers.push(STICKER_DEFINITIONS.week_perfect);
     }
@@ -698,16 +702,11 @@ async function checkWeeklyStickers(playerId, playerData, trainingStats, currentS
     const playerName = playerData.name ? playerData.name.toLowerCase() : '';
     
     // Vérifier chaque sticker de joueuse individuellement selon son critère
+    // N'importe quelle joueuse peut débloquer n'importe quel sticker de coéquipière
+    // en atteignant le palier de semaines complètes correspondant
     Object.entries(STICKER_DEFINITIONS).forEach(([stickerId, sticker]) => {
         if (sticker.rarity === 'legendary' && stickerId.startsWith('player_')) {
-            // Vérifier si déjà possédé
             if (currentStickers.includes(stickerId)) return;
-            
-            // Vérifier si c'est la bonne joueuse
-            const stickerKey = stickerId.replace('player_', '');
-            if (!playerName.includes(stickerKey)) return;
-            
-            // Vérifier si le critère est atteint
             const requiredWeeks = sticker.criteria.required;
             if (weeksCompleteCount >= requiredWeeks) {
                 newStickers.push(sticker);
@@ -715,9 +714,14 @@ async function checkWeeklyStickers(playerId, playerData, trainingStats, currentS
         }
     });
 
-    // Coach Olivier (6 semaines parfaites)
-    if (!currentStickers.includes('coach_olivier') && weeksPerfectCount >= 6) {
+    // Coach Olivier (2 semaines parfaites — conforme à la définition)
+    if (!currentStickers.includes('coach_olivier') && weeksPerfectCount >= 2) {
         newStickers.push(STICKER_DEFINITIONS.coach_olivier);
+    }
+
+    // Coach Alexis (3 semaines parfaites — conforme à la définition)
+    if (!currentStickers.includes('coach_alexis') && weeksPerfectCount >= 3) {
+        newStickers.push(STICKER_DEFINITIONS.coach_alexis);
     }
 
     // Collectif Sablé (tous les stickers joueurs débloqués)
@@ -874,54 +878,68 @@ async function displayStickerWidget(playerId) {
         const totalStickers = Object.keys(STICKER_DEFINITIONS).length;
         const percentage = Math.round((ownedStickers.length / totalStickers) * 100);
 
-        // Obtenir les 3 derniers stickers débloqués
-        const recentStickers = ownedStickers.slice(-3).reverse().map(id => STICKER_DEFINITIONS[id]).filter(s => s);
+        // Obtenir les 3 derniers stickers débloqués (avec leur id pour le clic)
+        const recentStickers = ownedStickers.slice(-3).reverse()
+            .map(id => ({ id, ...STICKER_DEFINITIONS[id] }))
+            .filter(s => s.image);
 
         // Générer le HTML du widget
         const html = `
-            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: white;">
-                        🏆 Collection de Stickers
+            <div class="card" style="background: linear-gradient(150deg, #2180ac 0%, #145470 100%); color: white; border: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: white;">
+                        Collection de Stickers
                     </h3>
-                    <div style="background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">
+                    <div style="background: rgba(255,255,255,0.18); padding: 5px 11px; border-radius: 20px; font-size: 13px; font-weight: 600;">
                         ${ownedStickers.length}/${totalStickers}
                     </div>
                 </div>
 
                 <!-- Barre de progression -->
-                <div style="background: rgba(255,255,255,0.2); border-radius: 20px; height: 8px; margin-bottom: 16px; overflow: hidden;">
+                <div style="background: rgba(255,255,255,0.18); border-radius: 20px; height: 6px; margin-bottom: 14px; overflow: hidden;">
                     <div style="background: white; height: 100%; width: ${percentage}%; border-radius: 20px; transition: width 0.5s;"></div>
                 </div>
 
-                <!-- Stats par rareté -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
-                    <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 12px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: 700;">${counts.common}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Communs</div>
+                <!-- Stats par rareté — cliquables -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+                    <div onclick="openStickerCollection('${playerId}', 'common')"
+                         style="background: rgba(255,255,255,0.13); padding: 10px 8px; border-radius: 10px; text-align: center; cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='rgba(255,255,255,0.22)'"
+                         onmouseout="this.style.background='rgba(255,255,255,0.13)'">
+                        <div style="font-size: 22px; font-weight: 700;">${counts.common}</div>
+                        <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">Communs</div>
                     </div>
-                    <div style="background: rgba(59, 130, 246, 0.3); padding: 12px; border-radius: 12px; text-align: center; border: 2px solid rgba(59, 130, 246, 0.5);">
-                        <div style="font-size: 24px; font-weight: 700;">${counts.rare}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Rares</div>
+                    <div onclick="openStickerCollection('${playerId}', 'rare')"
+                         style="background: rgba(59,130,246,0.25); padding: 10px 8px; border-radius: 10px; text-align: center; border: 1.5px solid rgba(59,130,246,0.45); cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='rgba(59,130,246,0.4)'"
+                         onmouseout="this.style.background='rgba(59,130,246,0.25)'">
+                        <div style="font-size: 22px; font-weight: 700;">${counts.rare}</div>
+                        <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">Rares</div>
                     </div>
-                    <div style="background: rgba(234, 179, 8, 0.3); padding: 12px; border-radius: 12px; text-align: center; border: 2px solid rgba(234, 179, 8, 0.5);">
-                        <div style="font-size: 24px; font-weight: 700;">${counts.legendary}</div>
-                        <div style="font-size: 12px; opacity: 0.9;">Légendaires</div>
+                    <div onclick="openStickerCollection('${playerId}', 'legendary')"
+                         style="background: rgba(234,179,8,0.25); padding: 10px 8px; border-radius: 10px; text-align: center; border: 1.5px solid rgba(234,179,8,0.45); cursor: pointer; transition: background 0.2s;"
+                         onmouseover="this.style.background='rgba(234,179,8,0.4)'"
+                         onmouseout="this.style.background='rgba(234,179,8,0.25)'">
+                        <div style="font-size: 22px; font-weight: 700;">${counts.legendary}</div>
+                        <div style="font-size: 11px; opacity: 0.85; margin-top: 2px;">Légendaires</div>
                     </div>
                 </div>
 
                 ${recentStickers.length > 0 ? `
-                    <!-- Derniers stickers débloqués -->
-                    <div style="margin-top: 16px;">
-                        <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9; font-weight: 600;">✨ Derniers débloqués</div>
-                        <div style="display: flex; gap: 8px; justify-content: center;">
+                    <!-- Derniers stickers débloqués — cliquables -->
+                    <div style="margin-top: 14px;">
+                        <div style="font-size: 12px; margin-bottom: 10px; opacity: 0.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Derniers débloqués</div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
                             ${recentStickers.map(sticker => `
-                                <div style="position: relative;">
-                                    <img src="${sticker.image}" 
-                                         alt="${sticker.name}" 
-                                         style="width: 64px; height: 64px; border-radius: 12px; border: 3px solid ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; object-fit: cover; background: white;"
-                                         title="${sticker.name}: ${sticker.description}">
-                                    <div style="position: absolute; top: -6px; right: -6px; background: ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white;">
+                                <div onclick="showStickerDetail('${sticker.id}')"
+                                     style="position: relative; cursor: pointer; transition: transform 0.2s;"
+                                     onmouseover="this.style.transform='scale(1.08)'"
+                                     onmouseout="this.style.transform='scale(1)'">
+                                    <img src="${sticker.image}"
+                                         alt="${sticker.name}"
+                                         style="width: 64px; height: 64px; border-radius: 12px; border: 2.5px solid ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; object-fit: cover; display: block;"
+                                         title="${sticker.name}">
+                                    <div style="position: absolute; top: -5px; right: -5px; background: ${sticker.rarity === 'legendary' ? '#fbbf24' : sticker.rarity === 'rare' ? '#3b82f6' : '#10b981'}; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid white;">
                                         ${sticker.emoji}
                                     </div>
                                 </div>
@@ -929,29 +947,27 @@ async function displayStickerWidget(playerId) {
                         </div>
                     </div>
                 ` : `
-                    <div style="text-align: center; padding: 20px; opacity: 0.8; font-size: 14px;">
-                        Complète des RPE pour débloquer des stickers ! 🎯
+                    <div style="text-align: center; padding: 16px 0; opacity: 0.75; font-size: 13px;">
+                        Complète des RPE pour débloquer des stickers !
                     </div>
                 `}
 
-                <!-- Bouton voir collection (Phase 2) -->
-                ${ownedStickers.length > 0 ? `
-                    <button onclick="alert('Page Collection à venir en Phase 2 ! 🎨')" 
-                            style="width: 100%; margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); color: white; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(255,255,255,0.3)'"
-                            onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                        📖 Voir ma collection complète
+                <!-- Actions compactes -->
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+                    <button onclick="openStickerCollection('${playerId}')"
+                            style="padding: 7px 16px; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.45); color: white; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; font-family: inherit;"
+                            onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+                        Voir ma collection
                     </button>
-                ` : ''}
+                    <button onclick="forceCheckStickers('${playerId}')"
+                            style="padding: 7px 16px; background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.45); color: white; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; font-family: inherit;"
+                            onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+                        Mettre à jour
+                    </button>
+                </div>
             </div>
-            <button class="sticker-collection-btn" onclick="openStickerCollection('${playerId}')" 
-                    style="width: 100%; padding: 12px; margin-top: 15px; background: linear-gradient(135deg, #10b981, #3b82f6); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                📖 Voir ma collection complète
-            </button>
-            <button onclick="forceCheckStickers('${playerId}')" 
-                    style="width: 100%; padding: 12px; margin-top: 10px; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
-                🎯 Vérifier mes stickers maintenant
-            </button>
         `;
 
         widgetContainer.innerHTML = html;

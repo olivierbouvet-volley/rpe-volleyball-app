@@ -109,7 +109,7 @@ function createNotificationModal() {
     
     modal.innerHTML = `
         <div style="
-            background: white;
+            background: var(--color-surface, white);
             border-radius: 16px;
             max-width: 500px;
             width: 100%;
@@ -215,7 +215,7 @@ function createNotificationModal() {
                         flex: 1;
                         padding: 14px;
                         border: 1px solid #d1d5db;
-                        background: white;
+                        background: var(--color-surface, white);
                         border-radius: 8px;
                         font-size: 14px;
                         font-weight: 600;

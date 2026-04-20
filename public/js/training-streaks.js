@@ -300,35 +300,35 @@ async function displayTrainingWidget(playerId) {
         }
         
         container.innerHTML = `
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px;">
+            <div style="background: var(--color-surface, white); border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; padding: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="font-size: 14px; font-weight: 600; color: #1f2937;">📊 Objectif Semaine</div>
-                    <div style="font-size: 12px; color: #6b7280;">${sessions}/${WEEKLY_EXPECTED_SESSIONS} séances</div>
+                    <div style="font-size: 14px; font-weight: 600; color: var(--color-text, #1f2937);">📊 Objectif Semaine</div>
+                    <div style="font-size: 12px; color: var(--color-text-secondary, #6b7280);">${sessions}/${WEEKLY_EXPECTED_SESSIONS} séances</div>
                 </div>
-                
+
                 <!-- Barre de progression -->
-                <div style="height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; margin-bottom: 12px;">
+                <div style="height: 10px; background: var(--color-border, #e5e7eb); border-radius: 5px; overflow: hidden; margin-bottom: 12px;">
                     <div style="height: 100%; width: ${progress}%; background: ${progressColor}; border-radius: 5px; transition: width 0.5s ease;"></div>
                 </div>
-                
+
                 <!-- Message -->
                 <div style="font-size: 13px; color: ${progressColor}; font-weight: 500;">
-                    ${progress >= 100 ? 
-                        '🎯 Semaine parfaite !' : 
-                        sessions === 0 ? 
+                    ${progress >= 100 ?
+                        '🎯 Semaine parfaite !' :
+                        sessions === 0 ?
                             '💪 Logguez votre première séance !' :
                             `Plus que ${remaining} séance${remaining > 1 ? 's' : ''} !`
                     }
                 </div>
-                
+
                 <!-- Streak de semaines si > 0 -->
                 ${weeklyStreak > 0 ? `
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; display: flex; align-items: center; gap: 8px;">
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border, #e5e7eb); display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 20px;">🏆</span>
-                        <span style="font-size: 12px; color: #6b7280;">${weeklyStreak} semaine${weeklyStreak > 1 ? 's' : ''} parfaite${weeklyStreak > 1 ? 's' : ''} d'affilée</span>
+                        <span style="font-size: 12px; color: var(--color-text-secondary, #6b7280);">${weeklyStreak} semaine${weeklyStreak > 1 ? 's' : ''} parfaite${weeklyStreak > 1 ? 's' : ''} d'affilée</span>
                     </div>
                 ` : ''}
-                
+
                 <!-- Bonus week-end -->
                 ${(stats?.currentWeekBonus || 0) > 0 ? `
                     <div style="margin-top: 8px; font-size: 11px; color: #8b5cf6;">

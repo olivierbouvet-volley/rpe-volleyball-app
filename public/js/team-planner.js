@@ -98,13 +98,14 @@
      * Envoie les données des joueuses à l'application React via postMessage
      */
     async function sendPlayersToReactApp() {
-        const iframe = document.getElementById('teamPlannerIframe');
+        const iframe = document.getElementById('plannerIframe');
         if (!iframe || !iframe.contentWindow) return;
 
         try {
             // Récupérer les joueuses depuis Firebase
             if (typeof db === 'undefined' || !db) {
-                console.error('Firebase non initialisé');
+                console.warn('Firebase non encore initialisé, retry dans 1s...');
+                setTimeout(sendPlayersToReactApp, 1000);
                 return;
             }
 
@@ -196,15 +197,15 @@
 
             console.log(`📤 Envoi de ${players.length} joueuses à l'application React`);
 
-            // Envoyer les données à l'iframe avec l'URL appropriée
-            const targetOrigin = useDevServer ? DEV_SERVER_URL : window.location.origin;
+            // Envoyer les données à l'iframe (même origine = window.location.origin)
+            const targetOrigin = window.location.origin;
             iframe.contentWindow.postMessage({
                 type: 'PLAYERS_DATA',
                 players: players
             }, targetOrigin);
             
             // Envoyer aussi l'ID de l'utilisateur connecté
-            if (auth.currentUser) {
+            if (typeof auth !== 'undefined' && auth && auth.currentUser) {
                 iframe.contentWindow.postMessage({
                     type: 'USER_ID',
                     userId: auth.currentUser.uid

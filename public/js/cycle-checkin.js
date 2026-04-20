@@ -389,19 +389,24 @@ async function updateCyclePhaseDisplay() {
             dayOfCycle = result.dayOfCycle;
             isExtended = false;
         } else {
-            // Fallback : calcul simple
+            // Fallback : calcul simple SANS modulo (pas de reset automatique)
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const startDate = new Date(cycleData.cycleStartDate);
             startDate.setHours(0, 0, 0, 0);
-            
+
             const diffTime = today - startDate;
             const daysSinceStart = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            dayOfCycle = (daysSinceStart % (cycleData.cycleLength || 28)) + 1;
-            
+            const cycleLength = cycleData.cycleLength || 28;
+            dayOfCycle = daysSinceStart + 1;
+            if (dayOfCycle <= 0) dayOfCycle = 1;
+
+            isExtended = dayOfCycle > cycleLength;
+
             if (dayOfCycle <= 5) phase = 'Menstruelle';
             else if (dayOfCycle <= 14) phase = 'Folliculaire';
             else if (dayOfCycle <= 16) phase = 'Ovulatoire';
+            else if (isExtended) phase = 'Cycle prolongé';
             else phase = 'Lutéale';
         }
         

@@ -1,0 +1,126 @@
+/**
+ * VolleyVision Design Tokens
+ * Single source of truth — all colors, surfaces, brand, quality scale
+ * Dark-only theme (navy profond, jamais de noir pur)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+:root {
+  /* ─── Surfaces ──────────────────────────────────────────────
+   * Couches d'élévation, du plus profond au plus clair
+   * Jamais #000000 — toujours navy ou slate profond
+   */
+  --surface-root:    #080E1A;   /* Fond absolu de la page */
+  --surface-1:       #0B1220;   /* Fond principal (ex bg-slate-900) */
+  --surface-2:       #131C2E;   /* Panels, cartes */
+  --surface-3:       #1A2640;   /* Éléments interactifs, inputs */
+  --surface-4:       #223052;   /* Hover d'éléments interactifs */
+  --surface-border:  #1E2D47;   /* Bordures entre surfaces */
+  --surface-divider: #152238;   /* Séparateurs subtils */
+
+  /* ─── Brand ─────────────────────────────────────────────────
+   * Identité VolleyVision — "Volley" vert / "Vision" bleu
+   */
+  --brand-green:       #22C55E;  /* Logo "Volley", kills, sélection active */
+  --brand-green-dim:   #16A34A;  /* Hover, états enfoncés */
+  --brand-green-muted: #166534;  /* Backgrounds de succès subtils */
+  --brand-green-glow:  rgba(34, 197, 94, 0.15);
+
+  --brand-blue:        #3B82F6;  /* Logo "Vision", onglets actifs, liens */
+  --brand-blue-dim:    #2563EB;  /* Hover, états enfoncés */
+  --brand-blue-muted:  #1E3A8A;  /* Backgrounds info subtils */
+  --brand-blue-glow:   rgba(59, 130, 246, 0.15);
+
+  /* ─── Texte ──────────────────────────────────────────────── */
+  --text-primary:   #F1F5F9;   /* Titres, valeurs importantes */
+  --text-secondary: #CBD5E1;   /* Corps de texte général */
+  --text-muted:     #94A3B8;   /* Labels, métadonnées */
+  --text-disabled:  #475569;   /* Éléments désactivés */
+  --text-link:      #60A5FA;   /* Liens inline */
+
+  /* ─── Bordures ───────────────────────────────────────────── */
+  --border-strong:  #334155;   /* Séparateurs visibles */
+  --border-default: #1E293B;   /* Bordures de cartes standard */
+  --border-subtle:  #0F172A;   /* Bordures très discrètes */
+  --border-focus:   #3B82F6;   /* Focus ring inputs */
+
+  /* ─── Qualité volleyball ─────────────────────────────────── 
+   * Échelle de qualité des actions (DataVolley codes)
+   * CORRECTION : + était lime-500 (#84cc16), unifié sur blue-400 (#60A5FA)
+   */
+  --q-kill:     #22C55E;  /* # — Kill / Ace / Excellent */
+  --q-positive: #60A5FA;  /* + — Positif (corrigé : blue-400, non lime) */
+  --q-neutral:  #EAB308;  /* ! — Neutre */
+  --q-negative: #F97316;  /* - — Négatif */
+  --q-poor:     #EF4444;  /* / — Mauvais */
+  --q-error:    #DC2626;  /* = — Erreur */
+
+  /* Backgrounds de qualité (alpha 20%) */
+  --q-kill-bg:     rgba(34, 197, 94,  0.15);
+  --q-positive-bg: rgba(96, 165, 250, 0.15);
+  --q-neutral-bg:  rgba(234, 179, 8,  0.15);
+  --q-negative-bg: rgba(249, 115, 22, 0.15);
+  --q-poor-bg:     rgba(239, 68, 68,  0.15);
+  --q-error-bg:    rgba(220, 38, 38,  0.15);
+
+  /* ─── État sémantiques ───────────────────────────────────── */
+  --state-success:      #34D399;  /* Succès (plus clair que brand-green pour fond sombre) */
+  --state-success-bg:   rgba(52, 211, 153, 0.12);
+  --state-warning:      #FBBF24;
+  --state-warning-bg:   rgba(251, 191, 36, 0.12);
+  --state-error:        #F87171;
+  --state-error-bg:     rgba(248, 113, 113, 0.12);
+  --state-info:         #60A5FA;
+  --state-info-bg:      rgba(96, 165, 250, 0.12);
+
+  /* ─── Ombres ─────────────────────────────────────────────── 
+   * Sur fond sombre : ombres plus prononcées, quasi
+   */
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg:  0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl:  0 16px 40px rgba(0, 0, 0, 0.7);
+  --shadow-glow-green: 0 0 20px rgba(34, 197, 94,  0.25);
+  --shadow-glow-blue:  0 0 20px rgba(59, 130, 246, 0.25);
+
+  /* ─── Typographie ────────────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Tailles fonctionnelles */
+  --text-xs:   0.75rem;    /* 12px — labels, badges */
+  --text-sm:   0.875rem;   /* 14px — corps général */
+  --text-base: 1rem;       /* 16px — headings cartes */
+  --text-lg:   1.125rem;   /* 18px — sections headings */
+  --text-xl:   1.25rem;    /* 20px — noms d'équipes */
+  --text-2xl:  1.5rem;     /* 24px — scores */
+  --text-4xl:  2.25rem;    /* 36px — hero score */
+
+  /* Poids */
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  /* Feature settings Inter pour les chiffres tabulaires (scores, stats) */
+  --font-feature-tabular: "tnum" 1, "lnum" 1;
+
+  /* ─── Espacement ─────────────────────────────────────────── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-full: 9999px;
+
+  /* ─── Transitions ────────────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-base:   200ms ease;
+  --transition-slow:   300ms ease;
+
+  /* ─── Z-index ────────────────────────────────────────────── */
+  --z-panel:    10;
+  --z-overlay:  50;
+  --z-modal:    100;
+  --z-popout:   200;
+  --z-toast:    300;
+}

@@ -14,6 +14,11 @@
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/img/icon-192.png">
     
+    <!-- Google Fonts — Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
@@ -23,7 +28,10 @@
     
     <!-- Weekend Match Recap CSS -->
     <link rel="stylesheet" href="/css/weekend-match-recap.css">
-    
+
+    <!-- Pro Design System Upgrade -->
+    <link rel="stylesheet" href="/css/pro-design.css">
+
     <style>
         :root {
             /* Color Palette - Crème naturel & Teal */
@@ -75,13 +83,14 @@
             --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.3);
 
             /* Typography */
-            --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --font-size-sm: 12px;
             --font-size-base: 14px;
             --font-size-lg: 16px;
             --font-size-xl: 18px;
             --font-size-2xl: 20px;
             --font-size-3xl: 24px;
+            --font-size-display: 32px;
             --font-weight-normal: 400;
             --font-weight-medium: 500;
             --font-weight-semibold: 550;
@@ -280,11 +289,11 @@
         }
 
         .header {
-            background: var(--netflix-black-light);
+            background: var(--color-surface);
             border-bottom: 1px solid var(--color-card-border);
             padding: var(--space-20) var(--space-16);
             margin-bottom: var(--space-24);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .header-content {
@@ -991,6 +1000,9 @@
         }
     </style>
 
+    <!-- Responsive améliorations — chargé après <style> pour prendre le dessus -->
+    <link rel="stylesheet" href="/css/responsive.css">
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -998,9 +1010,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
     
-    <!-- Configuration Firebase Prod/Dev -->
+    <!-- Configuration Firebase -->
     <script src="/js/config/firebase-config-prod.js"></script>
-    <script src="/js/config/firebase-config-dev.js"></script>
     <script src="/js/config/firebase-loader.js"></script>
 </head>
 <body>
@@ -1038,8 +1049,11 @@
                         </div>
                     </div>
                     <div class="header-right">
-                        <button class="btn" onclick="openSettingsModal()" style="background: #667eea; color: white; padding: 8px 12px; font-size: 12px;">⚙️</button>
-                        <button class="btn logout-btn" onclick="logout()" style="padding: 8px 12px; font-size: 12px;">↩️</button>
+                        <button class="btn btn-icon" id="darkModeTogglePlayer" onclick="toggleDarkMode()" title="Mode sombre" style="padding: 8px 12px; font-size: 16px;">
+                            <i class="fas fa-moon" id="darkModeIconPlayer"></i>
+                        </button>
+                        <button class="btn" onclick="openSettingsModal()" style="background: var(--color-primary); color: white; padding: 8px 12px; font-size: 14px;"><i class="fas fa-cog"></i></button>
+                        <button class="btn logout-btn" onclick="logout()" style="padding: 8px 12px; font-size: 14px;"><i class="fas fa-right-from-bracket"></i></button>
                     </div>
                 </div>
             </div>
@@ -1057,11 +1071,11 @@
         
         <div class="container dashboard">
             <div class="nav-tabs">
-                <div class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</div>
-                <div class="nav-tab" data-tab="checkin" onclick="switchTab('checkin')">✅ Check-in</div>
-                <div class="nav-tab" data-tab="logrpe" onclick="switchTab('logrpe')">📝 Log RPE</div>
-                <div class="nav-tab" data-tab="loadcalc" onclick="switchTab('loadcalc')">💪 Calculateur</div>
-                <div class="nav-tab" data-tab="matchs" onclick="switchTab('matchs')">⚽ Matchs</div>
+                <div class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-chart-line" style="margin-right:5px;"></i>Dashboard</div>
+                <div class="nav-tab" data-tab="checkin" onclick="switchTab('checkin')"><i class="fas fa-check-circle" style="margin-right:5px;"></i>Check-in</div>
+                <div class="nav-tab" data-tab="logrpe" onclick="switchTab('logrpe')"><i class="fas fa-pencil-alt" style="margin-right:5px;"></i>Log RPE</div>
+                <div class="nav-tab" data-tab="loadcalc" onclick="switchTab('loadcalc')"><i class="fas fa-dumbbell" style="margin-right:5px;"></i>Calculateur</div>
+                <div class="nav-tab" data-tab="matchs" onclick="switchTab('matchs')"><i class="fas fa-trophy" style="margin-right:5px;"></i>Matchs</div>
             </div>
 
             <!-- Dashboard Tab -->
@@ -1710,7 +1724,92 @@
                             </div>
                         </div>
                         <!-- FIN SECTION CYCLE MENSTRUEL -->
-                        
+
+                        <!-- ============================================== -->
+                        <!-- SECTION DOULEURS — DÉCLARATION PAR LA JOUEUSE -->
+                        <!-- ============================================== -->
+                        <div id="painCheckinSection" style="margin-top: var(--space-24); padding-top: var(--space-16); border-top: 2px solid var(--color-border);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-12);">
+                                <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; color: var(--color-text); font-size: 16px;">
+                                    🤕 Douleur / Gêne physique
+                                    <span style="font-size: 12px; font-weight: normal; color: var(--color-text-secondary);">(optionnel)</span>
+                                </h3>
+                                <!-- Bouton toggle discret — par défaut "Aucune douleur" (coché) -->
+                                <button type="button" id="painToggleBtn" onclick="toggleCheckinPainForm()" style="display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;">
+                                    ✅ Aucune douleur
+                                </button>
+                            </div>
+
+                            <!-- Douleurs actives à confirmer — injectées dynamiquement par checkActivePainsForCheckin() -->
+                            <div id="painConfirmationSection" style="display: none; margin-bottom: 16px;"></div>
+
+                            <!-- Formulaire douleur — masqué par défaut (la joueuse n'a PAS besoin de cliquer si tout va bien) -->
+                            <div id="painCheckinForm" style="display: none; background: #fff7ed; padding: 16px; border-radius: 12px; border: 1px solid #fed7aa;">
+                                <div style="margin-bottom: 12px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #92400e;">Zone de la douleur *</label>
+                                    <select id="checkinPainZone" style="width: 100%; padding: 10px; border: 2px solid #fed7aa; border-radius: 8px; font-size: 14px; background: white;">
+                                        <option value="">Sélectionner...</option>
+                                        <option value="head">Tête</option>
+                                        <option value="neck">Cou</option>
+                                        <option value="shoulder">Épaule</option>
+                                        <option value="elbow">Coude</option>
+                                        <option value="wrist">Poignet</option>
+                                        <option value="hand">Main/Doigts</option>
+                                        <option value="back">Dos</option>
+                                        <option value="lower_back">Bas du dos</option>
+                                        <option value="hip">Hanche</option>
+                                        <option value="thigh">Cuisse</option>
+                                        <option value="knee">Genou</option>
+                                        <option value="calf">Mollet</option>
+                                        <option value="ankle">Cheville</option>
+                                        <option value="foot">Pied</option>
+                                    </select>
+                                </div>
+
+                                <div style="margin-bottom: 12px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #92400e;">Intensité de la douleur *</label>
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                        <button type="button" class="pain-intensity-btn" data-value="1" onclick="selectPainIntensity(1)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">1</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="2" onclick="selectPainIntensity(2)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">2</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="3" onclick="selectPainIntensity(3)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">3</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="4" onclick="selectPainIntensity(4)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">4</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="5" onclick="selectPainIntensity(5)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">5</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="6" onclick="selectPainIntensity(6)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">6</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="7" onclick="selectPainIntensity(7)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">7</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="8" onclick="selectPainIntensity(8)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">8</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="9" onclick="selectPainIntensity(9)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">9</button>
+                                        <button type="button" class="pain-intensity-btn" data-value="10" onclick="selectPainIntensity(10)" style="width: 32px; height: 32px; padding: 0; border: 2px solid #e5e7eb; background: white; border-radius: 50%; cursor: pointer; font-size: 12px; font-weight: 600;">10</button>
+                                    </div>
+                                    <input type="hidden" id="checkinPainIntensity" value="0">
+                                    <div id="checkinPainIntensityLabel" style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Aucune sélection</div>
+                                </div>
+
+                                <div style="margin-bottom: 12px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #92400e;">Depuis combien de jours ?</label>
+                                    <select id="checkinPainDaysSince" style="width: 100%; padding: 10px; border: 2px solid #fed7aa; border-radius: 8px; font-size: 14px; background: white;">
+                                        <option value="1">Aujourd'hui (1er jour)</option>
+                                        <option value="2">Depuis 2 jours</option>
+                                        <option value="3">Depuis 3 jours</option>
+                                        <option value="4">Depuis 4 jours</option>
+                                        <option value="5">Depuis 5 jours</option>
+                                        <option value="6">Depuis 6 jours</option>
+                                        <option value="7">Depuis 7 jours ou plus</option>
+                                    </select>
+                                </div>
+
+                                <div style="margin-bottom: 12px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #92400e;">Description courte (optionnel)</label>
+                                    <input type="text" id="checkinPainDescription" maxlength="100" placeholder="Ex: douleur en sautant, point lors des frappes..." style="width: 100%; padding: 10px; border: 2px solid #fed7aa; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                                </div>
+
+                                <button type="button" onclick="resetCheckinPainForm(); document.getElementById('painToggleBtn').textContent='✅ Aucune douleur'; document.getElementById('painToggleBtn').style.background='#f3f4f6'; document.getElementById('painToggleBtn').style.color='#6b7280';" style="padding: 6px 14px; background: #f3f4f6; color: #6b7280; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; margin-right: 8px;">
+                                    ✕ Annuler
+                                </button>
+                                <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;">✓ La douleur sera enregistrée avec le check-in</p>
+                            </div>
+                        </div>
+                        <!-- FIN SECTION DOULEURS -->
+
                         <div class="form-group">
                             <label class="form-label">Commentaire (optionnel, 150 caractères max)</label>
                             <textarea class="form-control" id="checkinComment" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur votre état du jour..."></textarea>
@@ -1818,8 +1917,7 @@
                 <!-- Sous-onglets pour RPE -->
                 <div style="display: flex; gap: var(--space-8); margin-bottom: var(--space-24); border-bottom: 2px solid var(--color-border); padding-bottom: var(--space-8);">
                     <button class="btn btn-secondary" id="rpeTodayBtn" onclick="showRpeSubTab('today')" style="background: var(--color-primary); color: white;">Aujourd'hui</button>
-                    <button class="btn btn-secondary" id="rpeYesterdayBtn" onclick="showRpeSubTab('yesterday')">Veille (J-1)</button>
-                    <button class="btn btn-secondary" id="rpeDayBeforeBtn" onclick="showRpeSubTab('daybefore')">Avant-veille (J-2)</button>
+                    <button class="btn btn-secondary" id="rpeRattrapageBtn" onclick="showRpeSubTab('rattrapage')">📅 Rattrapage</button>
                     <button class="btn btn-secondary" id="rpeDeleteBtn" onclick="showRpeSubTab('delete')" style="margin-left: auto; background: #e74c3c; color: white;">🗑️ Supprimer un RPE</button>
                 </div>
                 
@@ -1899,158 +1997,92 @@
                     </form>
                 </div>
                 
-                <!-- RPE Veille (J-1) -->
-                <div class="card" id="rpeYesterdayCard" style="display: none;">
-                    <h3 class="card-title">Rattrapage RPE - Veille (J-1)</h3>
-                    <form id="rpeYesterdayForm">
+                <!-- RPE Rattrapage (avec calendrier) -->
+                <div class="card" id="rpeRattrapageCard" style="display: none;">
+                    <h3 class="card-title">Rattrapage RPE</h3>
+                    <p style="color: var(--color-text-secondary); margin-bottom: var(--space-16);">
+                        Sélectionnez la date de la séance que vous avez oubliée d'enregistrer
+                    </p>
+                    <form id="rpeRattrapageForm">
+                        <!-- Étape 0: Sélection de la date -->
+                        <div class="form-group" id="rpeRattrapageStep0">
+                            <label class="form-label">Date de la séance</label>
+                            <input type="date" id="rattrapageDate" class="form-control" style="padding: 12px; font-size: 16px; border-radius: 8px; border: 2px solid var(--color-border);" required>
+                            <p id="rattrapageDateLabel" style="margin-top: 8px; font-weight: 600; color: var(--color-primary); display: none;"></p>
+                        </div>
+
                         <!-- Étape 1: Type d'activité -->
-                        <div class="form-group" id="rpeYesterdayStep1">
+                        <div class="form-group" id="rpeRattrapageStep1" style="display: none;">
                             <label class="form-label">Type de session</label>
-                            <input type="hidden" id="sessionTypeYesterday" value="">
-                            <div class="activity-buttons-yesterday" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                                <button type="button" class="activity-btn-yesterday" data-value="Entrainement" style="background: #3b82f6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(59,130,246,0.3);">
+                            <input type="hidden" id="sessionTypeRattrapage" value="">
+                            <div class="activity-buttons-rattrapage" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Entrainement" style="background: #3b82f6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(59,130,246,0.3);">
                                     🏐 Entraînement
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Match" style="background: #ef4444; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239,68,68,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Match" style="background: #ef4444; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239,68,68,0.3);">
                                     🏆 Match
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Preparation Physique" style="background: #10b981; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Preparation Physique" style="background: #10b981; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
                                     💪 Prépa Physique
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Muscu+Volley" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Muscu+Volley" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
                                     💪🏐 Muscu + Volley
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Recuperation Active" style="background: #8b5cf6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Recuperation Active" style="background: #8b5cf6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
                                     🧘 Récupération
                                 </button>
-                                <button type="button" class="activity-btn-yesterday" data-value="Activite Physique Annexe" style="background: #f59e0b; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
+                                <button type="button" class="activity-btn-rattrapage" data-value="Activite Physique Annexe" style="background: #f59e0b; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
                                     🚴 Activité Annexe
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Étape 2: Effort ressenti -->
-                        <div class="form-group" id="rpeYesterdayStep2" style="display: none;">
+                        <div class="form-group" id="rpeRattrapageStep2" style="display: none;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <span id="selectedActivityBadgeYesterday" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;"></span>
-                                <button type="button" onclick="resetRpeFormYesterday()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px;">✏️ Modifier</button>
+                                <span id="selectedActivityBadgeRattrapage" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;"></span>
+                                <button type="button" onclick="resetRpeFormRattrapage()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px;">✏️ Modifier</button>
                             </div>
                             <label class="form-label">Effort ressenti (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="rpeValueYesterday" style="display:none;">
-                            <div style="display:none;"><span id="rpeValueDisplayYesterday">5</span>/10</div>
+                            <input type="range" min="0" max="10" value="0" class="form-control" id="rpeValueRattrapage" style="display:none;">
+                            <div style="display:none;"><span id="rpeValueDisplayRattrapage">5</span>/10</div>
                         </div>
-                        
+
                         <!-- Étape 3: Durée -->
-                        <div class="form-group" id="rpeYesterdayStep3" style="display: none;">
+                        <div class="form-group" id="rpeRattrapageStep3" style="display: none;">
                             <label class="form-label">Durée de la session</label>
-                            <input type="hidden" id="durationYesterday" value="">
-                            <div class="duration-wheel-yesterday" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
-                                <button type="button" class="duration-btn-yesterday" data-minutes="30" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">30'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="45" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">45'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="60" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">60'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="75" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">75'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="90" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">90'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="105" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">105'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="120" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">120'</button>
-                                <button type="button" class="duration-btn-yesterday" data-minutes="150" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">150'</button>
+                            <input type="hidden" id="durationRattrapage" value="">
+                            <div class="duration-wheel-rattrapage" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="30" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">30'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="45" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">45'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="60" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">60'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="75" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">75'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="90" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">90'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="105" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">105'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="120" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">120'</button>
+                                <button type="button" class="duration-btn-rattrapage" data-minutes="150" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">150'</button>
                             </div>
                         </div>
-                        
+
                         <!-- Étape 4: Performance -->
-                        <div class="form-group" id="rpeYesterdayStep4" style="display: none;">
+                        <div class="form-group" id="rpeRattrapageStep4" style="display: none;">
                             <label class="form-label">Comment je note ma performance (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="performanceYesterday" style="display:none;">
-                            <div style="display:none;"><span id="performanceValueYesterday">5</span>/10</div>
+                            <input type="range" min="0" max="10" value="0" class="form-control" id="performanceRattrapage" style="display:none;">
+                            <div style="display:none;"><span id="performanceValueRattrapage">5</span>/10</div>
                         </div>
-                        
+
                         <!-- Étape 5: Commentaire et soumission -->
-                        <div id="rpeYesterdayStep5" style="display: none;">
+                        <div id="rpeRattrapageStep5" style="display: none;">
                             <div class="form-group">
                                 <label class="form-label">Commentaire (optionnel, 150 caractères max)</label>
-                                <textarea class="form-control" id="rpeCommentYesterday" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur la session de la veille..."></textarea>
-                                <div style="text-align: right; margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary);"><span id="rpeCommentCountYesterday">0</span>/150</div>
+                                <textarea class="form-control" id="rpeCommentRattrapage" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur cette session..."></textarea>
+                                <div style="text-align: right; margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary);"><span id="rpeCommentCountRattrapage">0</span>/150</div>
                             </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">✅ Enregistrer le RPE (J-1)</button>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">✅ Enregistrer le RPE</button>
                         </div>
                     </form>
                 </div>
-                
-                <!-- RPE Avant-veille (J-2) -->
-                <div class="card" id="rpeDayBeforeCard" style="display: none;">
-                    <h3 class="card-title">Rattrapage RPE - Avant-veille (J-2)</h3>
-                    <form id="rpeDayBeforeForm">
-                        <!-- Étape 1: Type d'activité -->
-                        <div class="form-group" id="rpeDayBeforeStep1">
-                            <label class="form-label">Type de session</label>
-                            <input type="hidden" id="sessionTypeDayBefore" value="">
-                            <div class="activity-buttons-daybefore" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
-                                <button type="button" class="activity-btn-daybefore" data-value="Entrainement" style="background: #3b82f6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(59,130,246,0.3);">
-                                    🏐 Entraînement
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Match" style="background: #ef4444; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239,68,68,0.3);">
-                                    🏆 Match
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Preparation Physique" style="background: #10b981; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
-                                    💪 Prépa Physique
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Muscu+Volley" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
-                                    💪🏐 Muscu + Volley
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Recuperation Active" style="background: #8b5cf6; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(139,92,246,0.3);">
-                                    🧘 Récupération
-                                </button>
-                                <button type="button" class="activity-btn-daybefore" data-value="Activite Physique Annexe" style="background: #f59e0b; color: white; border: none; padding: 15px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
-                                    🚴 Activité Annexe
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Étape 2: Effort ressenti -->
-                        <div class="form-group" id="rpeDayBeforeStep2" style="display: none;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <span id="selectedActivityBadgeDayBefore" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;"></span>
-                                <button type="button" onclick="resetRpeFormDayBefore()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 12px;">✏️ Modifier</button>
-                            </div>
-                            <label class="form-label">Effort ressenti (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="rpeValueDayBefore" style="display:none;">
-                            <div style="display:none;"><span id="rpeValueDisplayDayBefore">5</span>/10</div>
-                        </div>
-                        
-                        <!-- Étape 3: Durée -->
-                        <div class="form-group" id="rpeDayBeforeStep3" style="display: none;">
-                            <label class="form-label">Durée de la session</label>
-                            <input type="hidden" id="durationDayBefore" value="">
-                            <div class="duration-wheel-daybefore" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px;">
-                                <button type="button" class="duration-btn-daybefore" data-minutes="30" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">30'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="45" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">45'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="60" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">60'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="75" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">75'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="90" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">90'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="105" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">105'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="120" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">120'</button>
-                                <button type="button" class="duration-btn-daybefore" data-minutes="150" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #e5e7eb; background: white; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;">150'</button>
-                            </div>
-                        </div>
-                        
-                        <!-- Étape 4: Performance -->
-                        <div class="form-group" id="rpeDayBeforeStep4" style="display: none;">
-                            <label class="form-label">Comment je note ma performance (1-10)</label>
-                            <input type="range" min="0" max="10" value="0" class="form-control" id="performanceDayBefore" style="display:none;">
-                            <div style="display:none;"><span id="performanceValueDayBefore">5</span>/10</div>
-                        </div>
-                        
-                        <!-- Étape 5: Commentaire et soumission -->
-                        <div id="rpeDayBeforeStep5" style="display: none;">
-                            <div class="form-group">
-                                <label class="form-label">Commentaire (optionnel, 150 caractères max)</label>
-                                <textarea class="form-control" id="rpeCommentDayBefore" maxlength="150" rows="3" placeholder="Ajoutez un commentaire sur la session de l'avant-veille..."></textarea>
-                                <div style="text-align: right; margin-top: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary);"><span id="rpeCommentCountDayBefore">0</span>/150</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">✅ Enregistrer le RPE (J-2)</button>
-                        </div>
-                    </form>
-                </div>
-                
+
                 <!-- Supprimer un RPE -->
                 <div class="card" id="rpeDeleteCard" style="display: none;">
                     <h3 class="card-title">🗑️ Supprimer un RPE</h3>
@@ -2321,9 +2353,12 @@
                         <h1 class="header-title">Dashboard Coach</h1>
                         <p class="header-subtitle">Vue d'ensemble de l'équipe</p>
                     </div>
-                    <div style="display: flex; gap: var(--space-12);">
-                        <button class="btn btn-primary" onclick="openAddPlayerModal()">+ Ajouter une joueuse</button>
-                        <button class="btn logout-btn" onclick="logout()">Déconnexion</button>
+                    <div style="display: flex; gap: var(--space-12); align-items: center;">
+                        <button class="btn btn-icon" id="darkModeToggle" onclick="toggleDarkMode()" title="Mode sombre" style="padding: 8px 12px; font-size: 16px;">
+                            <i class="fas fa-moon" id="darkModeIcon"></i>
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddPlayerModal()"><i class="fas fa-plus" style="margin-right:6px;"></i>Ajouter une joueuse</button>
+                        <button class="btn logout-btn" onclick="logout()"><i class="fas fa-right-from-bracket" style="margin-right:6px;"></i>Déconnexion</button>
                     </div>
                 </div>
             </div>
@@ -2334,41 +2369,35 @@
             <div id="coachNotificationsContainer" style="margin-top: 20px;"></div>
         </div>
         
-        <div class="container dashboard">
-            <!-- Onglets -->
-            <div class="tabs" style="margin-bottom: var(--space-24); border-bottom: 2px solid var(--color-border); overflow-x: auto; white-space: nowrap;">
+        <div class="container coach-layout">
+            <!-- Onglets / Sidebar -->
+            <div class="tabs coach-sidebar-nav" style="border-bottom: 2px solid var(--color-border); overflow-x: auto; white-space: nowrap;">
                 <button class="tab-btn active" onclick="switchCoachTab('team')" data-tab="team" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px;">
-                    👥 Équipe
+                    <i class="fas fa-users" style="margin-right:6px;"></i>Équipe
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('weekend')" data-tab="weekend" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    🏐 Matchs Week-end
-                </button>
-                <button class="tab-btn" onclick="switchCoachTab('reports')" data-tab="reports" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    📊 Rapports
+                    <i class="fas fa-volleyball-ball" style="margin-right:6px;"></i>Matchs Week-end
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('injuries')" data-tab="injuries" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    🏥 Blessures
+                    <i class="fas fa-medkit" style="margin-right:6px;"></i>Médical
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('messages')" data-tab="messages" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    📢 Messages
+                    <i class="fas fa-bullhorn" style="margin-right:6px;"></i>Messages
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('restPeriods')" data-tab="restPeriods" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    ⏸️ Périodes de Repos
-                </button>
-                <button class="tab-btn" onclick="switchCoachTab('weekPlanner')" data-tab="weekPlanner" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    📅 Planificateur
-                </button>
-                <button class="tab-btn" onclick="switchCoachTab('teamPlanner')" data-tab="teamPlanner" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    🎬 Planning Avancé
+                    <i class="fas fa-pause-circle" style="margin-right:6px;"></i>Périodes de Repos
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('physicalPrep')" data-tab="physicalPrep" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    💪 Prépa Physique
+                    <i class="fas fa-dumbbell" style="margin-right:6px;"></i>Prépa Physique
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('management')" data-tab="management" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    ⚙️ Gestion Équipe
+                    <i class="fas fa-cog" style="margin-right:6px;"></i>Gestion Équipe
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('engagement')" data-tab="engagement" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    🔥 Engagement
+                    <i class="fas fa-fire" style="margin-right:6px;"></i>Engagement
+                </button>
+                <button class="tab-btn" onclick="switchCoachTab('weekPlanner')" data-tab="weekPlanner" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
+                    <i class="fas fa-calendar-alt" style="margin-right:6px;"></i>Planning
                 </button>
             </div>
 
@@ -2377,40 +2406,37 @@
             <!-- Filtres par Statut -->
             <div class="filter-buttons">
                 <button class="filter-btn active" data-filter="all" onclick="filterPlayers('all')">
-                    👥 Toutes (<span id="countAll">0</span>)
+                    <i class="fas fa-users"></i> Toutes (<span id="countAll">0</span>)
                 </button>
                 <button class="filter-btn optimal" data-filter="optimal" onclick="filterPlayers('optimal')">
-                    ✅ Optimal (<span id="countOptimal">0</span>)
+                    <i class="fas fa-circle-check"></i> Optimal (<span id="countOptimal">0</span>)
                 </button>
                 <button class="filter-btn attention" data-filter="attention" onclick="filterPlayers('attention')">
-                    ⚠️ Attention (<span id="countAttention">0</span>)
+                    <i class="fas fa-triangle-exclamation"></i> Attention (<span id="countAttention">0</span>)
                 </button>
                 <button class="filter-btn critical" data-filter="critical" onclick="filterPlayers('critical')">
-                    🚨 Critique (<span id="countCritical">0</span>)
+                    <i class="fas fa-circle-exclamation"></i> Critique (<span id="countCritical">0</span>)
                 </button>
             </div>
-            
-            <!-- Filtres par Phase du Cycle -->
-            <div class="filter-buttons" style="margin-top: var(--space-12);">
-                <span style="font-weight: 600; color: var(--color-text-secondary); margin-right: var(--space-8); align-self: center;">🌸 Phase:</span>
-                <button class="cycle-filter-btn active" data-cycle-filter="all" onclick="filterByPhase('all')">
-                    Toutes (<span id="countPhaseAll">0</span>)
-                </button>
-                <button class="cycle-filter-btn menstrual" data-cycle-filter="menstrual" onclick="filterByPhase('menstrual')">
-                    🩸 Menstruelle (<span id="countMenstrual">0</span>)
-                </button>
-                <button class="cycle-filter-btn follicular" data-cycle-filter="follicular" onclick="filterByPhase('follicular')">
-                    🌱 Folliculaire (<span id="countFollicular">0</span>)
-                </button>
-                <button class="cycle-filter-btn ovulatory" data-cycle-filter="ovulatory" onclick="filterByPhase('ovulatory')">
-                    ⚡ Ovulatoire (<span id="countOvulatory">0</span>)
-                </button>
-                <button class="cycle-filter-btn luteal" data-cycle-filter="luteal" onclick="filterByPhase('luteal')">
-                    🍂 Lutéale (<span id="countLuteal">0</span>)
-                </button>
-                <button class="cycle-filter-btn unknown" data-cycle-filter="unknown" onclick="filterByPhase('unknown')">
-                    ❓ Non configuré (<span id="countUnknown">0</span>)
-                </button>
+
+            <!-- KPI Équipe -->
+            <div class="coach-kpi-bar">
+                <div class="coach-kpi-card">
+                    <div class="coach-kpi-value" id="kpiScoreMoyen">—</div>
+                    <div class="coach-kpi-label"><i class="fas fa-gauge-high"></i> Score moyen</div>
+                </div>
+                <div class="coach-kpi-card coach-kpi-card--optimal">
+                    <div class="coach-kpi-value" id="kpiOptimal">0</div>
+                    <div class="coach-kpi-label"><i class="fas fa-circle-check"></i> Optimal</div>
+                </div>
+                <div class="coach-kpi-card coach-kpi-card--attention">
+                    <div class="coach-kpi-value" id="kpiAttention">0</div>
+                    <div class="coach-kpi-label"><i class="fas fa-triangle-exclamation"></i> Attention</div>
+                </div>
+                <div class="coach-kpi-card coach-kpi-card--critical">
+                    <div class="coach-kpi-value" id="kpiCritical">0</div>
+                    <div class="coach-kpi-label"><i class="fas fa-circle-exclamation"></i> Critique</div>
+                </div>
             </div>
 
             <!-- Liste des joueuses -->
@@ -2420,7 +2446,7 @@
 
             <!-- Bouton Mise à jour + Graphiques Coach -->
             <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: #1f2937;">📊 Statistiques d'entraînement</h2>
+                <h2 style="margin: 0; color: var(--color-text); font-family: var(--font-family-base); font-size: var(--font-size-3xl); font-weight: var(--font-weight-bold);"><i class="fas fa-chart-bar" style="margin-right:8px; color: var(--color-primary);"></i>Statistiques d'entraînement</h2>
                 <button id="refreshChartsBtn" onclick="refreshCoachCharts()" style="
                     background: #667eea;
                     color: white;
@@ -2437,27 +2463,27 @@
             </div>
 
             <!-- Graphique Charge d'Entraînement Semaine Coach -->
-            <div style="padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <h3 style="margin-top: 0;">📊 Volume Hebdomadaire par Joueuse</h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Moyenne hebdomadaire sur les 2 dernières semaines vs moyenne équipe</p>
+            <div class="chart-section" style="padding: 20px; background: var(--color-surface); border: 1px solid var(--color-card-border); border-radius: 10px;">
+                <h3 style="margin-top: 0; color: var(--color-text);"><i class="fas fa-chart-bar" style="margin-right:8px; color: var(--color-primary);"></i>Volume Hebdomadaire par Joueuse</h3>
+                <p style="color: var(--color-text-secondary); font-size: 14px; margin-bottom: 20px;">Moyenne hebdomadaire sur les 2 dernières semaines vs moyenne équipe</p>
                 <div style="height: 400px;">
                     <canvas id="coachWeeklyChart"></canvas>
                 </div>
             </div>
 
             <!-- Graphique Charge d'Entraînement Mois Coach -->
-            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <h3 style="margin-top: 0;">📅 Volume Mensuel par Joueuse</h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Heures du mois en cours vs moyenne équipe</p>
+            <div class="chart-section" style="margin-top: 30px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-card-border); border-radius: 10px;">
+                <h3 style="margin-top: 0; color: var(--color-text);"><i class="fas fa-calendar-alt" style="margin-right:8px; color: var(--color-primary);"></i>Volume Mensuel par Joueuse</h3>
+                <p style="color: var(--color-text-secondary); font-size: 14px; margin-bottom: 20px;">Heures du mois en cours vs moyenne équipe</p>
                 <div style="height: 400px;">
                     <canvas id="coachMonthlyChart"></canvas>
                 </div>
             </div>
 
             <!-- Graphique Cumul Annuel Coach -->
-            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <h3 style="margin-top: 0;">🎯 Cumul Annuel par Joueuse</h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Progression vers l'objectif de 720h par joueuse</p>
+            <div class="chart-section" style="margin-top: 30px; padding: 20px; background: var(--color-surface); border: 1px solid var(--color-card-border); border-radius: 10px;">
+                <h3 style="margin-top: 0; color: var(--color-text);"><i class="fas fa-bullseye" style="margin-right:8px; color: var(--color-primary);"></i>Cumul Annuel par Joueuse</h3>
+                <p style="color: var(--color-text-secondary); font-size: 14px; margin-bottom: 20px;">Progression vers l'objectif de 720h par joueuse</p>
                 <div style="height: 500px;">
                     <canvas id="coachAnnualChart"></canvas>
                 </div>
@@ -2471,49 +2497,158 @@
                 </div>
             </div>
 
-            <!-- Onglet Rapports -->
-            <div id="reportsTab" class="coach-tab-content" style="display: none;">
-                <!-- Bouton Export PDF -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-24);">
-                    <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin: 0;">📊 Rapports &amp; Analyses</h2>
-                    <button id="btnExportPDF" onclick="exportTeamReportPDF()" class="btn-export-pdf">📄 Exporter PDF</button>
+            <!-- Onglet Médical -->
+            <div id="injuriesTab" class="coach-tab-content" style="display: none;">
+
+                <!-- Sous-onglets Médical -->
+                <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--color-border);padding-bottom:0;">
+                    <button class="med-tab-btn active" data-medtab="suivi" onclick="switchMedTab('suivi')"
+                        style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;font-size:14px;border-bottom:3px solid var(--color-primary);margin-bottom:-2px;color:var(--color-primary);">
+                        🤕 Suivi blessures
+                    </button>
+                    <button class="med-tab-btn" data-medtab="kine" onclick="switchMedTab('kine')"
+                        style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--color-text-secondary);">
+                        🦴 Kiné
+                    </button>
+                    <button class="med-tab-btn" data-medtab="medecin" onclick="switchMedTab('medecin')"
+                        style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--color-text-secondary);">
+                        🩺 Médecin
+                    </button>
+                    <button class="med-tab-btn" data-medtab="contacts" onclick="switchMedTab('contacts')"
+                        style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-2px;color:var(--color-text-secondary);">
+                        📱 Contacts
+                    </button>
                 </div>
-                <div class="card" style="margin-bottom: var(--space-24);">
-                    <h3 class="card-title">📊 Évolution équipe (7 jours)</h3>
-                    <canvas id="teamEvolutionChart" style="max-height: 300px;"></canvas>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-24); margin-bottom: var(--space-24);">
-                    <div class="card">
-                        <h3 class="card-title">🏋️ Distribution de charge</h3>
-                        <canvas id="loadDistributionChart" style="max-height: 250px;"></canvas>
+
+                <!-- == SOUS-ONGLET KINÉ == -->
+                <div id="medTab_kine" class="med-tab-content" style="display:none;">
+                    <!-- Demandes kiné du jour -->
+                    <div id="kineRequestsBlock" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:16px;margin-bottom:20px;">
+                        <div style="font-weight:700;font-size:15px;color:#92400e;margin-bottom:10px;">🦴 Demandes kiné — aujourd'hui</div>
+                        <div id="kineRequestsToday"><span style="color:#9ca3af;font-size:13px;">Chargement...</span></div>
                     </div>
-                    
+                    <!-- Calendrier présences kiné -->
                     <div class="card">
-                        <h3 class="card-title">⚡ TSB Moyen de l'équipe</h3>
-                        <div style="text-align: center; padding: var(--space-32);">
-                            <div style="font-size: 48px; font-weight: var(--font-weight-bold); color: var(--color-primary);" id="avgTSB">--</div>
-                            <div style="margin-top: var(--space-8); color: var(--color-text-secondary);">Training Stress Balance</div>
-                            <div style="margin-top: var(--space-16); padding: var(--space-16); background: var(--color-background); border-radius: var(--radius-base);" id="tsbInterpretation">
-                                <strong>Interprétation :</strong> <span id="tsbText">En attente de données...</span>
+                        <h3 class="card-title">📅 Calendrier de présence du kiné</h3>
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <button type="button" onclick="kineCalPrevMonth()" style="padding:4px 10px;border:1px solid var(--color-border);background:var(--color-background);border-radius:6px;cursor:pointer;font-size:14px;">‹</button>
+                            <span id="kineCalMonthLabel" style="font-size:13px;font-weight:600;flex:1;text-align:center;"></span>
+                            <button type="button" onclick="kineCalNextMonth()" style="padding:4px 10px;border:1px solid var(--color-border);background:var(--color-background);border-radius:6px;cursor:pointer;font-size:14px;">›</button>
+                        </div>
+                        <div id="kineCalendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12px;"></div>
+                        <div style="margin-top:6px;font-size:11px;color:var(--color-text-secondary);">Clique sur une date pour marquer/démarquer une présence</div>
+                        <button onclick="saveKineDates()" style="margin-top:14px;padding:8px 20px;background:#25d366;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">
+                            💾 Enregistrer les dates
+                        </button>
+                    </div>
+                </div>
+
+                <!-- == SOUS-ONGLET MÉDECIN == -->
+                <div id="medTab_medecin" class="med-tab-content" style="display:none;">
+                    <!-- Alerte J-2 -->
+                    <div id="doctorVisitAlert" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:12px;padding:16px;margin-bottom:20px;">
+                        <div style="font-weight:700;font-size:15px;color:#1e40af;margin-bottom:6px;">📋 Visite médecin dans 2 jours</div>
+                        <div id="doctorVisitAlertMsg" style="font-size:13px;color:#1d4ed8;margin-bottom:12px;"></div>
+                        <button onclick="openDoctorScheduler()" style="padding:8px 18px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                            📝 Planifier les RDV
+                        </button>
+                    </div>
+
+                    <!-- Calendrier visites médecin -->
+                    <div class="card" style="margin-bottom:20px;">
+                        <h3 class="card-title">📅 Dates de visite du médecin</h3>
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <button type="button" onclick="docCalPrevMonth()" style="padding:4px 10px;border:1px solid var(--color-border);background:var(--color-background);border-radius:6px;cursor:pointer;font-size:14px;">‹</button>
+                            <span id="docCalMonthLabel" style="font-size:13px;font-weight:600;flex:1;text-align:center;"></span>
+                            <button type="button" onclick="docCalNextMonth()" style="padding:4px 10px;border:1px solid var(--color-border);background:var(--color-background);border-radius:6px;cursor:pointer;font-size:14px;">›</button>
+                        </div>
+                        <div id="docCalendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12px;"></div>
+                        <div style="margin-top:6px;font-size:11px;color:var(--color-text-secondary);">Clique sur une date pour planifier une visite médecin</div>
+                        <button onclick="saveDocDates()" style="margin-top:14px;padding:8px 20px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">
+                            💾 Enregistrer les dates
+                        </button>
+                    </div>
+
+                    <!-- Planificateur RDV (affiché quand on clique "Planifier") -->
+                    <div id="doctorSchedulerBlock" style="display:none;" class="card">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <h3 class="card-title" style="margin:0;">🗓️ Planifier les RDV — <span id="schedulerDateLabel"></span></h3>
+                            <button onclick="closeDoctorScheduler()" style="padding:4px 10px;border:1px solid var(--color-border);background:var(--color-background);border-radius:6px;cursor:pointer;font-size:13px;">✕ Fermer</button>
+                        </div>
+                        <!-- Plage horaire -->
+                        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;padding:12px;background:var(--color-background);border-radius:8px;">
+                            <span style="font-size:13px;font-weight:600;">Plage horaire :</span>
+                            <input type="time" id="schedStartTime" value="14:00" style="padding:6px 10px;border:1px solid var(--color-border);border-radius:6px;font-size:13px;">
+                            <span style="font-size:13px;">→</span>
+                            <input type="time" id="schedEndTime" value="17:00" style="padding:6px 10px;border:1px solid var(--color-border);border-radius:6px;font-size:13px;">
+                            <select id="schedSlotDuration" style="padding:6px 10px;border:1px solid var(--color-border);border-radius:6px;font-size:13px;">
+                                <option value="15">15 min</option>
+                                <option value="20">20 min</option>
+                                <option value="30" selected>30 min</option>
+                                <option value="45">45 min</option>
+                            </select>
+                            <button onclick="generateSlots()" style="padding:6px 14px;background:var(--color-primary);color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">
+                                Générer les créneaux
+                            </button>
+                        </div>
+                        <!-- Grille d'assignation -->
+                        <div id="slotsGrid" style="margin-bottom:16px;"></div>
+                        <!-- Validation -->
+                        <button onclick="validateAndNotifyAppointments()" id="btnValidateRdv" style="display:none;width:100%;padding:12px;background:#10b981;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:15px;">
+                            ✅ Valider et notifier les joueuses
+                        </button>
+                    </div>
+
+                    <!-- RDV du jour -->
+                    <div class="card">
+                        <h3 class="card-title">📋 RDV médecin à venir</h3>
+                        <div id="upcomingDoctorRdv"><span style="color:var(--color-text-secondary);font-size:13px;">Chargement...</span></div>
+                    </div>
+                </div>
+
+                <!-- == SOUS-ONGLET CONTACTS == -->
+                <div id="medTab_contacts" class="med-tab-content" style="display:none;">
+                    <div class="card">
+                        <h3 class="card-title">📱 Contacts Staff Médical</h3>
+                        <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;">
+                            Ces numéros sont utilisés pour les boutons WhatsApp et les notifications. Format : 33612345678 (sans le +)
+                        </p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Nom du Kiné</label>
+                                <input type="text" id="kineNameInput" placeholder="Ex: Dupont" style="width:100%;padding:8px;border:1px solid var(--color-border);border-radius:6px;box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Numéro Kiné (WhatsApp)</label>
+                                <input type="tel" id="kinePhoneInput" placeholder="Ex: 33612345678" style="width:100%;padding:8px;border:1px solid var(--color-border);border-radius:6px;box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Nom du Médecin</label>
+                                <input type="text" id="doctorNameInput" placeholder="Ex: Dr Martin" style="width:100%;padding:8px;border:1px solid var(--color-border);border-radius:6px;box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Numéro Médecin (WhatsApp)</label>
+                                <input type="tel" id="doctorPhoneInput" placeholder="Ex: 33698765432" style="width:100%;padding:8px;border:1px solid var(--color-border);border-radius:6px;box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Nom du Groupe Staff</label>
+                                <input type="text" id="medicalGroupNameInput" placeholder="Ex: Staff Médical Pôle" style="width:100%;padding:8px;border:1px solid var(--color-border);border-radius:6px;box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label style="display:block;margin-bottom:4px;font-size:13px;font-weight:600;">Numéro Groupe Staff</label>
+                                <input type="tel" id="medicalGroupPhoneInput" placeholder="Ex: 33698765432" style="width:100%;padding:8px;border:1px solid var(--color-border);border-radius:6px;box-sizing:border-box;">
                             </div>
                         </div>
+                        <button onclick="saveMedicalContacts()" style="padding:8px 20px;background:#25d366;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">
+                            💾 Enregistrer les contacts
+                        </button>
+                        <div id="medicalContactsDisplay" style="margin-top:12px;font-size:13px;color:var(--color-text-secondary);">Chargement...</div>
                     </div>
                 </div>
-                
-                <div class="card">
-                    <h3 class="card-title">📝 Résumé de l'équipe</h3>
-                    <div id="teamSummary" style="line-height: 1.8;">
-                        <p><strong>Joueuses actives :</strong> <span id="activePlayers">--</span></p>
-                        <p><strong>Check-ins aujourd'hui :</strong> <span id="todayCheckins">--</span></p>
-                        <p><strong>Score moyen de l'équipe :</strong> <span id="avgTeamScore">--</span>/10</p>
-                        <p><strong>Charge moyenne (7 jours) :</strong> <span id="avgLoad7days">--</span></p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Onglet Blessures -->
-            <div id="injuriesTab" class="coach-tab-content" style="display: none;">
+                <!-- == SOUS-ONGLET SUIVI BLESSURES (défaut) == -->
+                <div id="medTab_suivi" class="med-tab-content" style="display:block;">
+
                 <!-- En-tête avec bouton nouvelle blessure -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-24);">
                     <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin: 0;">Suivi des Blessures</h2>
@@ -2552,6 +2687,32 @@
                             <p style="color: #666; font-style: italic;">Aucune donnée disponible</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- VUE HEBDOMADAIRE DES DOULEURS               -->
+                <!-- ============================================== -->
+                <div class="card" style="margin-bottom: var(--space-24);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 class="card-title" style="margin: 0;">📅 Suivi semaine</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button onclick="changeWeekView(-1)" style="padding: 6px 12px; background: var(--color-background); border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer; font-size: 14px;">◀</button>
+                            <span id="weekViewLabel" style="font-size: 13px; font-weight: 500; min-width: 160px; text-align: center; color: var(--color-text-secondary);">Chargement...</span>
+                            <button onclick="changeWeekView(+1)" style="padding: 6px 12px; background: var(--color-background); border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer; font-size: 14px;">▶</button>
+                        </div>
+                    </div>
+                    <div id="weeklyPainGrid">
+                        <p style="color: var(--color-text-secondary); font-style: italic; text-align: center; padding: 16px;">Chargement...</p>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--color-text-secondary);">
+                        🟢 1-4 · 🟡 5-7 · 🔴 8-10 · La pastille affiche l'intensité déclarée
+                    </div>
+                </div>
+
+                <!-- Graphique 4 semaines -->
+                <div class="card" style="margin-bottom: var(--space-24);">
+                    <h3 class="card-title">📈 Douleurs — 4 dernières semaines</h3>
+                    <canvas id="painTimelineChart" height="120"></canvas>
                 </div>
 
                 <!-- ============================================== -->
@@ -2602,6 +2763,10 @@
                                 </div>
                             </div>
                             <div style="margin-bottom: var(--space-12);">
+                                <label style="display: block; margin-bottom: var(--space-4); font-weight: var(--font-weight-medium);">Intensité (1-10)</label>
+                                <input type="number" id="painIntensityCoach" min="1" max="10" placeholder="Ex: 5" style="width: 100%; padding: var(--space-8); border-radius: var(--radius-base); border: none;" />
+                            </div>
+                            <div style="margin-bottom: var(--space-12);">
                                 <label style="display: block; margin-bottom: var(--space-4); font-weight: var(--font-weight-medium);">Description (optionnel)</label>
                                 <input type="text" id="painDescription" placeholder="Ex: Léger point au poignet lors des frappes" style="width: 100%; padding: var(--space-8); border-radius: var(--radius-base); border: none;" maxlength="100" />
                             </div>
@@ -2622,13 +2787,15 @@
                                         <th style="padding: var(--space-8); text-align: left;">Date</th>
                                         <th style="padding: var(--space-8); text-align: left;">Zone</th>
                                         <th style="padding: var(--space-8); text-align: left;">Description</th>
+                                        <th style="padding: var(--space-8); text-align: center;">Intensité</th>
+                                        <th style="padding: var(--space-8); text-align: center;">Source</th>
                                         <th style="padding: var(--space-8); text-align: left;">Durée</th>
-                                        <th style="padding: var(--space-8); text-align: center;">Action</th>
+                                        <th style="padding: var(--space-8); text-align: center;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="painsTableBody">
                                     <tr>
-                                        <td colspan="6" style="text-align: center; padding: var(--space-20); color: #666;">
+                                        <td colspan="8" style="text-align: center; padding: var(--space-20); color: #666;">
                                             Aucune douleur signalée
                                         </td>
                                     </tr>
@@ -2676,8 +2843,9 @@
                         </table>
                     </div>
                 </div>
-            </div>
-            
+                </div><!-- /medTab_suivi -->
+            </div><!-- /injuriesTab -->
+
             <!-- Onglet Messages Urgents -->
             <div id="messagesTab" class="coach-tab-content" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
@@ -2746,55 +2914,44 @@
                 </div>
             </div>
             
-            <!-- Onglet Planificateur Semaine -->
-            <div id="weekPlannerTab" class="coach-tab-content" style="display: none;">
-                <div id="weekPlannerContainer">
-                    <div style="text-align: center; padding: 40px;">
-                        <div class="spinner"></div>
-                        <p style="margin-top: 16px; color: var(--color-text-secondary);">Chargement du planificateur...</p>
+            <!-- Onglet Planning — Overlay plein écran -->
+            <div id="weekPlannerTab" class="coach-tab-content" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:9990; background:var(--color-bg); flex-direction:column;">
+
+                <!-- Barre de navigation : Retour + sous-onglets -->
+                <div style="display:flex; align-items:center; gap:12px; height:52px; padding:0 16px; background:var(--color-surface); border-bottom:2px solid var(--color-border); flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                    <button onclick="switchCoachTab('team')" style="display:flex; align-items:center; gap:6px; padding:6px 14px; background:var(--color-primary-light); color:var(--color-primary); border:1px solid rgba(33,128,172,0.25); border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:all 0.15s;">
+                        ← Retour
+                    </button>
+                    <div style="width:1px; height:24px; background:var(--color-border);"></div>
+                    <button id="planSubBtn_team" onclick="switchPlanningSubTab('team')" style="padding:8px 18px; border:none; background:none; cursor:pointer; font-weight:600; border-bottom:3px solid var(--color-primary); color:var(--color-primary); font-size:14px; transition:all 0.15s;">
+                        📅 Planning Équipe
+                    </button>
+                    <button id="planSubBtn_cycles" onclick="switchPlanningSubTab('cycles')" style="padding:8px 18px; border:none; background:none; cursor:pointer; font-weight:500; border-bottom:3px solid transparent; color:var(--color-text-secondary); font-size:14px; transition:all 0.15s;">
+                        🔄 Vue Cycles
+                    </button>
+                </div>
+
+                <!-- Sous-onglet : Planning Équipe (React) -->
+                <div id="planSubTab_team" style="display:flex; flex:1; min-height:0; overflow:hidden;">
+                    <iframe
+                        id="plannerIframe"
+                        src="/planner/index.html"
+                        style="width:100%; height:100%; border:none; display:block;"
+                        title="Planning Équipe"
+                    ></iframe>
+                </div>
+
+                <!-- Sous-onglet : Vue Cycles -->
+                <div id="planSubTab_cycles" style="display:none; flex:1; overflow-y:auto; padding:16px; min-height:0;">
+                    <div id="weekPlannerContainer">
+                        <div style="text-align: center; padding: 40px;">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 16px; color: var(--color-text-secondary);">Chargement du planificateur...</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Onglet Planning Avancé (Netflix Style) - Intégration React -->
-            <div id="teamPlannerTab" class="coach-tab-content" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: #141414;">
-                <!-- Bouton de retour -->
-                <button 
-                    onclick="switchCoachTab('team')" 
-                    style="position: fixed; top: 16px; right: 16px; z-index: 10000; background: rgba(0,0,0,0.8); color: white; border: 2px solid #E50914; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
-                    onmouseover="this.style.background='#E50914'; this.style.transform='scale(1.05)';"
-                    onmouseout="this.style.background='rgba(0,0,0,0.8)'; this.style.transform='scale(1)';"
-                    title="Retour au dashboard"
-                >
-                    <span style="font-size: 20px;">←</span>
-                    Retour
-                </button>
-                
-                <div style="position: relative; width: 100%; height: 100%;">
-                    <!-- Iframe vers l'application React Team Planner -->
-                    <iframe 
-                        id="teamPlannerIframe"
-                        src="about:blank" 
-                        style="width: 100%; height: 100%; border: none; background: #141414;"
-                        title="RPE Team Planner"
-                    ></iframe>
-                    
-                    <!-- Fallback si l'iframe ne charge pas -->
-                    <div id="teamPlannerFallback" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #141414; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 40px;">
-                        <div style="font-size: 64px; margin-bottom: 24px;">🎬</div>
-                        <h2 style="color: #E50914; font-size: 28px; font-weight: 700; margin-bottom: 16px;">RPE Team Planner</h2>
-                        <p style="color: #888; font-size: 16px; max-width: 500px; line-height: 1.6;">
-                            Pour un développement plus rapide avec hot-reload, vous pouvez lancer le serveur dev :<br><br>
-                        </p>
-                        <code style="background: #333; padding: 16px 24px; border-radius: 8px; font-family: monospace; margin-top: 16px; color: #10B981;">
-                            cd "projet Manus" && npm run dev
-                        </code>
-                        <p style="color: #666; font-size: 14px; margin-top: 24px;">
-                            Sinon, le Planning Avancé est déjà intégré et fonctionnel ! 🎉
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             <!-- Onglet Prépa Physique -->
             <div id="physicalPrepTab" class="coach-tab-content" style="display: none;">
@@ -3024,46 +3181,54 @@
                     
                     <!-- Sous-onglets Engagement -->
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1);">
-                        <button class="engagement-sub-tab active" onclick="switchEngagementSubTab('stats')" data-subtab="stats" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
-                            📊 Statistiques
-                        </button>
-                        <button class="engagement-sub-tab" onclick="switchEngagementSubTab('stickers')" data-subtab="stickers" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
+                        <button class="engagement-sub-tab active" onclick="switchEngagementSubTab('stickers')" data-subtab="stickers" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
                             🏆 Stickers
                         </button>
+                        <button class="engagement-sub-tab" onclick="switchEngagementSubTab('maintenance')" data-subtab="maintenance" style="padding: 12px 24px; background: none; border: none; color: #666; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;">
+                            🔧 Maintenance
+                        </button>
                     </div>
-                    
-                    <!-- Contenu Stats -->
-                    <div id="engagementStatsContent" class="engagement-sub-content">
-                        <div id="engagementContent">
-                            <p style="text-align: center; color: #666;">Chargement des statistiques...</p>
-                            
-                            <!-- Graphique d'évolution de l'équipe -->
-                            <div class="card" style="margin-top: 20px; padding: 20px;">
-                                <h3 class="card-title">📈 Évolution de l'État de Forme de l'Équipe (7 derniers jours)</h3>
-                                <canvas id="teamEvolutionChart" width="400" height="200"></canvas>
-                            </div>
 
-                            <!-- Graphique de distribution de charge -->
-                            <div class="card" style="margin-top: 20px; padding: 20px;">
-                                <h3 class="card-title">📊 Distribution de la Charge d'Entraînement</h3>
-                                <canvas id="loadDistributionChart" width="400" height="200"></canvas>
-                            </div>
-
-                            <!-- Résumé de l'équipe -->
-                            <div class="card" style="margin-top: 20px; padding: 20px;">
-                                <h3 class="card-title">📝 Résumé Général de l'Équipe</h3>
-                                <div id="teamSummaryContent">
-                                    <p style="text-align: center; color: #666;">Chargement du résumé...</p>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    
                     <!-- Contenu Stickers -->
-                    <div id="engagementStickersContent" class="engagement-sub-content" style="display: none; max-height: none; overflow: visible;">
+                    <div id="engagementStickersContent" class="engagement-sub-content" style="max-height: none; overflow: visible;">
                         <div id="coachStickersVerification" style="max-height: none; overflow: visible;">
                             <p style="text-align: center; color: #666;">Chargement des stickers...</p>
+                        </div>
+                    </div>
+
+                    <!-- Contenu Maintenance -->
+                    <div id="engagementMaintenanceContent" class="engagement-sub-content" style="display: none;">
+                        <div style="padding: 20px;">
+                            <h3 style="margin-bottom: 20px; color: #1f2937;">🔧 Outils de Maintenance</h3>
+                            <p style="color: #666; margin-bottom: 30px;">
+                                Ces outils permettent de recalculer les streaks et restaurer les stickers perdus.
+                                <br><strong>Les stickers gagnés ne sont jamais supprimés</strong>, seulement restaurés si manquants.
+                            </p>
+
+                            <div style="display: grid; gap: 20px; max-width: 600px;">
+                                <!-- Bouton Recalculer toutes les joueuses -->
+                                <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px;">
+                                    <h4 style="margin: 0 0 10px 0; color: #1e40af;">🔄 Recalculer toutes les joueuses</h4>
+                                    <p style="color: #1e3a8a; font-size: 14px; margin-bottom: 15px;">
+                                        Recalcule les streaks et stickers pour <strong>toutes</strong> les joueuses.
+                                        Cette opération peut prendre quelques secondes.
+                                    </p>
+                                    <button onclick="repairAllPlayersStickers()" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                                        🔄 Recalculer tous les streaks
+                                    </button>
+                                </div>
+
+                                <!-- Info gel mensuel -->
+                                <div style="background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 12px; padding: 20px;">
+                                    <h4 style="margin: 0 0 10px 0; color: #374151;">ℹ️ Règles des streaks</h4>
+                                    <ul style="color: #4b5563; font-size: 14px; margin: 0; padding-left: 20px; line-height: 1.8;">
+                                        <li><strong>1 gel par mois</strong> : un oubli de 1-2 jours ne casse pas le streak</li>
+                                        <li><strong>Périodes de repos</strong> : les vacances ne cassent pas le streak</li>
+                                        <li><strong>Stickers permanents</strong> : une fois gagné, jamais perdu</li>
+                                        <li><strong>Streak max historique</strong> : les stickers sont basés sur le meilleur streak atteint, pas le courant</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3507,23 +3672,23 @@
     <div id="playerDetailModal" class="modal">
         <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <!-- EN-TÊTE -->
-            <div class="modal-header" style="display: flex; align-items: center; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; background: white; z-index: 10;">
+            <div class="modal-header player-detail-header" style="display: flex; align-items: center; gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--color-border); position: sticky; top: 0; background: var(--color-surface); z-index: 10;">
                 <div id="playerDetailAvatar" style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; overflow: hidden; flex-shrink: 0;">
                     <img id="playerDetailPhoto" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" alt="Photo">
                     <span id="playerDetailInitials">--</span>
                 </div>
                 <div style="flex: 1;">
-                    <div id="playerDetailFullName" style="font-size: 20px; font-weight: 600; color: #1f2937;"></div>
-                    <div id="playerDetailBirthday" style="font-size: 14px; color: #6b7280;"></div>
+                    <div id="playerDetailFullName" style="font-size: 20px; font-weight: 600; color: var(--color-text);"></div>
+                    <div id="playerDetailBirthday" style="font-size: 14px; color: var(--color-text-secondary);"></div>
                 </div>
                 <span id="playerDetailBadge" class="status-badge" style="padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 500;"></span>
-                <button onclick="closePlayerDetailModal()" style="background: none; border: none; font-size: 24px; color: #9ca3af; cursor: pointer; margin-left: 8px;">×</button>
+                <button onclick="closePlayerDetailModal()" style="background: none; border: none; font-size: 24px; color: var(--color-text-secondary); cursor: pointer; margin-left: 8px;">×</button>
             </div>
 
             <div class="modal-body" style="padding: 0;">
                 <!-- SCORE ACTUEL -->
-                <div style="text-align: center; padding: 20px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
-                    <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Score actuel</div>
+                <div id="playerScoreSection" class="modal-section" style="text-align: center; padding: 20px; border-bottom: 1px solid var(--color-border);">
+                    <div class="modal-text-secondary" style="font-size: 14px; margin-bottom: 4px;">Score actuel</div>
                     <div id="playerDetailScoreBig" style="font-size: 48px; font-weight: 700; color: #f59e0b;">0/10</div>
                 </div>
 
@@ -3596,7 +3761,13 @@
 
                 <!-- GRAPHIQUE CYCLE MENSTRUEL -->
                 <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
-                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 16px;">🌸 Cycle Menstruel</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 12px;">🌸 Cycle Menstruel</div>
+                    <!-- Navigation cycles avec flèches -->
+                    <div id="popupCycleNavigation" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <button id="popupCyclePrev" onclick="navigatePopupCycle(-1)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #374151; cursor: pointer; font-size: 14px;">◀</button>
+                        <span id="popupCycleLabel" style="padding: 6px 16px; border-radius: 6px; background: #667eea; color: white; font-size: 12px; font-weight: 600; min-width: 100px; text-align: center;">Cycle Actuel</span>
+                        <button id="popupCycleNext" onclick="navigatePopupCycle(1)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; color: #374151; cursor: pointer; font-size: 14px; opacity: 0.3;" disabled>▶</button>
+                    </div>
                     <div id="popupCycleChartContainer" style="position: relative; height: 300px;">
                         <canvas id="popupCycleChart"></canvas>
                     </div>
@@ -3944,7 +4115,8 @@
     <script src="/js/stickers.js"></script>
     <script src="/js/sticker-animation.js"></script>
     <script src="/js/sticker-collection.js"></script>
-    
+    <script src="/js/admin-stickers-repair.js"></script>
+
     <!-- Weekend Match Recap -->
     <script src="/js/weekend-match-recap.js"></script>
     
@@ -3954,6 +4126,7 @@
     <script src="/js/app-volume-stats.js"></script>
     <script src="/js/injury-constants.js"></script>
     <script src="/js/injury-management.js"></script>
+    <script src="/js/medical-module.js"></script>
     <script src="/js/notifications-manager.js"></script>
     <script src="/js/rest-periods-helper-COMPATIBLE.js"></script>
     <script src="/js/rest-periods-manager.js"></script>
@@ -3993,6 +4166,33 @@
     <!-- Initialize Motivational Quote on app startup -->
     <script>
         document.addEventListener('DOMContentLoaded', showDailyMotivation);
+    </script>
+
+    <!-- Dark Mode Toggle -->
+    <script>
+        function toggleDarkMode() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('rpe-theme', newTheme);
+            // Mettre à jour toutes les icônes (coach + joueuse)
+            document.querySelectorAll('[id^="darkModeIcon"]').forEach(icon => {
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            });
+        }
+
+        // Appliquer le thème sauvegardé au chargement
+        (function() {
+            const saved = localStorage.getItem('rpe-theme');
+            if (saved === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelectorAll('[id^="darkModeIcon"]').forEach(icon => {
+                        icon.className = 'fas fa-sun';
+                    });
+                });
+            }
+        })();
     </script>
 
 </body>

@@ -93,7 +93,7 @@ async function initWeekPlanner() {
         const players = await getPlayersWithCycleData();
         
         // Générer la vue calendrier
-        renderWeekPlanner(container, players);
+        renderWeekPlannerUI(container, players);
         
         console.log('📅 Planificateur Semaine: Chargé avec', players.length, 'joueuses');
         
@@ -165,21 +165,16 @@ function getPhaseForDate(cycleConfig, date) {
     
     const cycleLength = cycleConfig.cycleLength || 28;
     
-    // Calculer combien de cycles se sont écoulés depuis lastJ1
-    if (lastJ1 <= targetDate) {
-        const daysDiff = Math.floor((targetDate - lastJ1) / (1000 * 60 * 60 * 24));
-        const cyclesElapsed = Math.floor(daysDiff / cycleLength);
-        // Avancer lastJ1 au début du cycle actuel
-        lastJ1 = new Date(periodDateField.toDate ? periodDateField.toDate() : periodDateField);
-        lastJ1.setHours(0, 0, 0, 0);
-        lastJ1.setDate(lastJ1.getDate() + (cyclesElapsed * cycleLength));
+    // Si J1 dans le futur, erreur de saisie
+    if (lastJ1 > targetDate) {
+        return { phase: 'unknown', day: 0 };
     }
-    
+
+    // Calcul SANS recalcul automatique - pas de reset de cycle
     const daysSinceJ1 = Math.floor((targetDate - lastJ1) / (1000 * 60 * 60 * 24));
     let cycleDay = daysSinceJ1 + 1;
     if (cycleDay <= 0) cycleDay = 1;
-    if (cycleDay > cycleLength) cycleDay = cycleLength;
-    
+
     // Déterminer la phase
     let phase;
     if (cycleDay <= 5) {
@@ -189,9 +184,9 @@ function getPhaseForDate(cycleConfig, date) {
     } else if (cycleDay <= 16) {
         phase = 'ovulatory';
     } else {
-        phase = 'luteal';
+        phase = 'luteal'; // cycle prolongé = phase lutéale continue
     }
-    
+
     return { phase, day: cycleDay };
 }
 
@@ -280,7 +275,7 @@ function getDayRecommendation(stats) {
 /**
  * Rendre le planificateur semaine
  */
-function renderWeekPlanner(container, players) {
+function renderWeekPlannerUI(container, players) {
     const days = getNextDays(7);
     
     // Calculer les stats pour chaque jour
@@ -490,7 +485,7 @@ const weekPlannerStyles = `
 <style>
 .week-planner {
     padding: 20px;
-    background: white;
+    background: var(--color-surface, white);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }

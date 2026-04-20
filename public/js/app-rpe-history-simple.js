@@ -115,7 +115,7 @@ async function loadLast8Rpe() {
             const isFirst = idx === 0;
             
             html += `
-                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: white;">
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: var(--color-surface, white);">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div>
                             <strong style="color: #667eea;">${dateStr}</strong>

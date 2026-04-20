@@ -23,202 +23,133 @@ function switchCoachTab(tabName) {
     document.querySelectorAll('.coach-tab-content').forEach(tab => {
         tab.style.display = 'none';
     });
-    
-    // Désactiver tous les boutons
+
+    // Désactiver tous les boutons — on efface les inline styles pour laisser le CSS gérer
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
-        btn.style.borderBottom = '3px solid transparent';
-        btn.style.color = 'var(--color-text-secondary)';
-        btn.style.background = 'none';
+        btn.style.borderBottom = '';
+        btn.style.borderLeft = '';
+        btn.style.color = '';
+        btn.style.background = '';
+        btn.style.fontWeight = '';
     });
-    
+
     // Gérer la visibilité du header et des onglets selon l'onglet actif
     const coachHeader = document.querySelector('#coachScreen .header');
     const tabsContainer = document.querySelector('#coachScreen .tabs');
-    const dashboardContainer = document.querySelector('#coachScreen .dashboard');
-    
+    const dashboardContainer = document.querySelector('#coachScreen .coach-layout');
+
     if (tabName === 'teamPlanner') {
-        // Mode plein écran pour Team Planner
         if (coachHeader) coachHeader.style.display = 'none';
         if (tabsContainer) tabsContainer.style.display = 'none';
         if (dashboardContainer) dashboardContainer.style.padding = '0';
     } else {
-        // Restaurer l'affichage normal
         if (coachHeader) coachHeader.style.display = '';
         if (tabsContainer) tabsContainer.style.display = '';
         if (dashboardContainer) dashboardContainer.style.padding = '';
     }
-    
-    // Activer l'onglet sélectionné
-    if (tabName === 'team') {
-        document.getElementById('teamTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="team"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-    } else if (tabName === 'weekend') {
-        document.getElementById('weekendTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="weekend"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger le récap des matchs
-        if (typeof loadWeekendMatchRecap === 'function') {
-            loadWeekendMatchRecap();
+
+    // Activer l'onglet sélectionné — classe active seulement, le CSS fait le reste
+    const tabMap = {
+        'team':        { tabId: 'teamTab',        callback: null },
+        'weekend':     { tabId: 'weekendTab',      callback: () => typeof loadWeekendMatchRecap === 'function' && loadWeekendMatchRecap() },
+        'injuries':    { tabId: 'injuriesTab',     callback: () => {
+            if (typeof initInjuryTracking === 'function') initInjuryTracking();
+            if (typeof switchMedTab === 'function') switchMedTab('suivi');
+        }},
+        'messages':    { tabId: 'messagesTab',     callback: () => typeof loadScheduledMessages === 'function' && loadScheduledMessages() },
+        'restPeriods': { tabId: 'restPeriodsTab',  callback: () => typeof loadRestPeriods === 'function' && loadRestPeriods() },
+        'weekPlanner': { tabId: 'weekPlannerTab',  callback: () => switchPlanningSubTab('team') },
+        'physicalPrep':{ tabId: 'physicalPrepTab', callback: () => typeof initPhysicalPrepTab === 'function' && initPhysicalPrepTab() },
+        'management':  { tabId: 'managementTab',   callback: () => typeof loadPlayersTable === 'function' && loadPlayersTable() },
+        'engagement':  { tabId: 'engagementTab',   callback: () => { switchEngagementSubTab('stickers'); if (typeof updateFillIndicator === 'function') updateFillIndicator(); } },
+    };
+
+    const entry = tabMap[tabName];
+    if (entry) {
+        const tabEl = document.getElementById(entry.tabId);
+        if (tabEl) {
+            // weekPlannerTab est un overlay flex (position:fixed + flex-direction:column)
+            tabEl.style.display = (entry.tabId === 'weekPlannerTab') ? 'flex' : 'block';
         }
-    } else if (tabName === 'reports') {
-        document.getElementById('reportsTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="reports"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger les rapports
-        loadReports();
-    } else if (tabName === 'injuries') {
-        document.getElementById('injuriesTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="injuries"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger le module de suivi des blessures
-        if (typeof initInjuryTracking === 'function') {
-            initInjuryTracking();
-        }
-    } else if (tabName === 'messages') {
-        document.getElementById('messagesTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="messages"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger les messages programmés
-        if (typeof loadScheduledMessages === 'function') {
-            loadScheduledMessages();
-        }
-    } else if (tabName === 'restPeriods') {
-        document.getElementById('restPeriodsTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="restPeriods"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger les périodes de repos
-        if (typeof loadRestPeriods === 'function') {
-            loadRestPeriods();
-        }
-    } else if (tabName === 'weekPlanner') {
-        document.getElementById('weekPlannerTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="weekPlanner"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger le planificateur semaine
-        if (typeof initWeekPlanner === 'function') {
-            initWeekPlanner();
-        }
-    } else if (tabName === 'teamPlanner') {
-        document.getElementById('teamPlannerTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="teamPlanner"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid #E50914';
-        btn.style.color = 'white';
-        btn.style.background = 'linear-gradient(135deg, #E50914 0%, #b20710 100%)';
-        
-        // Charger le Team Planner Netflix Edition
-        if (typeof TeamPlanner !== 'undefined' && typeof TeamPlanner.init === 'function') {
-            TeamPlanner.init();
-        }
-    } else if (tabName === 'physicalPrep') {
-        document.getElementById('physicalPrepTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="physicalPrep"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger l'onglet prépa physique
-        if (typeof initPhysicalPrepTab === 'function') {
-            initPhysicalPrepTab();
-        }
-    } else if (tabName === 'management') {
-        document.getElementById('managementTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="management"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid var(--color-primary)';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger la gestion d'équipe (par défaut vue tableau)
-        if (typeof loadPlayersTable === 'function') {
-            loadPlayersTable();
-        }
-    } else if (tabName === 'engagement') {
-        document.getElementById('engagementTab').style.display = 'block';
-        const btn = document.querySelector('[data-tab="engagement"]');
-        btn.classList.add('active');
-        btn.style.borderBottom = '3px solid #f97316';
-        btn.style.color = 'var(--color-text)';
-        
-        // Charger le dashboard d'engagement (onglet stats par défaut)
-        switchEngagementSubTab('stats');
-        
-        // Mettre à jour l'indicateur de remplissage
-        if (typeof updateFillIndicator === 'function') {
-            updateFillIndicator();
-        }
+        const btn = document.querySelector('[data-tab="' + tabName + '"]');
+        if (btn) btn.classList.add('active');
+        if (entry.callback) entry.callback();
     }
 }
+
+// ─── Sous-onglets Planning ───────────────────────────────────────────────────
+
+function switchPlanningSubTab(sub) {
+    const subTeam   = document.getElementById('planSubTab_team');
+    const subCycles = document.getElementById('planSubTab_cycles');
+    const btnTeam   = document.getElementById('planSubBtn_team');
+    const btnCycles = document.getElementById('planSubBtn_cycles');
+    if (!subTeam) return;
+
+    const isTeam = sub === 'team';
+    subTeam.style.display   = isTeam ? 'flex' : 'none';
+    subCycles.style.display = isTeam ? 'none'  : 'flex';
+
+    [btnTeam, btnCycles].forEach(btn => {
+        if (!btn) return;
+        btn.style.borderBottom = '3px solid transparent';
+        btn.style.color = 'var(--color-text-secondary)';
+        btn.style.fontWeight = '500';
+    });
+    const activeBtn = isTeam ? btnTeam : btnCycles;
+    if (activeBtn) {
+        activeBtn.style.borderBottom = '3px solid var(--color-primary)';
+        activeBtn.style.color = 'var(--color-primary)';
+        activeBtn.style.fontWeight = '600';
+    }
+
+    if (!isTeam && typeof initWeekPlanner === 'function') {
+        initWeekPlanner();
+    }
+    // Si on revient sur l'onglet "team", re-envoyer les données joueuses au planner iframe
+    if (isTeam && window.TeamPlanner && typeof window.TeamPlanner.refresh === 'function') {
+        window.TeamPlanner.refresh();
+    }
+}
+window.switchPlanningSubTab = switchPlanningSubTab;
 
 // Fonction pour gérer les sous-onglets d'Engagement
 function switchEngagementSubTab(subTab) {
     // Vérifier que les éléments existent
-    const statsContent = document.getElementById('engagementStatsContent');
     const stickersContent = document.getElementById('engagementStickersContent');
-    
-    if (!statsContent || !stickersContent) {
+    const maintenanceContent = document.getElementById('engagementMaintenanceContent');
+
+    if (!stickersContent) {
         console.warn('Sous-onglets Engagement non trouvés dans le DOM');
-        // Fallback : charger seulement les stats d'engagement
-        if (typeof loadEngagementDashboard === 'function') {
-            loadEngagementDashboard();
-        }
         return;
     }
-    
+
     // Gérer les boutons
     document.querySelectorAll('.engagement-sub-tab').forEach(btn => {
         btn.classList.remove('active');
         btn.style.borderBottom = '3px solid transparent';
-        btn.style.color = '#666';
+        btn.style.color = 'var(--color-text-secondary)';
     });
-    
+
     const activeBtn = document.querySelector(`[data-subtab="${subTab}"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
         activeBtn.style.borderBottom = '3px solid #f97316';
         activeBtn.style.color = 'white';
     }
-    
-    // Gérer le contenu
-    statsContent.style.display = 'none';
+
+    // Gérer le contenu - masquer tous les onglets
     stickersContent.style.display = 'none';
-    
-    if (subTab === 'stats') {
-        statsContent.style.display = 'block';
-        // Charger les rapports et graphiques d'engagement
-        if (typeof loadReports === 'function') {
-            loadReports();
-        } else {
-            console.error('La fonction loadReports() n\'est pas définie.');
-        }
-    } else if (subTab === 'stickers') {
+    if (maintenanceContent) maintenanceContent.style.display = 'none';
+
+    if (subTab === 'stickers') {
         stickersContent.style.display = 'block';
         // Forcer les styles avec !important pour permettre l'affichage complet
         stickersContent.style.setProperty('max-height', 'none', 'important');
         stickersContent.style.setProperty('overflow', 'visible', 'important');
         stickersContent.style.setProperty('height', 'auto', 'important');
-        
+
         // Forcer aussi sur le parent .card
         const parentCard = stickersContent.closest('.card');
         if (parentCard) {
@@ -226,9 +157,13 @@ function switchEngagementSubTab(subTab) {
             parentCard.style.setProperty('overflow', 'visible', 'important');
             parentCard.style.setProperty('height', 'auto', 'important');
         }
-        
+
         // Charger la grille de stickers
         loadCoachStickersVerification();
+    } else if (subTab === 'maintenance') {
+        if (maintenanceContent) {
+            maintenanceContent.style.display = 'block';
+        }
     }
 }
 
@@ -240,7 +175,7 @@ async function loadCoachStickersVerification() {
     // Vérifier que STICKER_DEFINITIONS est disponible
     if (typeof STICKER_DEFINITIONS === 'undefined' || !STICKER_DEFINITIONS) {
         console.error('STICKER_DEFINITIONS non disponible');
-        container.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erreur : Définitions des stickers non chargées</p>';
+        container.innerHTML = '<p style="text-align: center; color: var(--color-error);">Erreur : Définitions des stickers non chargées</p>';
         return;
     }
     
@@ -326,7 +261,7 @@ async function loadCoachStickersVerification() {
         
     } catch (error) {
         console.error('Erreur chargement stickers:', error);
-        container.innerHTML = '<p style="text-align: center; color: #e74c3c;">Erreur lors du chargement des stickers</p>';
+        container.innerHTML = '<p style="text-align: center; color: var(--color-error);">Erreur lors du chargement des stickers</p>';
     }
 }
 
@@ -339,7 +274,7 @@ function renderCoachStickerCard(id, sticker) {
              onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(255,255,255,0.3)';"
              onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='${rarityColor}';" style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; transition: all 0.3s ease; border: 2px solid ${rarityColor}; cursor: pointer; position: relative; height: auto !important; min-height: auto !important;">
             <div style="position: relative;">
-                <img src="${sticker.image}" alt="${sticker.name}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px; background: white;">
+                <img src="${sticker.image}" alt="${sticker.name}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px; background: var(--color-surface, white);">
                 <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.2); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px;">
                     👁️
                 </div>

@@ -1,0 +1,809 @@
+/* ============================================
+   RPE Gen2 — Pro Design System Upgrade
+   Phase 2: OKLCH colors, shadows, cards pro
+   ============================================ */
+
+/* --- Font rendering --- */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- OKLCH Status Colors (avec fallback hex) --- */
+:root {
+  --color-optimal: #10B981;
+  --color-attention: #F59E0B;
+  --color-critical: #EF4444;
+
+  --color-optimal-bg: rgba(16, 185, 129, 0.08);
+  --color-attention-bg: rgba(245, 158, 11, 0.08);
+  --color-critical-bg: rgba(239, 68, 68, 0.08);
+
+  /* Shadows améliorées */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 8px rgba(0, 0, 0, 0.09), 0 12px 28px rgba(0, 0, 0, 0.09);
+
+  /* Semantic colors (light mode) */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #991b1b;
+  --color-info-bg: #e3f2fd;
+  --color-info-text: #1976d2;
+
+  /* Table column group backgrounds */
+  --col-bg-blue:   #dbeafe;  /* Anthropo */
+  --col-bg-yellow: #fef3c7;  /* Tests Volley */
+  --col-bg-red:    #fee2e2;  /* Muscu */
+  --col-bg-green:  #dcfce7;  /* Physio/VMA */
+
+  /* Strong border for tables */
+  --color-border-strong: #d1d5db;
+}
+
+@supports (color: oklch(0% 0 0)) {
+  :root {
+    --color-optimal: oklch(62% 0.17 160);
+    --color-attention: oklch(72% 0.18 60);
+    --color-critical: oklch(55% 0.22 25);
+
+    --color-optimal-bg: oklch(97% 0.04 160);
+    --color-attention-bg: oklch(97% 0.04 60);
+    --color-critical-bg: oklch(97% 0.04 25);
+  }
+}
+
+/* --- Gauge status (utilise les variables OKLCH) --- */
+.status-gauge-fill.optimal {
+  background: var(--color-optimal) !important;
+}
+.status-gauge-fill.attention {
+  background: var(--color-attention) !important;
+}
+.status-gauge-fill.critical {
+  background: var(--color-critical) !important;
+}
+
+/* --- Filter buttons → Pills --- */
+.filter-buttons {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  border-radius: 9999px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  transition: all 150ms ease !important;
+  letter-spacing: 0.01em;
+}
+
+.filter-btn i {
+  font-size: 11px;
+}
+
+.filter-btn.optimal { border-color: var(--color-optimal) !important; }
+.filter-btn.optimal.active {
+  background: var(--color-optimal-bg) !important;
+  color: var(--color-optimal) !important;
+  border-color: var(--color-optimal) !important;
+}
+.filter-btn.attention { border-color: var(--color-attention) !important; }
+.filter-btn.attention.active {
+  background: var(--color-attention-bg) !important;
+  color: var(--color-attention) !important;
+  border-color: var(--color-attention) !important;
+}
+.filter-btn.critical { border-color: var(--color-critical) !important; }
+.filter-btn.critical.active {
+  background: var(--color-critical-bg) !important;
+  color: var(--color-critical) !important;
+  border-color: var(--color-critical) !important;
+}
+
+/* --- Player Cards --- */
+.player-card {
+  position: relative;
+  box-shadow: var(--shadow-card) !important;
+  border-radius: 14px !important;
+  transition: box-shadow 200ms ease, transform 200ms ease !important;
+  padding: 16px 16px 16px 20px !important;
+}
+
+.player-card:hover {
+  box-shadow: var(--shadow-card-hover) !important;
+  transform: translateY(-3px) !important;
+}
+
+/* Bordure de statut côté gauche */
+.player-card[data-status="optimal"] {
+  border-left: 3px solid var(--color-optimal) !important;
+}
+.player-card[data-status="attention"] {
+  border-left: 3px solid var(--color-attention) !important;
+}
+.player-card[data-status="critical"] {
+  border-left: 3px solid var(--color-critical) !important;
+}
+
+/* Score badge (cercle coloré, coin haut-droit) */
+.player-score-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.player-score-badge--optimal { background: var(--color-optimal); }
+.player-score-badge--attention { background: var(--color-attention); }
+.player-score-badge--critical { background: var(--color-critical); }
+
+/* Status dot */
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.status-dot--optimal { background: var(--color-optimal); }
+.status-dot--attention { background: var(--color-attention); }
+.status-dot--critical { background: var(--color-critical); }
+
+/* Player name */
+.player-card-name {
+  display: flex !important;
+  align-items: center;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+  padding-right: 44px; /* espace pour le badge score */
+}
+
+/* Player avatar (override inline style) */
+.player-avatar-circle {
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.player-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Heures joueuse — layout compact avec icônes */
+.player-hours {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.player-hours-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-hours-item i {
+  font-size: 10px;
+  color: var(--color-primary);
+  opacity: 0.7;
+}
+
+.player-hours-item strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Cycle phase badge */
+.player-cycle-phase {
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* --- Tab buttons coach --- */
+.tab-btn {
+  font-family: var(--font-family-base) !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0em;
+  white-space: nowrap;
+  display: inline-flex !important;
+  align-items: center;
+}
+
+/* Tab actif — mode mobile (horizontal tabs) */
+.tab-btn.active {
+  color: var(--color-primary) !important;
+  border-bottom: 3px solid var(--color-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* --- Nav tabs joueuse --- */
+.nav-tab {
+  font-size: 13px !important;
+  letter-spacing: 0em;
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+/* --- Header improvements --- */
+.header-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.header-subtitle {
+  font-size: 13.5px !important;
+  opacity: 0.75;
+}
+
+/* --- Section headings --- */
+h2, h3 {
+  font-family: var(--font-family-base);
+  letter-spacing: -0.015em;
+}
+
+/* ============================================
+   PHASE 3 — Layout Coach Sidebar + KPI
+   ============================================ */
+
+/* --- KPI Bar --- */
+.coach-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.coach-kpi-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.coach-kpi-card--optimal { border-top: 3px solid var(--color-optimal); }
+.coach-kpi-card--attention { border-top: 3px solid var(--color-attention); }
+.coach-kpi-card--critical { border-top: 3px solid var(--color-critical); }
+
+.coach-kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.coach-kpi-card--optimal .coach-kpi-value { color: var(--color-optimal); }
+.coach-kpi-card--attention .coach-kpi-value { color: var(--color-attention); }
+.coach-kpi-card--critical .coach-kpi-value { color: var(--color-critical); }
+
+.coach-kpi-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.coach-kpi-label i {
+  margin-right: 4px;
+}
+
+@media (max-width: 600px) {
+  .coach-kpi-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* --- Sidebar layout (desktop ≥ 960px) --- */
+.coach-layout {
+  padding: var(--space-20) 0; /* remplace .dashboard */
+}
+
+@media (min-width: 960px) {
+  .coach-layout {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 0 28px;
+    align-items: start;
+    padding-top: 24px !important;
+  }
+
+  /* La nav tabs devient une sidebar verticale */
+  .coach-sidebar-nav {
+    grid-column: 1;
+    grid-row: 1 / 999;
+    display: flex !important;
+    flex-direction: column !important;
+    white-space: normal !important;
+    overflow-x: visible !important;
+    border-bottom: none !important;
+    border-right: 1px solid var(--color-border);
+    padding-right: 8px;
+    position: sticky;
+    top: 20px;
+    align-self: start;
+    margin-bottom: var(--space-24) !important;
+  }
+
+  /* Chaque tab = item de sidebar pleine largeur */
+  .coach-sidebar-nav .tab-btn {
+    display: flex !important;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 10px 14px !important;
+    border-radius: 8px !important;
+    border-bottom: none !important;
+    margin-bottom: 2px !important;
+    color: var(--color-text-secondary) !important;
+    font-size: 13.5px !important;
+    transition: background 150ms ease, color 150ms ease !important;
+  }
+
+  .coach-sidebar-nav .tab-btn:hover {
+    background: var(--color-secondary) !important;
+    color: var(--color-text) !important;
+  }
+
+  .coach-sidebar-nav .tab-btn.active {
+    background: rgba(var(--color-teal-500-rgb), 0.1) !important;
+    color: var(--color-primary) !important;
+    font-weight: 600 !important;
+    border-left: 3px solid var(--color-primary) !important;
+    padding-left: 11px !important;
+  }
+
+  .coach-sidebar-nav .tab-btn i {
+    width: 18px;
+    text-align: center;
+    margin-right: 8px !important;
+    flex-shrink: 0;
+  }
+
+  /* Tout le contenu (tabs content) dans la colonne droite */
+  .coach-layout .coach-tab-content,
+  .coach-layout #coachNotificationsContainer {
+    grid-column: 2;
+  }
+
+  /* Zone notifications (elle est dans un container séparé, on la laisse) */
+}
+
+/* ============================================
+   PHASE 4 — Dark Mode + Polish
+   ============================================ */
+
+/* --- Dark Mode Variables --- */
+html[data-theme="dark"] {
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-cream-50: #0f172a;
+  --color-cream-100: #1e293b;
+  --color-text: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+  --color-card-border: rgba(255, 255, 255, 0.07);
+  --color-secondary: rgba(255, 255, 255, 0.06);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 8px rgba(0, 0, 0, 0.4), 0 12px 28px rgba(0, 0, 0, 0.3);
+
+  /* Semantic colors ajustées pour dark */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error:   #f87171;
+  --color-error-bg:   rgba(248, 113, 113, 0.08);
+  --color-error-text: #fca5a5;
+  --color-info-bg:    rgba(96, 165, 250, 0.08);
+  --color-info-text:  #93c5fd;
+
+  /* Primary color plus clair pour contraste sur fond sombre */
+  --color-primary: #38bdf8;
+  --color-primary-hover: #7dd3fc;
+  --color-teal-300: #67e8f9;
+  --color-teal-500: #38bdf8;
+
+  /* Table column group backgrounds (sombres, teintés) */
+  --col-bg-blue:   rgba(59, 130, 246, 0.12);
+  --col-bg-yellow: rgba(245, 158, 11, 0.10);
+  --col-bg-red:    rgba(239, 68, 68, 0.10);
+  --col-bg-green:  rgba(16, 185, 129, 0.10);
+
+  /* Variables netflix manquantes (remplacées par des équivalents dark) */
+  --netflix-gray:       rgba(255, 255, 255, 0.06);
+  --netflix-gray-light: rgba(255, 255, 255, 0.10);
+  --netflix-gray-dark:  #1e293b;
+  --netflix-red:        #38bdf8;
+  --netflix-black:      #0f172a;
+  --netflix-black-light:#1e293b;
+}
+
+[data-theme="dark"] body {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .header {
+  background: #1e293b !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .header-title {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .header-subtitle {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .player-card,
+[data-theme="dark"] .coach-kpi-card {
+  background: var(--color-surface) !important;
+}
+
+/* .card : dark mode SAUF si elle a un gradient inline (ex: stickers, cycle) */
+[data-theme="dark"] .card:not([style*="linear-gradient"]):not([style*="background: linear"]) {
+  background: var(--color-surface) !important;
+}
+
+/* Bouton déconnexion visible en dark mode */
+[data-theme="dark"] .logout-btn {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* btn-icon en dark mode */
+[data-theme="dark"] .btn-icon {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] .nav-tabs,
+[data-theme="dark"] .coach-sidebar-nav {
+  background: var(--color-surface) !important;
+}
+
+[data-theme="dark"] .tab-btn,
+[data-theme="dark"] .nav-tab {
+  color: var(--color-text-secondary) !important;
+}
+
+/* tab-btn.active (coach sidebar) : texte couleur primaire sur fond transparent */
+[data-theme="dark"] .tab-btn.active {
+  color: var(--color-primary) !important;
+}
+
+/* nav-tab.active (joueuse) : fond primaire (#38bdf8 = bleu clair) → texte sombre pour contraste */
+[data-theme="dark"] .nav-tab.active {
+  background: var(--color-primary) !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="dark"] .modal-content {
+  background: #1e293b !important;
+  color: var(--color-text) !important;
+}
+
+/* --- Modal joueuse : dark mode complet --- */
+
+/* Header sticky */
+[data-theme="dark"] .modal-content .modal-header,
+[data-theme="dark"] .modal-content .player-detail-header {
+  background: #1e293b !important;
+  border-bottom-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Toute la modal-body : fond sombre */
+[data-theme="dark"] .modal-body {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+
+/* Section score actuel */
+[data-theme="dark"] #playerScoreSection,
+[data-theme="dark"] .modal-section {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .modal-text-secondary {
+  color: #94a3b8 !important;
+}
+
+/* Toutes les divs enfants de modal-body : fond sombre par défaut */
+[data-theme="dark"] .modal-body > div {
+  background: #0f172a !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Sous-cards dans les sections (ex: heures semaine/mois/année) */
+[data-theme="dark"] .modal-body div[style*="background: #f9fafb"],
+[data-theme="dark"] .modal-body div[style*="background:#f9fafb"],
+[data-theme="dark"] .modal-body div[style*="background: white"],
+[data-theme="dark"] .modal-body div[style*="background:white"],
+[data-theme="dark"] .modal-body div[style*="background: #fff"],
+[data-theme="dark"] .modal-body div[style*="background:#fff"],
+[data-theme="dark"] .modal-body div[style*="background: rgb(249"] {
+  background: #1e293b !important;
+}
+
+/* Textes noirs → clairs */
+[data-theme="dark"] .modal-body *[style*="color: #1f2937"],
+[data-theme="dark"] .modal-body *[style*="color:#1f2937"],
+[data-theme="dark"] .modal-body *[style*="color: #374151"],
+[data-theme="dark"] .modal-body *[style*="color:#374151"] {
+  color: #f1f5f9 !important;
+}
+
+/* Textes gris → secondaires */
+[data-theme="dark"] .modal-body *[style*="color: #6b7280"],
+[data-theme="dark"] .modal-body *[style*="color:#6b7280"],
+[data-theme="dark"] .modal-body *[style*="color: #9ca3af"],
+[data-theme="dark"] .modal-body *[style*="color:#9ca3af"] {
+  color: #94a3b8 !important;
+}
+
+/* Bordures */
+[data-theme="dark"] .modal-body *[style*="border-bottom: 1px solid #e5e7eb"],
+[data-theme="dark"] .modal-body *[style*="border-top: 1px solid #e5e7eb"] {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Footer modal */
+[data-theme="dark"] .modal-footer {
+  background: #1e293b !important;
+  border-top-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Tables */
+[data-theme="dark"] .modal-body table { color: #f1f5f9 !important; }
+[data-theme="dark"] .modal-body th { background: #0f172a !important; color: #94a3b8 !important; }
+[data-theme="dark"] .modal-body td { border-color: rgba(255,255,255,0.06) !important; }
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: #0f172a !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] .btn-icon {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: var(--color-text) !important;
+}
+
+/* Transitions globales pour le dark mode */
+body,
+.header,
+.player-card,
+.card,
+.coach-kpi-card,
+.modal-content,
+.nav-tabs,
+.tab-btn,
+.nav-tab {
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+/* ===== CATCH-ALL : éléments avec inline background: white en dark mode ===== */
+/* Cible les divs/spans avec background: white inline */
+[data-theme="dark"] div[style*="background: white"],
+[data-theme="dark"] div[style*="background:white"],
+[data-theme="dark"] div[style*="background: #fff"],
+[data-theme="dark"] div[style*="background: #FFF"],
+[data-theme="dark"] div[style*="background: rgb(255, 255, 255)"],
+[data-theme="dark"] li[style*="background: white"],
+[data-theme="dark"] section[style*="background: white"] {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+/* Textes sombres hardcodés en dark mode */
+[data-theme="dark"] *[style*="color: #1f2937"],
+[data-theme="dark"] *[style*="color: #374151"],
+[data-theme="dark"] *[style*="color: #111827"],
+[data-theme="dark"] *[style*="color: #0f172a"] {
+  color: var(--color-text) !important;
+}
+[data-theme="dark"] *[style*="color: #6b7280"],
+[data-theme="dark"] *[style*="color: #9ca3af"],
+[data-theme="dark"] *[style*="color: #64748b"],
+[data-theme="dark"] *[style*="color: #666"],
+[data-theme="dark"] *[style*="color: #999"] {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Fonds clairs hardcodés */
+[data-theme="dark"] *[style*="background: #f9fafb"],
+[data-theme="dark"] *[style*="background: #f3f4f6"],
+[data-theme="dark"] *[style*="background: #f8f9fa"],
+[data-theme="dark"] *[style*="background: #f1f5f9"] {
+  background: var(--color-background) !important;
+  color: var(--color-text) !important;
+}
+
+/* Bordures claires hardcodées */
+[data-theme="dark"] *[style*="border: 1px solid #e5e7eb"],
+[data-theme="dark"] *[style*="border-bottom: 1px solid #e5e7eb"],
+[data-theme="dark"] *[style*="border-top: 1px solid #e5e7eb"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Metric cards (dashboard joueuse) en dark mode */
+[data-theme="dark"] .metric-card {
+  background: var(--color-surface) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Status gauge track */
+[data-theme="dark"] .status-gauge {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Table joueurs (player-management) headers en dark mode */
+[data-theme="dark"] #playersTable th {
+  background: var(--color-surface) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.15) !important;
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] #playersTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Bouton view toggle actif */
+[data-theme="dark"] .view-toggle-btn.active {
+  background: var(--color-primary) !important;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3) !important;
+}
+
+/* Tableau de performance (player-management) en dark mode */
+[data-theme="dark"] #performanceTable th {
+  background: var(--color-surface) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+[data-theme="dark"] #performanceTable td {
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Boutons temps de jeu (time-played-badge) en dark mode */
+[data-theme="dark"] .time-played-badge {
+  background: var(--color-surface) !important;
+  color: inherit;
+}
+[data-theme="dark"] .time-played-badge.selected,
+[data-theme="dark"] .time-played-badge[style*="box-shadow"] {
+  background: var(--color-background) !important;
+}
+
+/* Cycle phase filters en dark mode */
+[data-theme="dark"] #cycleFilterContainer {
+  border-top-color: rgba(255,255,255,0.1) !important;
+}
+
+/* Select des graphiques coach (coach-dashboard-charts) */
+[data-theme="dark"] #loadWeekSelect,
+[data-theme="dark"] #loadMonthSelect {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
+/* --- Scrollbar custom --- */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   Masquer le bouton notification coach sur l'écran joueuse
+   ============================================ */
+
+/* Masqué quand playerScreen est actif (navigateurs modernes) */
+body:has(#playerScreen.active) #coachNotifBtn {
+  display: none !important;
+}
+
+/* Masqué aussi quand loginScreen est actif */
+body:has(#loginScreen.active) #coachNotifBtn {
+  display: none !important;
+}
+
+/* ============================================
+   Page de connexion — Dark Mode
+   ============================================ */
+
+[data-theme="dark"] .login-screen {
+  background: linear-gradient(150deg, #0f172a 0%, #1a3a52 100%) !important;
+}
+
+[data-theme="dark"] .login-card {
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .login-title {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .login-subtitle {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .form-label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .form-control {
+  background-color: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+  color: #475569 !important;
+}

@@ -114,9 +114,8 @@ function initRpeProgressiveUI() {
         });
     }
     
-    // Initialiser pour Yesterday et DayBefore
-    initRpeProgressiveUIYesterday();
-    initRpeProgressiveUIDayBefore();
+    // Initialiser pour Rattrapage
+    initRpeProgressiveUIRattrapage();
 }
 
 // Réinitialiser le formulaire RPE Aujourd'hui
@@ -160,222 +159,90 @@ window.resetRpeForm = function() {
 };
 
 // ========================================
-// FORMULAIRE RPE VEILLE (J-1)
+// FORMULAIRE RPE RATTRAPAGE (avec calendrier)
 // ========================================
 
-function initRpeProgressiveUIYesterday() {
-    // Boutons d'activité - Yesterday
-    document.querySelectorAll('.activity-btn-yesterday').forEach(btn => {
+function initRpeProgressiveUIRattrapage() {
+    // Boutons d'activité - Rattrapage
+    document.querySelectorAll('.activity-btn-rattrapage').forEach(btn => {
         btn.addEventListener('click', function() {
             const value = this.dataset.value;
-            document.getElementById('sessionTypeYesterday').value = value;
-            
-            document.getElementById('rpeYesterdayStep1').style.display = 'none';
-            document.getElementById('rpeYesterdayStep2').style.display = 'block';
-            
+            document.getElementById('sessionTypeRattrapage').value = value;
+
+            document.getElementById('rpeRattrapageStep1').style.display = 'none';
+            document.getElementById('rpeRattrapageStep2').style.display = 'block';
+
             const config = ACTIVITY_COLORS[value];
-            const badge = document.getElementById('selectedActivityBadgeYesterday');
+            const badge = document.getElementById('selectedActivityBadgeRattrapage');
             badge.textContent = `${config.emoji} ${config.text}`;
             badge.style.background = config.bg;
             badge.style.color = 'white';
-            
+
             if (typeof initRatingBadges === 'function') {
                 setTimeout(initRatingBadges, 50);
             }
         });
     });
-    
-    // Boutons de durée - Yesterday
-    document.querySelectorAll('.duration-btn-yesterday').forEach(btn => {
+
+    // Boutons de durée - Rattrapage
+    document.querySelectorAll('.duration-btn-rattrapage').forEach(btn => {
         btn.addEventListener('click', function() {
             const minutes = this.dataset.minutes;
-            document.getElementById('durationYesterday').value = minutes;
-            
-            document.querySelectorAll('.duration-btn-yesterday').forEach(b => {
+            document.getElementById('durationRattrapage').value = minutes;
+
+            document.querySelectorAll('.duration-btn-rattrapage').forEach(b => {
                 b.style.border = '3px solid #e5e7eb';
                 b.style.background = 'white';
                 b.style.color = '#374151';
             });
-            
+
             this.style.border = '3px solid #3b82f6';
             this.style.background = '#3b82f6';
             this.style.color = 'white';
-            
-            document.getElementById('rpeYesterdayStep3').style.display = 'none';
-            document.getElementById('rpeYesterdayStep4').style.display = 'block';
-            
+
+            document.getElementById('rpeRattrapageStep3').style.display = 'none';
+            document.getElementById('rpeRattrapageStep4').style.display = 'block';
+
             if (typeof initRatingBadges === 'function') {
                 setTimeout(initRatingBadges, 50);
             }
         });
     });
-    
-    // Observer effort ressenti Yesterday
-    const rpeValueYesterday = document.getElementById('rpeValueYesterday');
-    if (rpeValueYesterday) {
+
+    // Observer effort ressenti Rattrapage
+    const rpeValueRattrapage = document.getElementById('rpeValueRattrapage');
+    if (rpeValueRattrapage) {
         const observer = new MutationObserver(() => {
-            if (parseInt(rpeValueYesterday.value) > 0) {
-                document.getElementById('rpeYesterdayStep3').style.display = 'block';
+            if (parseInt(rpeValueRattrapage.value) > 0) {
+                document.getElementById('rpeRattrapageStep3').style.display = 'block';
             }
         });
-        observer.observe(rpeValueYesterday, { attributes: true, attributeFilter: ['value'] });
-        
-        rpeValueYesterday.addEventListener('change', function() {
+        observer.observe(rpeValueRattrapage, { attributes: true, attributeFilter: ['value'] });
+
+        rpeValueRattrapage.addEventListener('change', function() {
             if (parseInt(this.value) > 0) {
-                document.getElementById('rpeYesterdayStep3').style.display = 'block';
+                document.getElementById('rpeRattrapageStep3').style.display = 'block';
             }
         });
     }
-    
-    // Observer performance Yesterday
-    const performanceYesterday = document.getElementById('performanceYesterday');
-    if (performanceYesterday) {
+
+    // Observer performance Rattrapage
+    const performanceRattrapage = document.getElementById('performanceRattrapage');
+    if (performanceRattrapage) {
         const observer = new MutationObserver(() => {
-            if (parseInt(performanceYesterday.value) > 0) {
-                document.getElementById('rpeYesterdayStep5').style.display = 'block';
+            if (parseInt(performanceRattrapage.value) > 0) {
+                document.getElementById('rpeRattrapageStep5').style.display = 'block';
             }
         });
-        observer.observe(performanceYesterday, { attributes: true, attributeFilter: ['value'] });
-        
-        performanceYesterday.addEventListener('change', function() {
+        observer.observe(performanceRattrapage, { attributes: true, attributeFilter: ['value'] });
+
+        performanceRattrapage.addEventListener('change', function() {
             if (parseInt(this.value) > 0) {
-                document.getElementById('rpeYesterdayStep5').style.display = 'block';
+                document.getElementById('rpeRattrapageStep5').style.display = 'block';
             }
         });
     }
 }
-
-window.resetRpeFormYesterday = function() {
-    document.getElementById('sessionTypeYesterday').value = '';
-    document.getElementById('rpeValueYesterday').value = '0';
-    document.getElementById('durationYesterday').value = '';
-    document.getElementById('performanceYesterday').value = '0';
-    
-    document.getElementById('rpeYesterdayStep1').style.display = 'block';
-    document.getElementById('rpeYesterdayStep2').style.display = 'none';
-    document.getElementById('rpeYesterdayStep3').style.display = 'none';
-    document.getElementById('rpeYesterdayStep4').style.display = 'none';
-    document.getElementById('rpeYesterdayStep5').style.display = 'none';
-    
-    document.querySelectorAll('.duration-btn-yesterday').forEach(b => {
-        b.style.border = '3px solid #e5e7eb';
-        b.style.background = 'white';
-        b.style.color = '#374151';
-    });
-    
-    if (typeof refreshRatingBadges === 'function') {
-        refreshRatingBadges();
-    }
-};
-
-// ========================================
-// FORMULAIRE RPE AVANT-VEILLE (J-2)
-// ========================================
-
-function initRpeProgressiveUIDayBefore() {
-    // Boutons d'activité - DayBefore
-    document.querySelectorAll('.activity-btn-daybefore').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const value = this.dataset.value;
-            document.getElementById('sessionTypeDayBefore').value = value;
-            
-            document.getElementById('rpeDayBeforeStep1').style.display = 'none';
-            document.getElementById('rpeDayBeforeStep2').style.display = 'block';
-            
-            const config = ACTIVITY_COLORS[value];
-            const badge = document.getElementById('selectedActivityBadgeDayBefore');
-            badge.textContent = `${config.emoji} ${config.text}`;
-            badge.style.background = config.bg;
-            badge.style.color = 'white';
-            
-            if (typeof initRatingBadges === 'function') {
-                setTimeout(initRatingBadges, 50);
-            }
-        });
-    });
-    
-    // Boutons de durée - DayBefore
-    document.querySelectorAll('.duration-btn-daybefore').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const minutes = this.dataset.minutes;
-            document.getElementById('durationDayBefore').value = minutes;
-            
-            document.querySelectorAll('.duration-btn-daybefore').forEach(b => {
-                b.style.border = '3px solid #e5e7eb';
-                b.style.background = 'white';
-                b.style.color = '#374151';
-            });
-            
-            this.style.border = '3px solid #3b82f6';
-            this.style.background = '#3b82f6';
-            this.style.color = 'white';
-            
-            document.getElementById('rpeDayBeforeStep3').style.display = 'none';
-            document.getElementById('rpeDayBeforeStep4').style.display = 'block';
-            
-            if (typeof initRatingBadges === 'function') {
-                setTimeout(initRatingBadges, 50);
-            }
-        });
-    });
-    
-    // Observer effort ressenti DayBefore
-    const rpeValueDayBefore = document.getElementById('rpeValueDayBefore');
-    if (rpeValueDayBefore) {
-        const observer = new MutationObserver(() => {
-            if (parseInt(rpeValueDayBefore.value) > 0) {
-                document.getElementById('rpeDayBeforeStep3').style.display = 'block';
-            }
-        });
-        observer.observe(rpeValueDayBefore, { attributes: true, attributeFilter: ['value'] });
-        
-        rpeValueDayBefore.addEventListener('change', function() {
-            if (parseInt(this.value) > 0) {
-                document.getElementById('rpeDayBeforeStep3').style.display = 'block';
-            }
-        });
-    }
-    
-    // Observer performance DayBefore
-    const performanceDayBefore = document.getElementById('performanceDayBefore');
-    if (performanceDayBefore) {
-        const observer = new MutationObserver(() => {
-            if (parseInt(performanceDayBefore.value) > 0) {
-                document.getElementById('rpeDayBeforeStep5').style.display = 'block';
-            }
-        });
-        observer.observe(performanceDayBefore, { attributes: true, attributeFilter: ['value'] });
-        
-        performanceDayBefore.addEventListener('change', function() {
-            if (parseInt(this.value) > 0) {
-                document.getElementById('rpeDayBeforeStep5').style.display = 'block';
-            }
-        });
-    }
-}
-
-window.resetRpeFormDayBefore = function() {
-    document.getElementById('sessionTypeDayBefore').value = '';
-    document.getElementById('rpeValueDayBefore').value = '0';
-    document.getElementById('durationDayBefore').value = '';
-    document.getElementById('performanceDayBefore').value = '0';
-    
-    document.getElementById('rpeDayBeforeStep1').style.display = 'block';
-    document.getElementById('rpeDayBeforeStep2').style.display = 'none';
-    document.getElementById('rpeDayBeforeStep3').style.display = 'none';
-    document.getElementById('rpeDayBeforeStep4').style.display = 'none';
-    document.getElementById('rpeDayBeforeStep5').style.display = 'none';
-    
-    document.querySelectorAll('.duration-btn-daybefore').forEach(b => {
-        b.style.border = '3px solid #e5e7eb';
-        b.style.background = 'white';
-        b.style.color = '#374151';
-    });
-    
-    if (typeof refreshRatingBadges === 'function') {
-        refreshRatingBadges();
-    }
-};
 
 // ========================================
 // INITIALISATION
@@ -391,9 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
     // Observer les changements de visibilité des cards RPE
     const rpeTodayCard = document.getElementById('rpeTodayCard');
-    const rpeYesterdayCard = document.getElementById('rpeYesterdayCard');
-    const rpeDayBeforeCard = document.getElementById('rpeDayBeforeCard');
-    
+    const rpeRattrapageCard = document.getElementById('rpeRattrapageCard');
+
     if (rpeTodayCard) {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -403,6 +269,22 @@ window.addEventListener('load', function() {
             });
         });
         observer.observe(rpeTodayCard, { attributes: true });
+    }
+
+    if (rpeRattrapageCard) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'style' && rpeRattrapageCard.style.display !== 'none') {
+                    if (typeof resetRpeFormRattrapage === 'function') {
+                        resetRpeFormRattrapage();
+                    }
+                    if (typeof initRattrapageCalendar === 'function') {
+                        initRattrapageCalendar();
+                    }
+                }
+            });
+        });
+        observer.observe(rpeRattrapageCard, { attributes: true });
     }
 });
 

@@ -105,7 +105,11 @@ const RATING_CONFIG = {
     // Performance (note positive)
     'performance': { type: 'positive', label: 'Performance', showLabel: true },
     'performanceYesterday': { type: 'positive', label: 'Performance', showLabel: true },
-    'performanceDayBefore': { type: 'positive', label: 'Performance', showLabel: true }
+    'performanceDayBefore': { type: 'positive', label: 'Performance', showLabel: true },
+
+    // RPE Rattrapage
+    'rpeValueRattrapage': { type: 'rpe', label: 'Effort ressenti', showLabel: true },
+    'performanceRattrapage': { type: 'positive', label: 'Performance', showLabel: true }
 };
 
 /**
@@ -263,6 +267,16 @@ function triggerRpeNextStep(sliderId) {
     }
     if (sliderId === 'performanceDayBefore') {
         const step5 = document.getElementById('rpeDayBeforeStep5');
+        if (step5) step5.style.display = 'block';
+    }
+
+    // RPE Rattrapage
+    if (sliderId === 'rpeValueRattrapage') {
+        const step3 = document.getElementById('rpeRattrapageStep3');
+        if (step3) step3.style.display = 'block';
+    }
+    if (sliderId === 'performanceRattrapage') {
+        const step5 = document.getElementById('rpeRattrapageStep5');
         if (step5) step5.style.display = 'block';
     }
 }
