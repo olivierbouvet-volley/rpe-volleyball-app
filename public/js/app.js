@@ -720,8 +720,10 @@ async function loadPlayerCheckinHistory() {
     }
 }
 
-// Gestion du formulaire de check-in
-document.getElementById('checkinForm').addEventListener('submit', async (e) => {
+// Gestion du formulaire de check-in (si l'ancien formulaire existe encore)
+const checkinFormEl = document.getElementById('checkinForm');
+if (checkinFormEl) {
+checkinFormEl.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     // VÉRIFIER SI ON EST EN PÉRIODE DE REPOS
@@ -849,6 +851,7 @@ document.getElementById('checkinForm').addEventListener('submit', async (e) => {
         alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
     }
 });
+} // fin if (checkinFormEl)
 
 // ===================================================
 // MODULE DOULEUR — CHECK-IN JOUEUSE

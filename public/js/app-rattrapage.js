@@ -119,6 +119,8 @@ function updateRattrapageDateLabel(date) {
 
 // Réinitialiser le formulaire Rattrapage
 function resetRpeFormRattrapage() {
+    // Si l'UI ARENA a remplacé l'ancien formulaire, on ignore
+    if (!document.getElementById('sessionTypeRattrapage')) return;
     document.getElementById('sessionTypeRattrapage').value = '';
     document.getElementById('rpeRattrapageStep1').style.display = 'block';
     document.getElementById('rpeRattrapageStep2').style.display = 'none';

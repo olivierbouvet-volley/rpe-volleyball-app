@@ -120,6 +120,8 @@ function initRpeProgressiveUI() {
 
 // Réinitialiser le formulaire RPE Aujourd'hui
 window.resetRpeForm = function() {
+    // Si l'UI ARENA a remplacé l'ancien formulaire, on ignore
+    if (!document.getElementById('sessionType')) return;
     document.getElementById('sessionType').value = '';
     document.getElementById('rpeValue').value = '0';
     document.getElementById('duration').value = '';
