@@ -14,10 +14,10 @@
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/img/icon-192.png">
     
-    <!-- Google Fonts — Inter -->
+    <!-- Google Fonts — Inter + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -32,55 +32,59 @@
     <!-- Pro Design System Upgrade -->
     <link rel="stylesheet" href="/css/pro-design.css">
 
+    <!-- ARENA Theme (dark neon redesign) -->
+    <link rel="stylesheet" href="/css/arenatheme.css">
+
     <style>
         :root {
-            /* Color Palette - Crème naturel & Teal */
-            --color-white: rgba(255, 255, 255, 1);
-            --color-black: rgba(0, 0, 0, 1);
-            --color-cream-50: rgba(252, 252, 249, 1);
-            --color-cream-100: rgba(255, 255, 253, 1);
-            --color-gray-200: rgba(245, 245, 245, 1);
-            --color-gray-300: rgba(167, 169, 169, 1);
-            --color-gray-400: rgba(119, 124, 124, 1);
-            --color-slate-500: rgba(98, 108, 113, 1);
-            --color-brown-600: rgba(94, 82, 64, 1);
-            --color-charcoal-700: rgba(31, 33, 33, 1);
-            --color-charcoal-800: rgba(38, 40, 40, 1);
-            --color-slate-900: rgba(19, 52, 59, 1);
-            --color-teal-300: #50b8c6;
-            --color-teal-400: #2da6b2;
-            --color-teal-500: #2180ac;
-            --color-teal-600: #1a6a8e;
-            --color-teal-700: #145470;
-            --color-red-400: #ff5459;
-            --color-red-500: #ff1a1a;
-            --color-orange-400: #e68161;
-            --color-orange-500: #a84b2f;
+            /* === ARENA THEME — Variables mappées pour compatibilité === */
+            /* Palette brute */
+            --color-white: #E8EAED;
+            --color-black: #0A0E14;
+            --color-cream-50: #0F141C;
+            --color-cream-100: #11161F;
+            --color-gray-200: #1A1F2A;
+            --color-gray-300: #4B5563;
+            --color-gray-400: #6B7280;
+            --color-slate-500: #9CA3AF;
+            --color-brown-600: #6B7280;
+            --color-charcoal-700: #E8EAED;
+            --color-charcoal-800: #F0F2F5;
+            --color-slate-900: #E8EAED;
+            --color-teal-300: #C8FF00;
+            --color-teal-400: #C8FF00;
+            --color-teal-500: #C8FF00;
+            --color-teal-600: #a8d600;
+            --color-teal-700: #8ab300;
+            --color-red-400: #FF5252;
+            --color-red-500: #FF2E97;
+            --color-orange-400: #FFB627;
+            --color-orange-500: #e69900;
 
             /* App specific colors */
-            --primary-color: #2180ac;
-            --success-color: #10B981;
-            --warning-color: #F59E0B;
-            --danger-color: #EF4444;
+            --primary-color: #C8FF00;
+            --success-color: #10C57E;
+            --warning-color: #FFB627;
+            --danger-color: #FF5252;
 
             /* RGB versions for opacity control */
-            --color-brown-600-rgb: 94, 82, 64;
-            --color-teal-500-rgb: 33, 128, 172;
-            --color-slate-900-rgb: 19, 52, 59;
-            --color-slate-500-rgb: 98, 108, 113;
-            --color-red-500-rgb: 239, 68, 68;
+            --color-brown-600-rgb: 107, 114, 128;
+            --color-teal-500-rgb: 200, 255, 0;
+            --color-slate-900-rgb: 232, 234, 237;
+            --color-slate-500-rgb: 156, 163, 175;
+            --color-red-500-rgb: 255, 46, 151;
 
             /* Semantic Color Tokens */
-            --color-background: var(--color-cream-50);
-            --color-surface: var(--color-cream-100);
-            --color-text: var(--color-slate-900);
-            --color-text-secondary: var(--color-slate-500);
-            --color-primary: var(--color-teal-500);
-            --color-primary-hover: var(--color-teal-600);
-            --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
-            --color-border: rgba(var(--color-brown-600-rgb), 0.2);
-            --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
-            --color-focus-ring: rgba(var(--color-teal-500-rgb), 0.3);
+            --color-background: #0A0E14;
+            --color-surface: #11161F;
+            --color-text: #E8EAED;
+            --color-text-secondary: #9CA3AF;
+            --color-primary: #C8FF00;
+            --color-primary-hover: #a8d600;
+            --color-secondary: rgba(200, 255, 0, 0.12);
+            --color-border: #1A1F2A;
+            --color-card-border: #1A1F2A;
+            --color-focus-ring: rgba(200, 255, 0, 0.3);
 
             /* Typography */
             --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -116,14 +120,14 @@
             --radius-full: 9999px;
 
             /* Shadows */
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
 
             /* Animation */
             --duration-fast: 150ms;
             --duration-normal: 250ms;
-            --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         /* Mobile Responsive Chart */
@@ -167,11 +171,39 @@
             font-size: var(--font-size-base);
             line-height: var(--line-height-normal);
             color: var(--color-text);
-            background-color: var(--color-background);
+            background: var(--color-background);
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .container {
+        /* === ARENA dark theme overrides for legacy inline styles === */
+        /* Cards & surfaces */
+        .card,
+        [style*="background: white"],
+        [style*="background-color: white"],
+        [style*="background: #fff"],
+        [style*="background: #ffffff"],
+        [style*="background:white"] {
+            background: var(--color-surface) !important;
+        }
+        [style*="background: #fffbeb"] { background: #1a1a0a !important; }
+        [style*="border: 2px solid #e5e7eb"],
+        [style*="border: 1px solid #e5e7eb"] {
+            border-color: var(--color-border) !important;
+        }
+        /* Fullscreen modal background */
+        #cycleChartFullscreenModal[style*="background: white"] {
+            background: var(--color-background) !important;
+        }
+        /* Modal cards */
+        #correctCycleModal [style*="background: white"] {
+            background: var(--color-surface) !important;
+        }
+        /* Keep exceptions — elements that need lighter bg for contrast */
+        .login-card,
+        .login-card * {
+            /* already handled by variables */;
+        }
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 var(--space-16);
@@ -192,19 +224,19 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #2180ac 0%, #4ECDC4 100%);
+            background: linear-gradient(135deg, #0A0E14 0%, #1A1F2A 100%);
             padding: var(--space-16);
         }
 
         .login-card {
-            background: white;
+            background: var(--color-surface);
             padding: var(--space-48) var(--space-32);
             border-radius: var(--radius-lg);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
             width: 100%;
             max-width: 400px;
             text-align: center;
-            border: 1px solid rgba(33, 128, 172, 0.1);
+            border: 1px solid var(--color-border);
         }
 
         .login-title {
@@ -238,7 +270,7 @@
             border: 1px solid var(--color-border);
             border-radius: var(--radius-base);
             font-size: var(--font-size-base);
-            background-color: white;
+            background-color: #0F141C;
             color: var(--color-text);
             transition: all var(--duration-fast) var(--ease-standard);
         }
@@ -247,7 +279,7 @@
             outline: none;
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px var(--color-focus-ring);
-            background-color: white;
+            background-color: #0F141C;
         }
 
         .form-control::placeholder {
@@ -290,10 +322,9 @@
 
         .header {
             background: var(--color-surface);
-            border-bottom: 1px solid var(--color-card-border);
+            border-bottom: 1px solid var(--color-border);
             padding: var(--space-20) var(--space-16);
             margin-bottom: var(--space-24);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .header-content {
@@ -1077,6 +1108,7 @@
                 <div class="nav-tab" data-tab="logrpe" onclick="switchTab('logrpe')"><i class="fas fa-pencil-alt" style="margin-right:5px;"></i>Log RPE</div>
                 <div class="nav-tab" data-tab="loadcalc" onclick="switchTab('loadcalc')"><i class="fas fa-dumbbell" style="margin-right:5px;"></i>Calculateur</div>
                 <div class="nav-tab" data-tab="matchs" onclick="switchTab('matchs')"><i class="fas fa-trophy" style="margin-right:5px;"></i>Matchs</div>
+                <div class="nav-tab" data-tab="album" onclick="switchTab('album')"><i class="fas fa-star" style="margin-right:5px;"></i>Album</div>
             </div>
 
             <!-- Dashboard Tab -->
@@ -2342,6 +2374,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+            <!-- Onglet Album (ARENA) -->
+            <div id="albumTab" class="tab-content"></div>
         </div>
     </div>
 
@@ -4017,6 +4052,9 @@
             }
         });
     </script>
+    <!-- ARENA Design System -->
+    <script src="/js/state.js"></script>
+    <script src="/js/arena-components.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/app-additions.js"></script>
     <script src="/js/app-photo-manager-simple.js"></script>
@@ -4056,6 +4094,12 @@
     <script src="/js/rating-badges.js"></script>
     <!-- Module Cycle Menstruel - Check-in joueuses (DOIT ÊTRE CHARGÉ AVANT cycle-badges.js) -->
     <script src="/js/cycle-checkin.js"></script>
+    <!-- ARENA Check-in (remplace l'UI existante) -->
+    <script src="/js/arena-checkin.js"></script>
+    <!-- ARENA RPE (remplace l'UI existante) -->
+    <script src="/js/arena-rpe.js"></script>
+    <!-- ARENA Album (nouvel onglet) -->
+    <script src="/js/arena-album.js"></script>
     <script src="/js/cycle-badges.js"></script>
     <script src="/js/rpe-progressive-ui.js"></script>
     <!-- Bibliothèque ExcelJS pour export Excel avec mise en forme complète -->
