@@ -334,3 +334,9 @@ h4 { font-size: 14px; font-weight: 700; }
 .arena-stack-sm { display: flex; flex-direction: column; gap: 6px; }
 .arena-stack    { display: flex; flex-direction: column; gap: 10px; }
 .arena-opacity-low { opacity: 0.4; pointer-events: none; }
+
+/* === ÉCRANS & ONGLETS — filet de sécurité === */
+.screen { display: none !important; }
+.screen.active { display: block !important; }
+.tab-content { display: none !important; }
+.tab-content.active { display: block !important; }
