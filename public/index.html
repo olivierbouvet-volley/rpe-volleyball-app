@@ -252,6 +252,23 @@
             font-size: var(--font-size-base);
         }
 
+        /* Bouton login — meilleur contraste sur fond néon */
+        #loginForm .btn-primary {
+            color: #0A0E14;
+            font-weight: 700;
+        }
+
+        /* Inputs login — fond plus clair pour meilleure visibilité */
+        #loginForm .form-control {
+            background-color: #1a2030;
+            border-color: #2a3040;
+        }
+        #loginForm .form-control:focus {
+            background-color: #1a2030;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(200, 255, 0, 0.15);
+        }
+
         .form-group {
             margin-bottom: var(--space-20);
             text-align: left;
