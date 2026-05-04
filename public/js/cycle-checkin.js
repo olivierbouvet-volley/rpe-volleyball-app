@@ -359,11 +359,14 @@ async function updateCyclePhaseDisplay() {
     const displayEl = document.getElementById('cyclePhaseDisplay');
     const iconEl = document.getElementById('cyclePhaseIcon');
     const textEl = document.getElementById('cyclePhaseText');
-    
+
+    // Si l'UI ARENA a remplacé l'ancien formulaire, on ignore
+    if (!displayEl || !iconEl || !textEl) return;
+
     try {
         // Récupérer la config du cycle
         const cycleDoc = await db.collection('menstrualCycle').doc(appState.currentUser).get();
-        
+
         if (!cycleDoc.exists || !cycleDoc.data().cycleStartDate) {
             displayEl.style.display = 'none';
             return;
