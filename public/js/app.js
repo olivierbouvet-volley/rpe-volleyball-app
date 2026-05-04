@@ -312,19 +312,22 @@ function switchTab(tabName) {
 // Charger le dashboard de la joueuse
 async function loadPlayerDashboard() {
     try {
-        // Réinitialiser les formulaires RPE progressifs
-        if (typeof resetRpeForm === 'function') resetRpeForm();
-        if (typeof resetRpeFormYesterday === 'function') resetRpeFormYesterday();
-        if (typeof resetRpeFormDayBefore === 'function') resetRpeFormDayBefore();
-        
+        // Si ARENA est actif, ne pas toucher aux anciens formulaires
+        if (!window.ARENA_ACTIVE) {
+            // Réinitialiser les formulaires RPE progressifs
+            if (typeof resetRpeForm === 'function') resetRpeForm();
+            if (typeof resetRpeFormYesterday === 'function') resetRpeFormYesterday();
+            if (typeof resetRpeFormDayBefore === 'function') resetRpeFormDayBefore();
+
+            // Init cycle detection ici (vue joueuse active, checkInForm présent)
+            if (typeof window.resetAndInitCycleDetection === 'function') {
+                window.resetAndInitCycleDetection();
+            }
+        }
+
         // Réinitialiser les pastilles
         if (typeof refreshRatingBadges === 'function') {
             refreshRatingBadges();
-        }
-
-        // Init cycle detection ici (vue joueuse active, checkInForm présent)
-        if (typeof window.resetAndInitCycleDetection === 'function') {
-            window.resetAndInitCycleDetection();
         }
         
         const playerDoc = await db.collection('players').doc(appState.currentUser).get();

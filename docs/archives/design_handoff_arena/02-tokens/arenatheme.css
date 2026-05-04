@@ -1,0 +1,335 @@
+/* ============================================================
+   ARENA THEME — RPE Gen2
+   Dark · Néon vert · Monospace · Pôle Espoir Sablé
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap");
+
+:root {
+  /* —— Surfaces —— */
+  --arena-bg:          #0A0E14;   /* fond principal */
+  --arena-bg-2:        #0F141C;   /* fond locked / input */
+  --arena-surface:     #11161F;   /* card surface */
+  --arena-surface-2:   #131923;   /* surface élevée / hover */
+  --arena-border:      #1A1F2A;   /* trait subtil */
+  --arena-border-soft: #222938;   /* séparateur intra-card */
+
+  /* —— Texte —— */
+  --arena-text:        #E8EAED;   /* primary */
+  --arena-text-dim:    #9CA3AF;   /* secondary */
+  --arena-text-muted:  #6B7280;   /* labels mono */
+  --arena-text-faint:  #4B5563;   /* tab inactif / locked */
+
+  /* —— Néons (palette signature) —— */
+  --arena-neon:        #C8FF00;   /* primary · CTA · streak */
+  --arena-pink:        #FF2E97;   /* cycle · alerts cycle */
+  --arena-blue:        #00D9FF;   /* secondary stats · sleep */
+  --arena-amber:       #FFB627;   /* warnings · charge */
+  --arena-ok:          #10C57E;   /* success · low symptoms */
+  --arena-bad:         #FF5252;   /* danger · high symptoms · errors */
+
+  /* —— Néons translucides (overlays / accents 6-25%) —— */
+  --arena-neon-15:     rgba(200, 255,  0, 0.15);
+  --arena-neon-40:     rgba(200, 255,  0, 0.40);
+  --arena-neon-60:     rgba(200, 255,  0, 0.60);
+  --arena-pink-15:     rgba(255, 46, 151, 0.15);
+  --arena-pink-40:     rgba(255, 46, 151, 0.40);
+  --arena-pink-60:     rgba(255, 46, 151, 0.60);
+  --arena-blue-15:     rgba(  0,217, 255, 0.15);
+  --arena-blue-40:     rgba(  0,217, 255, 0.40);
+  --arena-blue-60:     rgba(  0,217, 255, 0.60);
+
+  /* —— Typo —— */
+  --arena-font:        "Inter", system-ui, -apple-system, sans-serif;
+  --arena-mono:        "JetBrains Mono", ui-monospace, monospace;
+
+  /* —— Espace / radius —— */
+  --arena-radius-sm:   4px;
+  --arena-radius:      6px;
+  --arena-radius-md:   8px;
+  --arena-radius-lg:   10px;
+  --arena-radius-xl:   12px;
+
+  /* —— Effets —— */
+  --arena-glow-neon:   0 0 24px rgba(200, 255, 0, 0.35);
+  --arena-glow-pink:   0 0 24px rgba(255, 46, 151, 0.35);
+  --arena-glow-blue:   0 0 24px rgba(  0, 217, 255, 0.35);
+  --arena-shadow-card: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --arena-shadow-pop:  0 30px 60px rgba(0, 0, 0, 0.6);
+
+  /* —— Easing —— */
+  --arena-ease:        cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--arena-bg);
+  color: var(--arena-text);
+  font-family: var(--arena-font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: var(--arena-neon); color: var(--arena-bg); }
+
+::-webkit-scrollbar       { width: 0; height: 0; }
+* { scrollbar-width: none; }
+
+/* ============================================================
+   TYPOGRAPHIE
+   ============================================================ */
+h1, h2, h3, h4 { color: var(--arena-text); margin: 0; letter-spacing: -0.3px; }
+h1 { font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
+h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+h3 { font-size: 18px; font-weight: 700; }
+h4 { font-size: 14px; font-weight: 700; }
+
+.arena-mono       { font-family: var(--arena-mono); }
+.arena-label      { font-family: var(--arena-mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--arena-text-muted); }
+.arena-label--neon{ color: var(--arena-neon); }
+.arena-label--pink{ color: var(--arena-pink); }
+.arena-label--blue{ color: var(--arena-blue); }
+.arena-section    { font-family: var(--arena-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--arena-neon); }
+.arena-stat-num   { font-family: var(--arena-mono); font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.arena-card {
+  background: var(--arena-surface);
+  border: 1px solid var(--arena-border);
+  border-radius: var(--arena-radius-lg);
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.arena-card--neon  { border-color: var(--arena-neon-40); }
+.arena-card--pink  { border-color: var(--arena-pink-40); }
+.arena-card--blue  { border-color: var(--arena-blue-40); }
+.arena-card--amber { border-color: rgba(255, 182, 39, 0.4); }
+.arena-card--bad   { border-color: rgba(255,  82, 82, 0.4); }
+
+.arena-card--gradient-neon { background: linear-gradient(135deg, var(--arena-neon-15), transparent); border: 1px solid var(--arena-neon-60); }
+.arena-card--gradient-pink { background: linear-gradient(135deg, var(--arena-pink-15), transparent); border: 1px solid var(--arena-pink-40); }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.arena-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--arena-radius-md);
+  font-family: var(--arena-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  border: 1px solid var(--arena-border);
+  background: transparent;
+  color: var(--arena-text);
+  transition: all 150ms var(--arena-ease);
+}
+.arena-btn:hover { border-color: var(--arena-neon); color: var(--arena-neon); }
+
+.arena-btn--primary {
+  background: var(--arena-neon);
+  color: var(--arena-bg);
+  border: none;
+  box-shadow: var(--arena-glow-neon);
+}
+.arena-btn--primary:hover { transform: translateY(-1px); }
+
+.arena-btn--ghost { background: transparent; }
+.arena-btn--full  { width: 100%; padding: 14px 16px; font-size: 12px; letter-spacing: 2px; }
+
+/* Toggle pill (NON / OUI etc.) */
+.arena-toggle {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--arena-border);
+  color: var(--arena-text-muted);
+  border-radius: var(--arena-radius-sm);
+  font-family: var(--arena-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.arena-toggle--active { background: var(--arena-surface-2); border-color: var(--arena-neon); color: var(--arena-neon); }
+.arena-toggle--danger.arena-toggle--active { border-color: var(--arena-bad); color: var(--arena-bad); }
+
+/* ============================================================
+   SEGMENTED SCALE 0-10 (RPE / Sliders)
+   ============================================================ */
+.arena-scale { display: flex; gap: 3px; }
+.arena-scale__seg {
+  flex: 1;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--arena-border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--arena-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--arena-text-faint);
+  transition: all 100ms var(--arena-ease);
+}
+.arena-scale__seg--filled {
+  background: var(--arena-neon);
+  border: none;
+  color: var(--arena-bg);
+}
+
+/* Mini barre de progression (album) */
+.arena-progress { display: flex; gap: 2px; }
+.arena-progress__seg { flex: 1; height: 16px; background: var(--arena-surface-2); border-radius: 1px; }
+.arena-progress__seg--neon { background: var(--arena-neon); }
+.arena-progress__seg--blue { background: var(--arena-blue); }
+.arena-progress__seg--pink { background: var(--arena-pink); }
+
+/* ============================================================
+   FORM
+   ============================================================ */
+.arena-input,
+.arena-select,
+.arena-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--arena-bg);
+  border: 1px solid var(--arena-border);
+  color: var(--arena-text);
+  border-radius: var(--arena-radius-sm);
+  font-family: var(--arena-font);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 150ms var(--arena-ease);
+}
+.arena-input:focus,
+.arena-select:focus,
+.arena-textarea:focus { border-color: var(--arena-neon); }
+.arena-textarea { resize: none; min-height: 60px; }
+
+/* ============================================================
+   TAG / BADGE / PILL
+   ============================================================ */
+.arena-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-family: var(--arena-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 3px;
+  border: 1px solid var(--arena-border);
+  color: var(--arena-text);
+}
+.arena-tag--neon { color: var(--arena-neon); border-color: var(--arena-neon); }
+.arena-tag--pink { color: var(--arena-pink); border-color: var(--arena-pink-60); }
+.arena-tag--blue { color: var(--arena-blue); border-color: var(--arena-blue-60); }
+.arena-tag--ok   { color: var(--arena-ok);   border-color: var(--arena-ok); }
+.arena-tag--bad  { color: var(--arena-bad);  border-color: var(--arena-bad); }
+.arena-tag--amber{ color: var(--arena-amber);border-color: var(--arena-amber); }
+
+/* ============================================================
+   TAB BAR (bottom 6 onglets)
+   ============================================================ */
+.arena-tabbar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10, 14, 20, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--arena-border);
+  padding: 10px 8px 22px;
+  display: flex;
+  z-index: 40;
+}
+.arena-tabbar__tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 6px 0;
+  cursor: pointer;
+  font-family: var(--arena-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--arena-text-faint);
+  position: relative;
+  transition: color 150ms var(--arena-ease);
+  text-align: center;
+}
+.arena-tabbar__tab--active { color: var(--arena-neon); }
+.arena-tabbar__tab--active::before {
+  content: "";
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  width: 28px; height: 2px;
+  background: var(--arena-neon);
+  border-radius: 999px;
+}
+.arena-tabbar__icon { font-size: 16px; margin-bottom: 3px; display: block; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.arena-header {
+  padding: 8px 20px 14px;
+  border-bottom: 1px solid var(--arena-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.arena-header__title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.arena-header__section { font-size: 10px; letter-spacing: 2px; font-family: var(--arena-mono); color: var(--arena-neon); text-transform: uppercase; margin-bottom: 4px; }
+
+/* ============================================================
+   EFFETS DÉCO
+   ============================================================ */
+.arena-scanlines {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 3px);
+  pointer-events: none;
+}
+.arena-glow-neon { box-shadow: var(--arena-glow-neon); }
+.arena-glow-pink { box-shadow: var(--arena-glow-pink); }
+.arena-glow-blue { box-shadow: var(--arena-glow-blue); }
+
+@keyframes arena-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+.arena-live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: var(--arena-neon);
+  animation: arena-pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   UTILITAIRES
+   ============================================================ */
+.arena-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.arena-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.arena-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.arena-grid-8 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.arena-row    { display: flex; align-items: center; gap: 8px; }
+.arena-row--between { display: flex; align-items: center; justify-content: space-between; }
+.arena-stack-sm { display: flex; flex-direction: column; gap: 6px; }
+.arena-stack    { display: flex; flex-direction: column; gap: 10px; }

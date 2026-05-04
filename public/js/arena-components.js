@@ -164,6 +164,9 @@ function arenaDateLabel(text) {
   return `<div class="arena-label" style="margin-bottom:10px;">// ${text}</div>`;
 }
 
+// Flag global pour désactiver les anciens modules
+window.ARENA_ACTIVE = true;
+
 // Exporter dans le scope global (compatible script tags)
 window.arenaHeader = arenaHeader;
 window.arenaTabBar = arenaTabBar;

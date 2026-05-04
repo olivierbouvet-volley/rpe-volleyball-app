@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>RPE Gen2 — ARENA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: "Inter", system-ui, sans-serif; background: #050810; }
+  #root { height: 100%; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="arena-shared.jsx"></script>
+<script type="text/babel" src="screen-checkin.jsx"></script>
+<script type="text/babel" src="screen-rpe.jsx"></script>
+<script type="text/babel" src="screen-stats.jsx"></script>
+<script type="text/babel" src="screen-pphys.jsx"></script>
+<script type="text/babel" src="screen-match.jsx"></script>
+<script type="text/babel" src="screen-album.jsx"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="env,react">
+const { useState } = React;
+function Phone({ children }) {
+  return (
+    <div style={{ width: 390, height: 800, borderRadius: 48, background: "#000", padding: 9, position: "relative", boxShadow: "0 30px 60px rgba(200,255,0,0.08), 0 0 0 1px rgba(200,255,0,0.12), inset 0 0 0 2px #1a1a1a" }}>
+      <div style={{ position: "absolute", inset: 9, borderRadius: 40, overflow: "hidden", background: "#0A0E14" }}>{children}</div>
+      <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", width: 110, height: 30, background: "#000", borderRadius: 999, zIndex: 60 }} />
+      <div style={{ position: "absolute", bottom: 18, left: "50%", transform: "translateX(-50%)", width: 130, height: 4, background: "rgba(255,255,255,0.6)", borderRadius: 999, zIndex: 60 }} />
+    </div>
+  );
+}
+function App({ initialTab }) {
+  const [tab, setTab] = useState(initialTab || "checkin");
+  const Cmp = { checkin: window.CheckinScreen, rpe: window.RPEScreen, stats: window.StatsScreen, pphys: window.PPhysScreen, match: window.MatchScreen, album: window.AlbumScreen }[tab];
+  return <Cmp activeTab={tab} setActiveTab={setTab} />;
+}
+function FullProto({ initialTab }) { return <Phone><App initialTab={initialTab} /></Phone>; }
+const { DesignCanvas, DCSection, DCArtboard } = window;
+function Root() {
+  return (
+    <DesignCanvas title="RPE Gen2 — ARENA" subtitle="Prototype interactif · 6 onglets · Pôle Espoir Sablé">
+      <DCSection id="proto" title="Prototype interactif" subtitle="Clique les onglets en bas · ouvre une carte en plein écran avec le bouton ⤢">
+        <DCArtboard id="checkin" label="① Check-in (avec cycle)" width={390} height={800}><FullProto initialTab="checkin" /></DCArtboard>
+        <DCArtboard id="rpe" label="② Log RPE" width={390} height={800}><FullProto initialTab="rpe" /></DCArtboard>
+        <DCArtboard id="stats" label="③ Mes Stats" width={390} height={800}><FullProto initialTab="stats" /></DCArtboard>
+        <DCArtboard id="pphys" label="④ PPhys / 1RM" width={390} height={800}><FullProto initialTab="pphys" /></DCArtboard>
+        <DCArtboard id="match" label="⑤ Match" width={390} height={800}><FullProto initialTab="match" /></DCArtboard>
+        <DCArtboard id="album" label="⑥ Album" width={390} height={800}><FullProto initialTab="album" /></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+function start() {
+  if (!window.CheckinScreen || !window.RPEScreen || !window.StatsScreen || !window.PPhysScreen || !window.MatchScreen || !window.AlbumScreen || !window.DesignCanvas) return setTimeout(start, 60);
+  ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+}
+start();
+</script>
+</body>
+</html>
