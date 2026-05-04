@@ -146,82 +146,90 @@ initializePlayers();
 // LOGIN SYSTEM - AVEC OLIVIER ET ALEXIS
 // ============================================================================
 
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
+const loginFormEl = document.getElementById('loginForm');
+if (loginFormEl) {
+loginFormEl.addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('🔑 [Login] Soumission formulaire');
 
-    // S'assurer que l'auth anonyme est prête avant tout accès Firestore
-    if (typeof window.waitForAuth === 'function') {
-        await window.waitForAuth();
-    }
+    try {
+        // S'assurer que l'auth anonyme est prête avant tout accès Firestore
+        if (typeof window.waitForAuth === 'function') {
+            console.log('🔑 [Login] Attente waitForAuth...');
+            const authUser = await window.waitForAuth();
+            console.log('🔑 [Login] waitForAuth terminé, user:', authUser ? authUser.uid : 'null');
+        }
 
-    const username = document.getElementById('playerName').value.trim();
-    const password = document.getElementById('teamCode').value;
-    
-    // ========================================================================
-    // COACHES AUTORISÉS
-    // ========================================================================
-    const authorizedCoaches = {
-        'olivier': 'pole',
-        'alexis': 'pole',
-        'coach': 'pole'  // Ancien login, gardé pour compatibilité
-    };
-    
-    // ========================================================================
-    // VÉRIFIER SI C'EST UN COACH
-    // ========================================================================
-    const lowerUsername = username.toLowerCase();
-    
-    if (authorizedCoaches[lowerUsername] && password === authorizedCoaches[lowerUsername]) {
-        // C'est un coach autorisé!
-        appState.currentUser = lowerUsername;
-        appState.currentRole = 'coach';
-        appState.coachName = username; // Garder le nom original avec la casse
-        
-        console.log('Coach connecté:', username);
-        showScreen('coachScreen');
-        loadCoachDashboard();
-        return;
-    }
-    
-    // ========================================================================
-    // VÉRIFIER SI C'EST UNE JOUEUSE
-    // ========================================================================
-    if (password === 'pole') {
-        // Convertir en minuscule pour la recherche dans la table
-        const lowerInput = username.toLowerCase();
-        
-        // Vérifier d'abord dans la table de correspondance des accents
-        let playerId = ACCENTS_TO_ID[lowerInput];
-        
-        // Si pas dans la table, essayer avec le nom capitalisé
-        if (!playerId) {
-            playerId = username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
-        }
-        
-        // Chercher le document joueur
-        let playerDoc = await db.collection('players').doc(playerId).get();
-        
-        // Si pas trouvé avec l'ID calculé, essayer le nom exact
-        if (!playerDoc.exists) {
-            playerDoc = await db.collection('players').doc(username).get();
-            if (playerDoc.exists) {
-                playerId = username;
-            }
-        }
-        
-        if (playerDoc.exists) {
-            appState.currentUser = playerId;
-            appState.currentRole = 'player';
-            showScreen('playerScreen');
-            loadPlayerDashboard();
+        const username = document.getElementById('playerName').value.trim();
+        const password = document.getElementById('teamCode').value;
+        console.log('🔑 [Login] Identifiant saisi:', username);
+
+        // ========================================================================
+        // COACHES AUTORISÉS
+        // ========================================================================
+        const authorizedCoaches = {
+            'olivier': 'pole',
+            'alexis': 'pole',
+            'coach': 'pole'  // Ancien login, gardé pour compatibilité
+        };
+
+        const lowerUsername = username.toLowerCase();
+
+        if (authorizedCoaches[lowerUsername] && password === authorizedCoaches[lowerUsername]) {
+            appState.currentUser = lowerUsername;
+            appState.currentRole = 'coach';
+            appState.coachName = username;
+
+            console.log('🔑 [Login] Coach connecté:', username);
+            showScreen('coachScreen');
+            loadCoachDashboard();
             return;
-        } else {
-            alert('Nom d\'utilisateur incorrect. Veuillez vérifier votre nom.');
         }
-    } else {
-        alert('Mot de passe incorrect.');
+
+        // ========================================================================
+        // VÉRIFIER SI C'EST UNE JOUEUSE
+        // ========================================================================
+        if (password === 'pole') {
+            const lowerInput = username.toLowerCase();
+
+            let playerId = ACCENTS_TO_ID[lowerInput];
+
+            if (!playerId) {
+                playerId = username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
+            }
+
+            console.log('🔑 [Login] Recherche joueur:', playerId);
+
+            let playerDoc = await db.collection('players').doc(playerId).get();
+
+            if (!playerDoc.exists) {
+                console.log('🔑 [Login] Pas trouvé avec ID ' + playerId + ', essai nom exact...');
+                playerDoc = await db.collection('players').doc(username).get();
+                if (playerDoc.exists) {
+                    playerId = username;
+                }
+            }
+
+            if (playerDoc.exists) {
+                console.log('🔑 [Login] Joueur trouvé:', playerId);
+                appState.currentUser = playerId;
+                appState.currentRole = 'player';
+                showScreen('playerScreen');
+                loadPlayerDashboard();
+                return;
+            } else {
+                console.warn('🔑 [Login] Joueur introuvable:', playerId);
+                alert('Nom d\'utilisateur incorrect. Veuillez vérifier votre nom.');
+            }
+        } else {
+            alert('Mot de passe incorrect.');
+        }
+    } catch (error) {
+        console.error('🔑 [Login] ERREUR:', error.message, error);
+        alert('Erreur de connexion : ' + error.message + '\n\nVérifiez votre connexion internet et réessayez.');
     }
 });
+} // fin if (loginFormEl)
 
 // Afficher un écran
 function showScreen(screenId) {
@@ -236,19 +244,20 @@ function logout() {
     appState.currentUser = null;
     appState.currentRole = null;
     appState.coachName = null;
-    
+
     // Réinitialiser les formulaires RPE progressifs
     if (typeof resetRpeForm === 'function') resetRpeForm();
     if (typeof resetRpeFormYesterday === 'function') resetRpeFormYesterday();
     if (typeof resetRpeFormDayBefore === 'function') resetRpeFormDayBefore();
-    
+
     // Réinitialiser les pastilles
     if (typeof refreshRatingBadges === 'function') {
         refreshRatingBadges();
     }
-    
+
     showScreen('loginScreen');
-    document.getElementById('loginForm').reset();
+    var lf = document.getElementById('loginForm');
+    if (lf) lf.reset();
 }
 
 // ============================================================================
@@ -269,23 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCoachHeader();
     }
 });
-
-
-// Afficher un écran
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    document.getElementById(screenId).classList.add('active');
-}
-
-// Déconnexion
-function logout() {
-    appState.currentUser = null;
-    appState.currentRole = null;
-    showScreen('loginScreen');
-    document.getElementById('loginForm').reset();
-}
 
 // Gestion des onglets (joueuse)
 function switchTab(tabName) {

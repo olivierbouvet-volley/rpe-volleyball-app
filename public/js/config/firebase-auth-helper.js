@@ -21,18 +21,55 @@ function initAuth() {
   });
 }
 
-window.waitForAuth = function() {
+window.waitForAuth = function(timeoutMs) {
+  timeoutMs = timeoutMs || 8000;
   return new Promise(function(resolve, reject) {
+    var resolved = false;
+
+    // Timeout de securite : on resolve meme sans auth apres le delai
+    var timer = setTimeout(function() {
+      if (resolved) return;
+      resolved = true;
+      console.warn('[waitForAuth] Timeout apres ' + timeoutMs + 'ms — on continue sans auth');
+      resolve(null);
+    }, timeoutMs);
+
     function tryAuth() {
+      if (resolved) return;
       if (typeof firebase === 'undefined' || !firebase.apps || firebase.apps.length === 0) {
         return setTimeout(tryAuth, 100);
       }
       var auth = firebase.auth();
-      if (auth.currentUser) return resolve(auth.currentUser);
-      var u = auth.onAuthStateChanged(function(user) {
-        u();
-        if (user) return resolve(user);
-        auth.signInAnonymously().then(function(r) { resolve(r.user); }).catch(reject);
+      console.log('[waitForAuth] currentUser:', auth.currentUser ? auth.currentUser.uid : 'null');
+      if (auth.currentUser) {
+        resolved = true;
+        clearTimeout(timer);
+        return resolve(auth.currentUser);
+      }
+      var unsub = auth.onAuthStateChanged(function(user) {
+        if (resolved) return;
+        unsub();
+        console.log('[waitForAuth] onAuthStateChanged:', user ? user.uid : 'null');
+        if (user) {
+          resolved = true;
+          clearTimeout(timer);
+          resolve(user);
+        } else {
+          console.log('[waitForAuth] Lancement signInAnonymously...');
+          auth.signInAnonymously()
+            .then(function(r) {
+              if (resolved) return;
+              resolved = true;
+              clearTimeout(timer);
+              console.log('[waitForAuth] signInAnonymously OK:', r.user.uid);
+              resolve(r.user);
+            })
+            .catch(function(e) {
+              if (resolved) return;
+              console.error('[waitForAuth] signInAnonymously echec:', e.code, e.message);
+              // Ne pas rejeter — on laisse le timeout gerer
+            });
+        }
       });
     }
     tryAuth();
