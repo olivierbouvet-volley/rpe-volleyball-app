@@ -87,23 +87,52 @@ async function getLastWeekendMatches() {
         
         console.log('Recherche matchs:', saturdayStr, 'et', sundayStr);
         
-        // Récupérer tous les matchs du week-end
-        const matchesSnapshot = await db.collection('rpe')
-            .where('sessionType', '==', 'Match')
-            .where('date', 'in', [saturdayStr, sundayStr])
-            .get();
-        
-        const matches = [];
-        const playerIds = new Set();
-        
-        matchesSnapshot.forEach(doc => {
+        // Deux requêtes : format arena (type + Timestamp) + legacy (sessionType + string)
+        // Chaque requête est isolée pour ne pas bloquer l'autre en cas d'index manquant
+        const satStart = firebase.firestore.Timestamp.fromDate(new Date(saturdayStr + 'T00:00:00'));
+        const sunEnd   = firebase.firestore.Timestamp.fromDate(new Date(sundayStr + 'T23:59:59'));
+
+        const [arenaResult, legacyResult] = await Promise.allSettled([
+            db.collection('rpe')
+                .where('type', '==', 'Match')
+                .where('date', '>=', satStart)
+                .where('date', '<=', sunEnd)
+                .get(),
+            db.collection('rpe')
+                .where('sessionType', '==', 'Match')
+                .where('date', 'in', [saturdayStr, sundayStr])
+                .get()
+        ]);
+
+        if (arenaResult.status === 'rejected') console.warn('Arena match query failed:', arenaResult.reason?.message);
+        if (legacyResult.status === 'rejected') console.warn('Legacy match query failed:', legacyResult.reason?.message);
+
+        const arenaDocs  = arenaResult.status  === 'fulfilled' ? arenaResult.value.docs  : [];
+        const legacyDocs = legacyResult.status === 'fulfilled' ? legacyResult.value.docs : [];
+
+        // Dédoublonner par docId d'abord, puis par playerId+date (garder l'entrée la plus complète)
+        const seenIds = new Set();
+        const rawMatches = [];
+
+        [...arenaDocs, ...legacyDocs].forEach(doc => {
+            if (seenIds.has(doc.id)) return;
+            seenIds.add(doc.id);
             const data = doc.data();
-            matches.push({
+            const rawDate = data.date;
+            const dateStr = rawDate?.toDate ? rawDate.toDate().toISOString().split('T')[0] : String(rawDate).split('T')[0];
+            rawMatches.push({
                 id: doc.id,
-                ...data
+                ...data,
+                date: dateStr,
+                duration: data.durationMin ?? data.duration ?? 0
             });
-            playerIds.add(data.playerId);
         });
+
+        // Pas de déduplication par joueuse+date : plusieurs matchs par jour sont normaux (coupe de France, etc.)
+        const matches = rawMatches;
+        const playerIds = new Set(matches.map(m => m.playerId));
+
+        console.log(`Matchs trouvés: ${matches.length} (arena: ${arenaDocs.length}, legacy: ${legacyDocs.length})`);
         
         // Récupérer les infos des joueuses
         const playerNames = {};
@@ -217,16 +246,43 @@ async function getWeekendHistoryData(weeksBack = 8) {
             });
         }
 
-        // Query Firestore pour tous les matchs de ces dates
-        // Note: Firestore 'in' query supporte max 30 valeurs, on est bon avec 16 dates
-        const matchesSnapshot = await db.collection('rpe')
-            .where('sessionType', '==', 'Match')
-            .where('date', 'in', allDates)
-            .get();
+        // Requête arena (type + Timestamp range) + legacy (sessionType + date string)
+        // allDates est trié du plus récent au plus ancien (index 0 = dimanche dernier)
+        const allDatesSet = new Set(allDates);
+        const earliestSatStart = firebase.firestore.Timestamp.fromDate(new Date(allDates[allDates.length - 1] + 'T00:00:00'));
+        const latestSunEnd     = firebase.firestore.Timestamp.fromDate(new Date(allDates[0] + 'T23:59:59'));
+
+        // Résistant aux erreurs d'index manquant
+        const [arenaHistoryResult, legacyHistoryResult] = await Promise.allSettled([
+            db.collection('rpe')
+                .where('type', '==', 'Match')
+                .where('date', '>=', earliestSatStart)
+                .where('date', '<=', latestSunEnd)
+                .get(),
+            db.collection('rpe')
+                .where('sessionType', '==', 'Match')
+                .where('date', 'in', allDates)
+                .get()
+        ]);
+
+        const arenaHistoryDocs  = arenaHistoryResult.status  === 'fulfilled' ? arenaHistoryResult.value.docs  : [];
+        const legacyHistoryDocs = legacyHistoryResult.status === 'fulfilled' ? legacyHistoryResult.value.docs : [];
+
+        // Fusionner sans doublons + normaliser date
+        const seenHistoryIds = new Set();
+        const normalizedDocs = [];
+        [...arenaHistoryDocs, ...legacyHistoryDocs].forEach(doc => {
+            if (seenHistoryIds.has(doc.id)) return;
+            seenHistoryIds.add(doc.id);
+            const data = doc.data();
+            const rawDate = data.date;
+            const dateStr = rawDate?.toDate ? rawDate.toDate().toISOString().split('T')[0] : String(rawDate).split('T')[0];
+            if (!allDatesSet.has(dateStr)) return; // hors période
+            normalizedDocs.push({ ...data, date: dateStr });
+        });
 
         // Distribuer les matchs dans les bons week-ends
-        matchesSnapshot.forEach(doc => {
-            const data = doc.data();
+        normalizedDocs.forEach(data => {
             const weekendIndex = weekendDateMap[data.date];
             if (weekendIndex !== undefined) {
                 weekendsData[weekendIndex].matches.push(data);

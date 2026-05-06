@@ -18,14 +18,16 @@ let checkinState = {
   showNewPain: false,
   newPain: { zone: '', intensity: 0, daysSince: '1', desc: '' },
   // Cycle
-  cycleOpen: false,
+  cycleOpen: true,
   cycleDay: null,
   periodProximity: '',
   showSymptoms: false,
+  showSpm: false,
   symptoms: { cramps: 0, headache: 0, fatigue: 0, moodSwings: 0, bloating: 0, backPain: 0, breastTenderness: 0 },
   // Commentaire
   comment: '',
   submitted: false,
+  alreadyDoneToday: false,
 };
 
 // Zones de douleur
@@ -59,10 +61,32 @@ const SYMPTOM_LABELS = [
 // RENDU PRINCIPAL
 // ============================================================================
 
-function renderCheckin() {
+function renderCheckin(scrollTarget) {
   const s = checkinState;
   const container = document.getElementById('checkinTab');
   if (!container) return;
+
+  // Vue verrouillée si check-in déjà fait aujourd'hui
+  if (s.alreadyDoneToday) {
+    container.innerHTML = `
+      ${arenaHeader({ section: 'DAILY_CHECKIN', title: 'Check-in', right: liveDot('FAIT') })}
+      <div style="padding: 48px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(0,255,136,0.1); border: 2px solid var(--arena-ok); display: flex; align-items: center; justify-content: center; font-size: 32px;">&#10003;</div>
+        <div style="font-family: var(--arena-mono); font-size: 11px; color: var(--arena-ok); letter-spacing: 2px;">CHECK-IN DU JOUR VALIDÉ</div>
+        <div style="color: var(--arena-text-dim); font-size: 13px; line-height: 1.6; max-width: 260px;">Tu as déjà complété ton check-in aujourd'hui.<br>Reviens demain pour le suivant.</div>
+        <button data-action="goRpe"
+          style="margin-top: 16px; width: 100%; max-width: 280px; padding: 14px; background: var(--arena-neon); color: #0A0E14; border: none; border-radius: 8px; font-family: var(--arena-mono); font-size: 12px; font-weight: 800; letter-spacing: 2px; cursor: pointer; box-shadow: 0 0 24px var(--arena-neon-40);">
+          &#9658; REMPLIR MON RPE
+        </button>
+      </div>
+    `;
+    bindCheckinEvents();
+    return;
+  }
+
+  // Sauvegarder la position de scroll avant le re-rendu
+  const oldScrollDiv = container.querySelector('[style*="overflow-y"]');
+  const prevScroll = oldScrollDiv ? oldScrollDiv.scrollTop : 0;
 
   const phase = calcPhase(s.cycleDay);
   const totalSymp = Object.values(s.symptoms).reduce((a, b) => a + b, 0);
@@ -86,10 +110,38 @@ function renderCheckin() {
       ${renderSubmitButton()}
     </div>
 
-    ${arenaTabBar({ activeTab: 'checkin' })}
   `;
 
   bindCheckinEvents();
+
+  // Gestion du scroll après re-rendu — scroll manuel dans le conteneur overflow
+  const newScrollDiv = container.querySelector('[style*="overflow-y"]');
+  if (newScrollDiv) {
+    if (scrollTarget === 'cycle') {
+      requestAnimationFrame(() => {
+        const cycleEl = newScrollDiv.querySelector('[data-action="toggleCycle"]');
+        if (cycleEl) {
+          const containerRect = newScrollDiv.getBoundingClientRect();
+          const elemRect = cycleEl.getBoundingClientRect();
+          newScrollDiv.scrollTop += elemRect.top - containerRect.top - 10;
+        }
+      });
+    } else if (scrollTarget === 'symptoms') {
+      requestAnimationFrame(() => {
+        // Cibler le premier segment de symptôme si le grid est ouvert, sinon le bouton DÉTAILLER
+        const target = newScrollDiv.querySelector('[data-action="setSymptom"]')
+          || newScrollDiv.querySelector('[data-action="toggleSymptoms"]');
+        if (target) {
+          const containerRect = newScrollDiv.getBoundingClientRect();
+          const elemRect = target.getBoundingClientRect();
+          newScrollDiv.scrollTop += elemRect.top - containerRect.top - 20;
+        }
+      });
+    } else {
+      // Restaurer la position de scroll précédente
+      newScrollDiv.scrollTop = prevScroll;
+    }
+  }
 }
 
 // ============================================================================
@@ -100,7 +152,7 @@ function renderDayButton(key, label) {
   const s = checkinState;
   const active = s.day === key;
   return `
-    <button data-day="${key}"
+    <button data-action="setDay" data-day="${key}"
       style="flex:1;padding:7px 0;background:${active ? 'var(--arena-neon)' : 'transparent'};color:${active ? '#0A0E14' : 'var(--arena-text-dim)'};border:${active ? 'none' : '1px solid var(--arena-border)'};border-radius:6px;font-family:var(--arena-mono);font-size:10px;font-weight:800;letter-spacing:1.5px;cursor:pointer;">
       ${label}
     </button>`;
@@ -279,25 +331,31 @@ function renderCycleContent(sympColor, totalSymp) {
             style="aspect-ratio:1;background:${active ? 'var(--arena-pink)' : 'transparent'};border:${active ? 'none' : '1px solid var(--arena-border)'};color:${active ? '#0A0E14' : 'var(--arena-text-dim)'};border-radius:6px;font-family:var(--arena-mono);font-weight:800;font-size:11px;cursor:pointer;">J${d}</button>`;
         }).join('')}
       </div>
-      <button data-action="setCycleNone"
-        style="width:100%;padding:8px 0;background:${s.cycleDay === 0 ? 'var(--arena-surface-2)' : 'transparent'};color:${s.cycleDay === 0 ? 'var(--arena-text)' : 'var(--arena-text-dim)'};border:1px solid ${s.cycleDay === 0 ? 'var(--arena-pink)' : 'var(--arena-border)'};border-radius:6px;font-family:var(--arena-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;margin-bottom:14px;">
-        ${s.cycleDay === 0 ? '● PAS DE RÈGLES' : '○ NON, PAS DE RÈGLES'}
-      </button>
+      <!-- Boutons NON + SPM côte à côte -->
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <button data-action="setCycleNone"
+          style="flex:1;padding:8px 0;background:${s.cycleDay === 0 ? 'var(--arena-surface-2)' : 'transparent'};color:${s.cycleDay === 0 ? 'var(--arena-amber)' : 'var(--arena-text-dim)'};border:1px solid ${s.cycleDay === 0 ? 'var(--arena-amber)' : 'var(--arena-border)'};border-radius:6px;font-family:var(--arena-mono);font-size:10px;font-weight:700;letter-spacing:1.5px;cursor:pointer;">
+          ${s.cycleDay === 0 ? '● PAS DE RÈGLES' : '○ NON, PAS DE RÈGLES'}
+        </button>
+        <button data-action="toggleSpm"
+          style="padding:8px 16px;background:${s.showSpm ? 'var(--arena-pink-15)' : 'transparent'};color:${s.showSpm ? 'var(--arena-pink)' : 'var(--arena-text-dim)'};border:1px solid ${s.showSpm ? 'var(--arena-pink)' : 'var(--arena-border)'};border-radius:6px;font-family:var(--arena-mono);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;">
+          SPM
+        </button>
+      </div>
 
-      ${s.cycleDay === 0 ? `
-        <div style="margin-bottom:14px;">
-          ${monoLabel({ text: 'RÈGLES PROCHES ?' })}
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;">
-            ${['notyet', 'j5-j3', 'j2-j1'].map(v => {
-              const labels = { notyet: 'PAS ENCORE', 'j5-j3': 'J-5 / J-3', 'j2-j1': 'J-2 / J-1' };
-              const active = s.periodProximity === v;
-              return `<button data-action="setProximity" data-val="${v}"
-                style="padding:9px 0;background:${active ? 'var(--arena-pink-15)' : 'transparent'};border:1px solid ${active ? 'var(--arena-pink)' : 'var(--arena-border)'};color:${active ? 'var(--arena-pink)' : 'var(--arena-text-dim)'};border-radius:6px;font-family:var(--arena-mono);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;">${labels[v]}</button>`;
-            }).join('')}
+
+
+      ${s.showSpm ? `
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            ${monoLabel({ text: 'SYMPTÔMES PRÉ-MENSTRUELS (SPM)', color: 'pink' })}
+            ${totalSymp > 0 ? `<div style="font-family:var(--arena-mono);font-size:10px;color:${sympColor};font-weight:700;">SCORE: ${totalSymp}/70</div>` : ''}
           </div>
-        </div>` : ''}
+        </div>
+        ${renderSymptomGrid()}
+      ` : ''}
 
-      ${s.cycleDay !== null ? `
+      ${s.cycleDay !== null && s.cycleDay > 0 && !s.showSpm ? `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${s.showSymptoms ? '12px' : '0'};">
           <div>
             ${monoLabel({ text: 'SYMPTÔMES MENSTRUELS', color: 'pink' })}
@@ -390,6 +448,10 @@ function bindCheckinEvents() {
   const container = document.getElementById('checkinTab');
   if (!container) return;
 
+  // Guard : n'ajouter le listener de délégation qu'une seule fois
+  if (!container._checkinDelegationBound) {
+    container._checkinDelegationBound = true;
+
   container.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -425,30 +487,50 @@ function bindCheckinEvents() {
         renderCheckin();
         break;
       }
+      case 'goRpe': {
+        if (typeof switchTab === 'function') switchTab('logrpe');
+        break;
+      }
+      case 'setDay': {
+        checkinState.day = btn.dataset.day;
+        renderCheckin();
+        break;
+      }
       case 'toggleCycle': {
         checkinState.cycleOpen = !checkinState.cycleOpen;
-        renderCheckin();
+        renderCheckin(null);
         break;
       }
       case 'setCycleDay': {
         checkinState.cycleDay = parseInt(btn.dataset.day);
-        renderCheckin();
+        checkinState.showSpm = false;
+        checkinState.showSymptoms = true;
+        renderCheckin('symptoms');
         break;
       }
       case 'setCycleNone': {
         checkinState.cycleDay = checkinState.cycleDay === 0 ? null : 0;
-        if (checkinState.cycleDay !== 0) checkinState.periodProximity = '';
-        renderCheckin();
+        if (checkinState.cycleDay !== 0) { checkinState.periodProximity = ''; checkinState.showSpm = false; }
+        renderCheckin(null);
         break;
       }
       case 'setProximity': {
         checkinState.periodProximity = btn.dataset.val;
-        renderCheckin();
+        renderCheckin(null);
+        break;
+      }
+      case 'toggleSpm': {
+        checkinState.showSpm = !checkinState.showSpm;
+        if (checkinState.showSpm) {
+          checkinState.cycleDay = 0;
+          checkinState.showSymptoms = false;
+        }
+        renderCheckin(checkinState.showSpm ? 'symptoms' : null);
         break;
       }
       case 'toggleSymptoms': {
         checkinState.showSymptoms = !checkinState.showSymptoms;
-        renderCheckin();
+        renderCheckin(checkinState.showSymptoms ? 'symptoms' : null);
         break;
       }
       case 'setSymptom': {
@@ -466,13 +548,7 @@ function bindCheckinEvents() {
     }
   });
 
-  // Day buttons
-  container.querySelectorAll('[data-day]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      checkinState.day = btn.dataset.day;
-      renderCheckin();
-    });
-  });
+  } // fin guard _checkinDelegationBound
 
   // SegScale clicks
   container.querySelectorAll('.arena-scale').forEach(scale => {
@@ -525,7 +601,7 @@ async function submitCheckin() {
       await window.waitForAuth();
     }
 
-    const playerId = appState?.currentUser?.id;
+    const playerId = appState?.currentUser;
     if (!playerId) {
       alert('Connecte-toi d\'abord !');
       return;
@@ -564,7 +640,8 @@ async function submitCheckin() {
       cycle: {
         day: checkinState.cycleDay,
         proximity: checkinState.cycleDay === 0 ? checkinState.periodProximity : null,
-        symptoms: checkinState.showSymptoms ? checkinState.symptoms : null,
+        symptoms: (checkinState.showSymptoms || checkinState.showSpm) ? checkinState.symptoms : null,
+        spm: checkinState.showSpm,
       },
       comment: checkinState.comment,
       playerId: playerId,
@@ -574,13 +651,8 @@ async function submitCheckin() {
     await db.collection('checkins').doc(docId).set(checkinData, { merge: true });
 
     checkinState.submitted = true;
-    renderCheckin();
-
-    // Reset après 2s
-    setTimeout(() => {
-      checkinState.submitted = false;
-      renderCheckin();
-    }, 2000);
+    checkinState.alreadyDoneToday = true;
+    renderCheckin(); // Affiche la vue "done"
 
     // Trigger sticker check
     if (typeof checkAndAwardStickers === 'function') {
@@ -588,6 +660,12 @@ async function submitCheckin() {
     }
 
     console.log('✓ Check-in enregistré:', docId);
+
+    // Rediriger vers RPE après 1.5s
+    setTimeout(() => {
+      if (typeof switchTab === 'function') switchTab('logrpe');
+    }, 1500);
+
   } catch (error) {
     console.error('Erreur check-in:', error);
     alert('Erreur lors de l\'enregistrement : ' + error.message);
@@ -598,11 +676,32 @@ async function submitCheckin() {
 // INIT
 // ============================================================================
 
-function initArenaCheckin() {
-  // Remplacer l'ancien checkinTab par le nouveau rendu
+async function _checkTodayCheckin() {
+  try {
+    const playerId = appState?.currentUser;
+    if (!playerId) return;
+    const today = new Date().toISOString().split('T')[0];
+    const doc = await db.collection('checkins').doc(`${playerId}_${today}`).get();
+    checkinState.alreadyDoneToday = doc.exists;
+  } catch (e) {
+    // ignore silencieusement
+  }
+}
+
+async function initArenaCheckin() {
+  await _checkTodayCheckin();
   renderCheckin();
+  if (typeof window.setArenaActiveTab === 'function') window.setArenaActiveTab('checkin');
   console.log('🏟️ ARENA Check-in initialisé');
 }
+
+// Appelé par app.js à chaque login de joueuse pour rafraîchir l'état du check-in
+window.refreshCheckinForPlayer = async function () {
+  checkinState.alreadyDoneToday = false;
+  checkinState.submitted = false;
+  await _checkTodayCheckin();
+  renderCheckin();
+};
 
 // Exporter
 window.checkinState = checkinState;

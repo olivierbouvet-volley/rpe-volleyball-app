@@ -192,8 +192,10 @@ loginFormEl.addEventListener('submit', async (e) => {
         if (password === 'pole') {
             const lowerInput = username.toLowerCase();
 
+            // Essai 1 : table de correspondance accents
             let playerId = ACCENTS_TO_ID[lowerInput];
 
+            // Essai 2 : docId = prénom capitalisé (format standard)
             if (!playerId) {
                 playerId = username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
             }
@@ -202,11 +204,27 @@ loginFormEl.addEventListener('submit', async (e) => {
 
             let playerDoc = await db.collection('players').doc(playerId).get();
 
+            // Essai 3 : docId exact tel que saisi
             if (!playerDoc.exists) {
-                console.log('🔑 [Login] Pas trouvé avec ID ' + playerId + ', essai nom exact...');
                 playerDoc = await db.collection('players').doc(username).get();
-                if (playerDoc.exists) {
-                    playerId = username;
+                if (playerDoc.exists) playerId = username;
+            }
+
+            // Essai 4 : recherche par champ name (couvre les docIds aléatoires créés avec .add())
+            if (!playerDoc.exists) {
+                console.log('🔑 [Login] Essai recherche par champ name...');
+                const byNameSnap = await db.collection('players')
+                    .orderBy('name')
+                    .get();
+                // Chercher un document dont le name commence par le prénom saisi (insensible à la casse)
+                const match = byNameSnap.docs.find(d => {
+                    const firstName = (d.data().name || '').split(' ')[0].toLowerCase();
+                    return firstName === lowerInput;
+                });
+                if (match) {
+                    playerDoc = match;
+                    playerId = match.id;
+                    console.log('🔑 [Login] Trouvé par name:', playerId);
                 }
             }
 
@@ -215,11 +233,11 @@ loginFormEl.addEventListener('submit', async (e) => {
                 appState.currentUser = playerId;
                 appState.currentRole = 'player';
                 showScreen('playerScreen');
-                loadPlayerDashboard();
+                loadPlayerDashboard(true);
                 return;
             } else {
                 console.warn('🔑 [Login] Joueur introuvable:', playerId);
-                alert('Nom d\'utilisateur incorrect. Veuillez vérifier votre nom.');
+                alert('Nom d\'utilisateur incorrect. Veuillez vérifier votre prénom.');
             }
         } else {
             alert('Mot de passe incorrect.');
@@ -237,6 +255,14 @@ function showScreen(screenId) {
         screen.classList.remove('active');
     });
     document.getElementById(screenId).classList.add('active');
+
+    // Tabbar ARENA + padding body uniquement sur le dashboard joueuse
+    const tabbar = document.getElementById('arena-global-tabbar');
+    const isPlayer = screenId === 'playerScreen';
+    if (tabbar) {
+        tabbar.style.display = isPlayer ? 'flex' : 'none';
+    }
+    document.body.classList.toggle('arena-player-active', isPlayer);
 }
 
 // Déconnexion
@@ -288,21 +314,48 @@ function switchTab(tabName) {
         content.classList.remove('active');
     });
     
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(`${tabName}Tab`).classList.add('active');
+    const navTabEl = document.querySelector(`[data-tab="${tabName}"]`);
+    if (navTabEl) navTabEl.classList.add('active');
+    const tabContentEl = document.getElementById(`${tabName}Tab`);
+    if (tabContentEl) tabContentEl.classList.add('active');
     
+    // Synchroniser l'état actif de la tabbar ARENA
+    if (typeof window.setArenaActiveTab === 'function') {
+        const arenaKeyMap = { checkin:'checkin', logrpe:'rpe', stats:'stats', loadcalc:'pphys', matchs:'match', album:'album' };
+        window.setArenaActiveTab(arenaKeyMap[tabName] || null);
+    }
+
+    // Charger les graphiques quand on ouvre l'onglet Stats
+    if (tabName === 'stats') {
+        // refreshPlayerDashboardCharts force le re-rendu même si déjà initialisé sur canvas caché
+        const chartsInit = typeof refreshPlayerDashboardCharts === 'function'
+            ? refreshPlayerDashboardCharts
+            : initPlayerDashboardCharts;
+        if (typeof chartsInit === 'function') {
+            setTimeout(() => chartsInit(), 100);
+        }
+        // Rafraîchir aussi les compteurs de volume
+        if (typeof updatePlayerVolumeStats === 'function') {
+            setTimeout(() => updatePlayerVolumeStats(appState.currentUser), 50);
+        }
+    }
+
     // Initialiser le calculateur de charge si on ouvre cet onglet
     if (tabName === 'loadcalc' && typeof initLoadCalculator === 'function') {
         console.log('switchTab: Appel initLoadCalculator, currentPlayer =', window.currentPlayer);
-        // Petit délai pour s'assurer que le DOM est prêt
         setTimeout(() => {
             initLoadCalculator();
         }, 100);
     }
+
+    // Initialiser l'album de stickers
+    if (tabName === 'album' && typeof loadAlbumData === 'function' && typeof renderAlbum === 'function') {
+        loadAlbumData().then(() => renderAlbum());
+    }
 }
 
 // Charger le dashboard de la joueuse
-async function loadPlayerDashboard() {
+async function loadPlayerDashboard(isInitialLogin = false) {
     try {
         // Si ARENA est actif, ne pas toucher aux anciens formulaires
         if (!window.ARENA_ACTIVE) {
@@ -340,21 +393,40 @@ async function loadPlayerDashboard() {
         
         // Charger les données du jour
         const today = new Date().toISOString().split('T')[0];
-        
-        // Check-in du jour
-        const checkinSnapshot = await db.collection('checkins')
-            .where('playerId', '==', appState.currentUser)
-            .where('date', '==', today)
-            .limit(1)
-            .get();
-        
-        // RPE du jour
+
+        // Check-in du jour — lookup direct par docId (évite comparaison Timestamp vs string)
+        const checkinDoc = await db.collection('checkins')
+            .doc(`${appState.currentUser}_${today}`).get();
+        const checkinSnapshot = { empty: !checkinDoc.exists, docs: checkinDoc.exists ? [checkinDoc] : [] };
+
+        // RPE du jour — range Timestamp (le champ date est stocké comme Timestamp)
+        const startOfToday = firebase.firestore.Timestamp.fromDate(new Date(today + 'T00:00:00.000'));
+        const endOfToday   = firebase.firestore.Timestamp.fromDate(new Date(today + 'T23:59:59.999'));
         const rpeSnapshot = await db.collection('rpe')
             .where('playerId', '==', appState.currentUser)
-            .where('date', '==', today)
+            .where('date', '>=', startOfToday)
+            .where('date', '<=', endOfToday)
+            .limit(1)
             .get();
+
+        // Synchroniser l'état du check-in arena
+        if (typeof checkinState !== 'undefined') {
+            checkinState.alreadyDoneToday = checkinDoc.exists;
+            if (typeof renderCheckin === 'function') renderCheckin();
+        }
+
+        // Ouverture intelligente au premier login du jour
+        if (isInitialLogin) {
+            if (checkinSnapshot.empty) {
+                // Pas encore de check-in aujourd'hui → ouvrir check-in
+                setTimeout(() => switchTab('checkin'), 50);
+            } else if (rpeSnapshot.empty) {
+                // Check-in fait mais pas de RPE → ouvrir RPE
+                setTimeout(() => switchTab('logrpe'), 50);
+            }
+            // Les deux faits → rester sur dashboard (aucun switchTab)
+        }
         
-        // Calculer le score (avec énergie si disponible)
         let score = 0;
         let status = 'Aucune donnée';
         
@@ -458,10 +530,10 @@ async function loadPlayerDashboard() {
             loadPlayerNotifications(appState.currentUser);
         }
         
-        // Afficher le prompt pour activer les notifications push
-        if (typeof showNotificationPrompt === 'function') {
-            showNotificationPrompt(appState.currentUser);
-        }
+        // Push notifications désactivées temporairement (FCM VAPID key 401)
+        // if (typeof showNotificationPrompt === 'function') {
+        //     showNotificationPrompt(appState.currentUser);
+        // }
         
         // Vérifier si aujourd'hui est un jour de repos
         await checkAndBlockRestDay();
@@ -487,10 +559,8 @@ async function loadPlayerDashboard() {
         
         console.log('✅ Header mis à jour - Player:', window.currentPlayer.id, 'Name:', playerData.name, 'Photo:', photoURL);
         
-        // Charger les graphiques du dashboard joueuse (tendance forme + charge)
-        if (typeof initPlayerDashboardCharts === 'function') {
-            setTimeout(initPlayerDashboardCharts, 200);
-        }
+        // Ne pas init les graphiques ici : le canvas stats est caché (display:none)
+        // Ils seront initialisés lors du switchTab('stats')
         
         // Charger les recommandations d'entraînement par phase du cycle
         console.log('📋 Vérification window.loadAndDisplayRecommendations:', typeof window.loadAndDisplayRecommendations);
@@ -1388,31 +1458,34 @@ async function loadCoachDashboard() {
 // Obtenir le statut d'une joueuse
 async function getPlayerStatus(playerId) {
     const today = new Date().toISOString().split('T')[0];
-    
-    const checkinSnapshot = await db.collection('checkins')
-        .where('playerId', '==', playerId)
-        .where('date', '==', today)
-        .limit(1)
-        .get();
-    
-    if (checkinSnapshot.empty) {
+
+    // Lookup direct par docId — évite comparaison Timestamp vs string
+    const checkinDoc = await db.collection('checkins').doc(`${playerId}_${today}`).get();
+
+    if (!checkinDoc.exists) {
         return { score: 0, status: 'critical' };
     }
-    
-    const checkin = checkinSnapshot.docs[0].data();
-    
-    // Calcul avec énergie si disponible, sinon sans
+
+    const checkin = checkinDoc.data();
+
+    // Supports both arena format (vitals.*) and legacy format (top-level fields)
+    const sleep    = checkin.vitals?.sleep    ?? checkin.sleep    ?? 5;
+    const aches    = checkin.vitals?.aches    ?? checkin.soreness ?? 5;
+    const stress   = checkin.vitals?.stress   ?? checkin.stress   ?? 5;
+    const mood     = checkin.vitals?.mood     ?? checkin.mood     ?? 5;
+    const energy   = checkin.vitals?.energy   ?? checkin.energy   ?? null;
+
     let score;
-    if (checkin.energy !== undefined && checkin.energy !== null) {
-        score = Math.round((checkin.sleep + (10 - checkin.soreness) + (10 - checkin.stress) + checkin.mood + checkin.energy) / 5);
+    if (energy !== null && energy !== undefined) {
+        score = Math.round((sleep + (10 - aches) + (10 - stress) + mood + energy) / 5);
     } else {
-        score = Math.round((checkin.sleep + (10 - checkin.soreness) + (10 - checkin.stress) + checkin.mood) / 4);
+        score = Math.round((sleep + (10 - aches) + (10 - stress) + mood) / 4);
     }
-    
+
     let status = 'critical';
     if (score >= 7) status = 'optimal';
     else if (score >= 5) status = 'attention';
-    
+
     return { score, status };
 }
 
@@ -1930,15 +2003,29 @@ async function addPlayer() {
     if (!form) return;
     
     const formData = new FormData(form);
+    const fullName = (formData.get('playerName') || '').trim();
+    if (!fullName) { alert('Le nom est obligatoire.'); return; }
+
+    // DocId = premier mot du nom (prénom), première lettre en majuscule
+    // Ex: "Anne DUPONT" → "Anne", "anne" → "Anne"
+    const firstName = fullName.split(' ')[0];
+    const docId = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+
     const playerData = {
-        name: formData.get('playerName'),
+        name: fullName,
         birthDate: formData.get('playerBirthDate'),
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         rpe: []
     };
     
     try {
-        await db.collection('players').add(playerData);
+        // Vérifier que le docId n'existe pas déjà
+        const existing = await db.collection('players').doc(docId).get();
+        if (existing.exists) {
+            alert(`Une joueuse avec le prénom "${docId}" existe déjà. Utilise un identifiant différent.`);
+            return;
+        }
+        await db.collection('players').doc(docId).set(playerData);
         console.log('Joueuse ajoutée');
         
         // Invalider le cache des graphiques

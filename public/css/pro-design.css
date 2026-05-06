@@ -440,11 +440,11 @@ html[data-theme="dark"] {
   --color-info-bg:    rgba(96, 165, 250, 0.08);
   --color-info-text:  #93c5fd;
 
-  /* Primary color plus clair pour contraste sur fond sombre */
-  --color-primary: #38bdf8;
-  --color-primary-hover: #7dd3fc;
-  --color-teal-300: #67e8f9;
-  --color-teal-500: #38bdf8;
+  /* Primary color — NE PAS redéfinir ici : l'arena theme (#C8FF00) prend le dessus via <style> inline */
+  /* --color-primary: #38bdf8; */
+  /* --color-primary-hover: #7dd3fc; */
+  /* --color-teal-300: #67e8f9; */
+  /* --color-teal-500: #38bdf8; */
 
   /* Table column group backgrounds (sombres, teintés) */
   --col-bg-blue:   rgba(59, 130, 246, 0.12);

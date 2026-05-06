@@ -247,8 +247,15 @@ h4 { font-size: 14px; font-weight: 700; }
 /* ============================================================
    TAB BAR (bottom 6 onglets)
    ============================================================ */
+.nav-tabs { display: none !important; }
+#stickerWidget { display: none !important; }
+#arena-global-tabbar { display: none; }
+
+/* padding bas pour que le contenu ne passe pas sous la tabbar fixe */
+body.arena-player-active { padding-bottom: 80px; }
+
 .arena-tabbar {
-  position: absolute;
+  position: fixed;
   bottom: 0; left: 0; right: 0;
   background: rgba(10, 14, 20, 0.95);
   backdrop-filter: blur(12px);
@@ -256,7 +263,7 @@ h4 { font-size: 14px; font-weight: 700; }
   border-top: 1px solid var(--arena-border);
   padding: 10px 8px 22px;
   display: flex;
-  z-index: 40;
+  z-index: 200;
 }
 .arena-tabbar__tab {
   flex: 1;

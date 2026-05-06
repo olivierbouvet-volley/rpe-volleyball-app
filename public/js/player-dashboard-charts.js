@@ -157,10 +157,10 @@ async function loadFormTrendChart() {
                     y: {
                         min: 0,
                         max: 100,
-                        ticks: { callback: (v) => v + '%' },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        ticks: { callback: (v) => v + '%', color: 'rgba(255,255,255,0.6)' },
+                        grid: { color: 'rgba(255,255,255,0.08)' }
                     },
-                    x: { grid: { display: false } }
+                    x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.6)' } }
                 }
             }
         });
@@ -370,7 +370,7 @@ async function loadWeeklyTrainingChart() {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { boxWidth: 12, padding: 10 }
+                        labels: { boxWidth: 12, padding: 10, color: 'rgba(255,255,255,0.7)' }
                     },
                     tooltip: {
                         callbacks: {
@@ -381,14 +381,15 @@ async function loadWeeklyTrainingChart() {
                 scales: {
                     x: { 
                         stacked: true,
-                        grid: { display: false } 
+                        grid: { display: false },
+                        ticks: { color: 'rgba(255,255,255,0.6)' }
                     },
                     y: {
                         stacked: true,
                         beginAtZero: true,
-                        title: { display: true, text: 'Heures' },
-                        ticks: { callback: (v) => v + 'h' },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        title: { display: true, text: 'Heures', color: 'rgba(255,255,255,0.6)' },
+                        ticks: { callback: (v) => v + 'h', color: 'rgba(255,255,255,0.6)' },
+                        grid: { color: 'rgba(255,255,255,0.08)' }
                     }
                 }
             }
@@ -628,9 +629,9 @@ async function loadMonthlyTrainingChart() {
                         position: 'left',
                         min: 0,
                         max: yAxisMax,
-                        title: { display: true, text: 'Heures' },
-                        ticks: { callback: (v) => v + 'h' },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        title: { display: true, text: 'Heures', color: 'rgba(255,255,255,0.6)' },
+                        ticks: { callback: (v) => v + 'h', color: 'rgba(255,255,255,0.6)' },
+                        grid: { color: 'rgba(255,255,255,0.08)' }
                     },
                     y2: {
                         beginAtZero: true,
@@ -1254,15 +1255,17 @@ async function loadCycleChart(cycleOffset = 0) {
                                 return 'J' + Math.round(value);
                             }
                         },
-                        title: { display: true, text: 'Jour du Cycle' }
+                        title: { display: true, text: 'Jour du Cycle', color: 'rgba(255,255,255,0.6)' },
+                        ticks: { color: 'rgba(255,255,255,0.6)' }
                     },
                     y: {
                         type: 'linear',
                         position: 'left',
                         min: 0,
                         max: 10,
-                        title: { display: true, text: 'Hormones (pg/mL)' },
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        title: { display: true, text: 'Hormones (pg/mL)', color: 'rgba(255,255,255,0.6)' },
+                        ticks: { color: 'rgba(255,255,255,0.6)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.08)' }
                     },
                     y1: {
                         type: 'linear',
@@ -1475,10 +1478,11 @@ async function updateAnnualProgress() {
 }
 
 /**
- * Rafraîchit tous les graphiques
+ * Rafraîchit tous les graphiques (force le re-rendu même si déjà initialisé sur canvas caché)
  */
 function refreshPlayerDashboardCharts() {
-    console.log('Dashboard Charts: Rafraîchissement...');
+    console.log('Dashboard Charts: Rafraîchissement forcé...');
+    isInitializing = false;
     initPlayerDashboardCharts();
 }
 

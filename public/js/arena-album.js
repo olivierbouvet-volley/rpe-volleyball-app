@@ -18,14 +18,24 @@ const RARITY_COLORS = {
 
 async function loadAlbumData() {
   try {
-    const playerId = appState?.currentUser?.id;
-    if (!playerId) return;
+    const playerId = appState?.currentUser;
+    console.log('[Album] loadAlbumData — playerId:', playerId);
+    if (!playerId) {
+      console.warn('[Album] loadAlbumData — appState.currentUser est vide !');
+      return;
+    }
 
-    const snapshot = await db.collection('players').doc(playerId).collection('stickers').get();
+    // Les stickers sont stockés dans le champ array 'stickers' du document joueur
+    const playerDoc = await db.collection('players').doc(playerId).get();
     albumState.unlocked = new Set();
-    snapshot.forEach(doc => {
-      if (doc.exists) albumState.unlocked.add(doc.id);
-    });
+    if (playerDoc.exists) {
+      const data = playerDoc.data();
+      const stickerIds = data.stickers || [];
+      console.log('[Album] loadAlbumData — stickers Firestore:', stickerIds.length, stickerIds.slice(0, 5));
+      stickerIds.forEach(id => albumState.unlocked.add(id));
+    } else {
+      console.warn('[Album] loadAlbumData — document joueur introuvable pour id:', playerId);
+    }
     albumState.loading = false;
   } catch (err) {
     console.error('Erreur chargement album:', err);
@@ -40,6 +50,12 @@ function renderAlbum() {
   const stickers = Object.values(window.STICKER_DEFINITIONS || {});
   const total = stickers.length;
   const obtained = albumState.unlocked.size;
+  console.log('[Album] renderAlbum — stickers:', total, '| obtenus:', obtained);
+
+  if (total === 0) {
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--arena-text-muted);font-family:var(--arena-mono);font-size:11px;">Chargement des stickers…</div>`;
+    return;
+  }
 
   let filtered = stickers;
   if (albumState.filter === 'obtained') filtered = stickers.filter(s => albumState.unlocked.has(s.id));
@@ -58,7 +74,6 @@ function renderAlbum() {
       ${renderStickerGrid(filtered)}
     </div>
 
-    ${arenaTabBar({ activeTab: 'album' })}
     ${albumState.selectedSticker ? renderStickerModal(albumState.selectedSticker) : ''}
   `;
 
@@ -129,7 +144,7 @@ function renderStickerCard(s) {
 
   return `
     <div data-action="openSticker" data-id="${s.id}"
-      style="background:var(--arena-surface);border:1px solid ${cardAccent};border-radius:8px;overflow:hidden;cursor:${unlocked ? 'pointer' : 'default'};position:relative;aspect-ratio:0.7;display:flex;flex-direction:column;${unlocked ? '' : 'opacity:0.6;'}">
+      style="background:${unlocked ? 'var(--arena-surface)' : 'var(--arena-surface-2)'};border:1px solid ${unlocked ? cardAccent : 'rgba(255,255,255,0.28)'};border-radius:8px;overflow:hidden;cursor:${unlocked ? 'pointer' : 'default'};position:relative;aspect-ratio:0.7;display:flex;flex-direction:column;">
       <!-- Coin haut-gauche: numéro -->
       <div style="font-family:var(--arena-mono);font-size:8px;color:var(--arena-text-muted);padding:6px 8px 0;letter-spacing:1px;">№${number}/${Object.keys(window.STICKER_DEFINITIONS || {}).length.toString().padStart(3, '0')}</div>
       <!-- Coin haut-droit: rareté -->
@@ -140,17 +155,21 @@ function renderStickerCard(s) {
         ${unlocked ? `
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, ${rc.color}15, transparent 60%);"></div>
           <div class="arena-scanlines" style="opacity:0.3;"></div>
-          <span style="font-size:38px;position:relative;z-index:1;filter:drop-shadow(0 0 8px ${rc.color}60);">${s.emoji || '★'}</span>
-          ${unlocked ? `<div style="position:absolute;top:0;left:0;width:12px;height:12px;border-top:2px solid ${rc.color};border-left:2px solid ${rc.color};border-radius:2px 0 0 0;"></div>` : ''}
-          ${unlocked ? `<div style="position:absolute;bottom:0;right:0;width:12px;height:12px;border-bottom:2px solid ${rc.color};border-right:2px solid ${rc.color};border-radius:0 0 2px 0;"></div>` : ''}
+          ${s.image
+            ? `<img src="${s.image}" alt="${s.name}" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1;border-radius:4px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            : ''}
+          <span style="font-size:38px;position:relative;z-index:1;filter:drop-shadow(0 0 8px ${rc.color}60);${s.image ? 'display:none;' : ''}">${s.emoji || '★'}</span>
+          <div style="position:absolute;top:0;left:0;width:12px;height:12px;border-top:2px solid ${rc.color};border-left:2px solid ${rc.color};border-radius:2px 0 0 0;"></div>
+          <div style="position:absolute;bottom:0;right:0;width:12px;height:12px;border-bottom:2px solid ${rc.color};border-right:2px solid ${rc.color};border-radius:0 0 2px 0;"></div>
         ` : `
-          <span style="font-size:28px;color:var(--arena-text-faint);font-family:var(--arena-mono);">?</span>
+          <span style="font-size:32px;color:var(--arena-text-dim);font-family:var(--arena-mono);">?</span>
+          <div style="position:absolute;bottom:4px;right:4px;font-size:16px;">🔒</div>
         `}
       </div>
 
       <!-- Bandeau bas -->
       <div style="padding:6px 8px;background:linear-gradient(0deg, var(--arena-bg) 0%, transparent 100%);">
-        <div style="font-size:9px;color:${unlocked ? 'var(--arena-text)' : 'var(--arena-text-faint)'};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
+        <div style="font-size:9px;color:${unlocked ? 'var(--arena-text)' : 'var(--arena-text-dim)'};font-weight:700;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name}</div>
         <div style="font-family:var(--arena-mono);font-size:7px;color:var(--arena-text-muted);margin-top:2px;">${unlocked ? 'OBTENU' : 'VERROUILLÉ'}</div>
       </div>
     </div>`;
@@ -162,12 +181,12 @@ function renderStickerModal(s) {
 
   return `
     <div id="stickerModal" data-action="closeModal"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);">
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px);">
       <div data-action="closeModal" style="position:absolute;inset:0;"></div>
 
       <!-- Carte holographique -->
       <div id="holoCard"
-        style="position:relative;width:280px;height:380px;background:var(--arena-surface);border:2px solid ${rc.color};border-radius:12px;overflow:hidden;box-shadow:${rc.glow}, 0 30px 60px rgba(0,0,0,0.6);transform-style:preserve-3d;transition:transform 120ms ease-out;">
+        style="position:relative;width:min(88vw,340px);height:min(126vw,480px);background:var(--arena-surface);border:2px solid ${rc.color};border-radius:12px;overflow:hidden;box-shadow:${rc.glow}, 0 30px 60px rgba(0,0,0,0.6);transform-style:preserve-3d;transition:transform 120ms ease-out;">
 
         <!-- Couche iridescente -->
         <div style="position:absolute;inset:0;background:conic-gradient(from 0deg, ${rc.color}20, var(--arena-blue)20, var(--arena-pink)20, ${rc.color}20);opacity:0.5;pointer-events:none;"></div>
@@ -175,9 +194,12 @@ function renderStickerModal(s) {
         <!-- Scanlines -->
         <div class="arena-scanlines" style="opacity:0.15;"></div>
 
-        <!-- Glyphe central -->
+        <!-- Visuel central -->
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-          <span style="font-size:110px;filter:drop-shadow(0 0 20px ${rc.color}60) hue-rotate(${s.rarity === 'legendary' ? '30deg' : '0deg'});position:relative;z-index:1;">${s.emoji || '★'}</span>
+          ${s.image
+            ? `<img src="${s.image}" alt="${s.name}" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+            : ''}
+          <span style="font-size:110px;filter:drop-shadow(0 0 20px ${rc.color}60) hue-rotate(${s.rarity === 'legendary' ? '30deg' : '0deg'});position:relative;z-index:1;${s.image ? 'display:none;' : ''}">${s.emoji || '★'}</span>
         </div>
 
         <!-- Bandeau nom -->
@@ -275,6 +297,7 @@ function bindAlbumEvents() {
 async function initArenaAlbum() {
   await loadAlbumData();
   renderAlbum();
+  if (typeof window.setArenaActiveTab === 'function') window.setArenaActiveTab('album');
   console.log('🏟️ ARENA Album initialisé');
 }
 
@@ -282,9 +305,4 @@ window.albumState = albumState;
 window.renderAlbum = renderAlbum;
 window.initArenaAlbum = initArenaAlbum;
 
-// Auto-init (avec délai pour laisser stickers.js charger)
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => setTimeout(initArenaAlbum, 1000));
-} else {
-  setTimeout(initArenaAlbum, 1000);
-}
+// Pas d'auto-init — renderAlbum est appelé par switchTab('album') après connexion

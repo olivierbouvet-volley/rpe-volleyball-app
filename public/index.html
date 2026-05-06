@@ -1157,6 +1157,10 @@
                     </div>
                     <div id="playerStatusInfo"></div>
                 </div>
+            </div>
+
+            <!-- Stats Tab (ARENA) -->
+            <div id="statsTab" class="tab-content">
                 <div class="card">
                     <h3 class="card-title">Volume d'entraînement</h3>
                     <div style="display: grid; gap: var(--space-16);">
@@ -2392,6 +2396,34 @@
             <div id="albumTab" class="tab-content"></div>
         </div>
     </div>
+
+    <!-- Tabbar ARENA (fixée en bas, toujours visible sur player screen) -->
+    <nav id="arena-global-tabbar" class="arena-tabbar" style="display:none;">
+      <button class="arena-tabbar__tab arena-tabbar__tab--active" data-arena-tab="checkin"
+        onclick="switchTab('checkin');setArenaActiveTab('checkin')">
+        <span class="arena-tabbar__icon">✓</span>CHECK
+      </button>
+      <button class="arena-tabbar__tab" data-arena-tab="rpe"
+        onclick="switchTab('logrpe');setArenaActiveTab('rpe')">
+        <span class="arena-tabbar__icon">↯</span>RPE
+      </button>
+      <button class="arena-tabbar__tab" data-arena-tab="stats"
+        onclick="switchTab('stats');setArenaActiveTab('stats')">
+        <span class="arena-tabbar__icon">▦</span>STATS
+      </button>
+      <button class="arena-tabbar__tab" data-arena-tab="pphys"
+        onclick="switchTab('loadcalc');setArenaActiveTab('pphys')">
+        <span class="arena-tabbar__icon">≡</span>PPHYS
+      </button>
+      <button class="arena-tabbar__tab" data-arena-tab="match"
+        onclick="switchTab('matchs');setArenaActiveTab('match')">
+        <span class="arena-tabbar__icon">◆</span>MATCH
+      </button>
+      <button class="arena-tabbar__tab" data-arena-tab="album"
+        onclick="switchTab('album');setArenaActiveTab('album')">
+        <span class="arena-tabbar__icon">★</span>ALBUM
+      </button>
+    </nav>
 
     <!-- Coach Dashboard -->
     <div id="coachScreen" class="screen">
@@ -4141,27 +4173,13 @@
     <!-- Dark Mode Toggle -->
     <script>
         function toggleDarkMode() {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const newTheme = isDark ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('rpe-theme', newTheme);
-            // Mettre à jour toutes les icônes (coach + joueuse)
-            document.querySelectorAll('[id^="darkModeIcon"]').forEach(icon => {
-                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            });
+            // Le site est toujours en mode sombre (arena theme) — bouton désactivé
         }
 
-        // Appliquer le thème sauvegardé au chargement
+        // Forcer le thème sombre au chargement (toujours)
         (function() {
-            const saved = localStorage.getItem('rpe-theme');
-            if (saved === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelectorAll('[id^="darkModeIcon"]').forEach(icon => {
-                        icon.className = 'fas fa-sun';
-                    });
-                });
-            }
+            localStorage.removeItem('rpe-theme');
+            document.documentElement.removeAttribute('data-theme');
         })();
     </script>
 

@@ -167,6 +167,15 @@ function arenaDateLabel(text) {
 // Flag global pour désactiver les anciens modules
 window.ARENA_ACTIVE = true;
 
+// Met à jour l'onglet actif de la tabbar ARENA statique (dans index.html)
+// arenaKey = null → aucun onglet actif (ex: Dashboard)
+window.setArenaActiveTab = function(arenaKey) {
+  document.querySelectorAll('#arena-global-tabbar [data-arena-tab]').forEach(btn => {
+    const active = arenaKey && btn.dataset.arenaTab === arenaKey;
+    btn.classList.toggle('arena-tabbar__tab--active', active);
+  });
+};
+
 // Exporter dans le scope global (compatible script tags)
 window.arenaHeader = arenaHeader;
 window.arenaTabBar = arenaTabBar;

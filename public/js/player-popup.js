@@ -113,40 +113,36 @@ async function loadAndDisplayCycleData(playerId) {
             }
         }
         
-        // 2. Récupérer le check-in du jour pour les symptômes
-        const checkinSnapshot = await db.collection('checkins')
-            .where('playerId', '==', playerId)
-            .where('date', '==', today)
-            .limit(1)
-            .get();
-        
+        // 2. Récupérer le check-in du jour — lookup direct par docId
+        const checkinDoc = await db.collection('checkins').doc(`${playerId}_${today}`).get();
+        const checkinSnapshotCompat = { empty: !checkinDoc.exists, docs: checkinDoc.exists ? [checkinDoc] : [] };
+
         let baseScore = 5;
-        
-        if (!checkinSnapshot.empty) {
-            const checkin = checkinSnapshot.docs[0].data();
-            
+
+        if (!checkinSnapshotCompat.empty) {
+            const checkin = checkinSnapshotCompat.docs[0].data();
+
             // Utiliser les données de cycle du check-in si disponibles
             if (checkin.cyclePhase) {
                 currentPlayerCycleData.phase = checkin.cyclePhase;
                 currentPlayerCycleData.dayOfCycle = checkin.cycleDay || checkin.dayOfCycle || currentPlayerCycleData.dayOfCycle;
             }
-            
+
             // Récupérer les symptômes
-            if (checkin.symptoms) {
-                currentPlayerCycleData.symptoms = checkin.symptoms;
-            }
-            
+            const symptoms = checkin.cycle?.symptoms || checkin.symptoms;
+            if (symptoms) currentPlayerCycleData.symptoms = symptoms;
+
             // Calculer le score de base
-            const sleep = checkin.sleepQuality || checkin.sleep || 5;
-            const soreness = checkin.soreness || 5;
-            const stress = checkin.stress || 5;
-            const mood = checkin.mood || 5;
-            const energy = checkin.energy !== undefined ? checkin.energy : null;
-            
+            const sleep  = checkin.vitals?.sleep  ?? checkin.sleepQuality ?? checkin.sleep  ?? 5;
+            const aches  = checkin.vitals?.aches  ?? checkin.soreness                       ?? 5;
+            const stress = checkin.vitals?.stress ?? checkin.stress                         ?? 5;
+            const mood   = checkin.vitals?.mood   ?? checkin.mood                           ?? 5;
+            const energy = checkin.vitals?.energy ?? checkin.energy                         ?? null;
+
             if (energy !== null) {
-                baseScore = Math.round((sleep + (10 - soreness) + (10 - stress) + mood + energy) / 5);
+                baseScore = Math.round((sleep + (10 - aches) + (10 - stress) + mood + energy) / 5);
             } else {
-                baseScore = Math.round((sleep + (10 - soreness) + (10 - stress) + mood) / 4);
+                baseScore = Math.round((sleep + (10 - aches) + (10 - stress) + mood) / 4);
             }
         }
         
@@ -327,41 +323,33 @@ function updatePopupHeader(playerId, playerData) {
  */
 async function updatePopupScore(playerId) {
     const today = new Date().toISOString().split('T')[0];
-    
-    const checkinSnapshot = await db.collection('checkins')
-        .where('playerId', '==', playerId)
-        .where('date', '==', today)
-        .limit(1)
-        .get();
-    
+
+    // Lookup direct par docId — évite comparaison Timestamp vs string
+    const checkinDoc = await db.collection('checkins').doc(`${playerId}_${today}`).get();
+
     let score = 0;
     let status = 'Critique';
     let statusColor = '#fee2e2';
     let textColor = '#991b1b';
-    
-    if (!checkinSnapshot.empty) {
-        const checkin = checkinSnapshot.docs[0].data();
-        const sleep = checkin.sleepQuality || checkin.sleep || 5;
-        const soreness = checkin.soreness || 5;
-        const stress = checkin.stress || 5;
-        const mood = checkin.mood || 5;
-        const energy = checkin.energy !== undefined ? checkin.energy : null;
-        
-        // Calcul avec énergie si disponible
+
+    if (checkinDoc.exists) {
+        const checkin = checkinDoc.data();
+        const sleep  = checkin.vitals?.sleep  ?? checkin.sleepQuality ?? checkin.sleep  ?? 5;
+        const aches  = checkin.vitals?.aches  ?? checkin.soreness                       ?? 5;
+        const stress = checkin.vitals?.stress ?? checkin.stress                         ?? 5;
+        const mood   = checkin.vitals?.mood   ?? checkin.mood                           ?? 5;
+        const energy = checkin.vitals?.energy ?? checkin.energy                         ?? null;
+
         if (energy !== null) {
-            score = Math.round((sleep + (10 - soreness) + (10 - stress) + mood + energy) / 5);
+            score = Math.round((sleep + (10 - aches) + (10 - stress) + mood + energy) / 5);
         } else {
-            score = Math.round((sleep + (10 - soreness) + (10 - stress) + mood) / 4);
+            score = Math.round((sleep + (10 - aches) + (10 - stress) + mood) / 4);
         }
-        
+
         if (score >= 7) {
-            status = 'Optimal';
-            statusColor = '#d1fae5';
-            textColor = '#065f46';
+            status = 'Optimal'; statusColor = '#d1fae5'; textColor = '#065f46';
         } else if (score >= 5) {
-            status = 'Attention';
-            statusColor = '#fef3c7';
-            textColor = '#92400e';
+            status = 'Attention'; statusColor = '#fef3c7'; textColor = '#92400e';
         }
     }
     
@@ -537,13 +525,25 @@ async function loadPopupTrendChart(playerId) {
  * Met à jour le dernier check-in
  */
 async function updatePopupLastCheckin(playerId) {
-    const checkinsSnapshot = await db.collection('checkins')
-        .where('playerId', '==', playerId)
-        .orderBy('date', 'desc')
-        .limit(1)
-        .get();
-    
-    if (checkinsSnapshot.empty) {
+    // Chercher d'abord par docId (arena format), sinon par orderBy
+    const today = new Date().toISOString().split('T')[0];
+    let checkin = null;
+
+    // Essai 1 : docId arena
+    const directDoc = await db.collection('checkins').doc(`${playerId}_${today}`).get();
+    if (directDoc.exists) {
+        checkin = directDoc.data();
+    } else {
+        // Essai 2 : legacy format, orderBy date desc
+        const snap = await db.collection('checkins')
+            .where('playerId', '==', playerId)
+            .orderBy('date', 'desc')
+            .limit(1)
+            .get();
+        if (!snap.empty) checkin = snap.docs[0].data();
+    }
+
+    if (!checkin) {
         document.getElementById('lastCheckinDate').textContent = 'Aucun check-in';
         document.getElementById('lastCheckinSleep').textContent = '--/10';
         document.getElementById('lastCheckinSoreness').textContent = '--/10';
@@ -552,29 +552,25 @@ async function updatePopupLastCheckin(playerId) {
         document.getElementById('lastCheckinScore').textContent = '--%';
         return;
     }
-    
-    const checkin = checkinsSnapshot.docs[0].data();
-    const date = new Date(checkin.date);
-    
-    document.getElementById('lastCheckinDate').textContent = date.toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+
+    // Afficher la date
+    const rawDate = checkin.date;
+    const dateObj = rawDate?.toDate ? rawDate.toDate() : new Date(rawDate);
+    document.getElementById('lastCheckinDate').textContent = dateObj.toLocaleDateString('fr-FR', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
     });
-    
-    const sleep = checkin.sleepQuality || checkin.sleep || 5;
-    const soreness = checkin.soreness || 5;
-    const stress = checkin.stress || 5;
-    const mood = checkin.mood || 5;
-    const energy = checkin.energy !== undefined ? checkin.energy : null;
-    
-    document.getElementById('lastCheckinSleep').textContent = `${sleep}/10`;
-    document.getElementById('lastCheckinSoreness').textContent = `${soreness}/10`;
-    document.getElementById('lastCheckinStress').textContent = `${stress}/10`;
-    document.getElementById('lastCheckinMood').textContent = `${mood}/10`;
-    
-    // Afficher l'énergie si disponible
+
+    const sleep  = checkin.vitals?.sleep  ?? checkin.sleepQuality ?? checkin.sleep  ?? 5;
+    const aches  = checkin.vitals?.aches  ?? checkin.soreness                       ?? 5;
+    const stress = checkin.vitals?.stress ?? checkin.stress                         ?? 5;
+    const mood   = checkin.vitals?.mood   ?? checkin.mood                           ?? 5;
+    const energy = checkin.vitals?.energy ?? checkin.energy                         ?? null;
+
+    document.getElementById('lastCheckinSleep').textContent     = `${sleep}/10`;
+    document.getElementById('lastCheckinSoreness').textContent  = `${aches}/10`;
+    document.getElementById('lastCheckinStress').textContent    = `${stress}/10`;
+    document.getElementById('lastCheckinMood').textContent      = `${mood}/10`;
+
     const energyEl = document.getElementById('lastCheckinEnergy');
     if (energyEl) {
         if (energy !== null) {
@@ -584,17 +580,15 @@ async function updatePopupLastCheckin(playerId) {
             energyEl.parentElement.style.display = 'none';
         }
     }
-    
-    // Score de préparation (avec énergie si disponible)
+
     let score;
     if (energy !== null) {
-        score = Math.round((sleep + (11 - soreness) + (11 - stress) + mood + energy) / 5 * 10);
+        score = Math.round((sleep + (11 - aches) + (11 - stress) + mood + energy) / 5 * 10);
     } else {
-        score = Math.round((sleep + (11 - soreness) + (11 - stress) + mood) / 4 * 10);
+        score = Math.round((sleep + (11 - aches) + (11 - stress) + mood) / 4 * 10);
     }
     document.getElementById('lastCheckinScore').textContent = `${score}%`;
-    
-    // Commentaire
+
     const commentEl = document.getElementById('lastCheckinComment');
     if (checkin.comment) {
         commentEl.textContent = `💬 "${checkin.comment}"`;
@@ -1134,22 +1128,24 @@ async function updatePopupCheckinsHistory(playerId) {
     };
     
     let html = '';
-    checkinsMap.forEach((data) => {
-        const date = new Date(data.date);
+    // Trier les entrées par date décroissante
+    const sortedEntries = [...checkinsMap.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+    sortedEntries.forEach(([dateKey, data]) => {
+        const date = new Date(dateKey);
         const dateStr = date.toLocaleDateString('fr-FR');
-        
-        const sleep = data.sleepQuality || data.sleep || 5;
-        const soreness = data.soreness || 5;
-        const stress = data.stress || 5;
-        const mood = data.mood || 5;
-        const energy = data.energy !== undefined ? data.energy : null;
+
+        const sleep  = data.vitals?.sleep  ?? data.sleepQuality ?? data.sleep  ?? 5;
+        const aches  = data.vitals?.aches  ?? data.soreness                    ?? 5;
+        const stress = data.vitals?.stress ?? data.stress                      ?? 5;
+        const mood   = data.vitals?.mood   ?? data.mood                        ?? 5;
+        const energy = data.vitals?.energy ?? (data.energy !== undefined ? data.energy : null);
         
         // Calcul du score avec énergie si disponible
         let score;
         if (energy !== null) {
-            score = Math.round((sleep + (11 - soreness) + (11 - stress) + mood + energy) / 5 * 10);
+            score = Math.round((sleep + (11 - aches) + (11 - stress) + mood + energy) / 5 * 10);
         } else {
-            score = Math.round((sleep + (11 - soreness) + (11 - stress) + mood) / 4 * 10);
+            score = Math.round((sleep + (11 - aches) + (11 - stress) + mood) / 4 * 10);
         }
         
         let scoreClass = 'color: #ef4444;';
@@ -1157,7 +1153,7 @@ async function updatePopupCheckinsHistory(playerId) {
         else if (score >= 60) scoreClass = 'color: #f59e0b;';
         
         // Récupérer les symptômes menstruels > 4
-        const symptoms = data.symptoms || {};
+        const symptoms = data.cycle?.symptoms || data.symptoms || {};
         console.log(`Popup ${dateStr}: symptoms brut =`, symptoms);
         
         const symptomLabels = {
@@ -1214,7 +1210,7 @@ async function updatePopupCheckinsHistory(playerId) {
             <tr>
                 <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'};">${dateStr}</td>
                 <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(sleep)}">${sleep}/10</td>
-                <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(soreness, true)}">${soreness}/10</td>
+                <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(aches, true)}">${aches}/10</td>
                 <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(stress, true)}">${stress}/10</td>
                 <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${getColorStyle(mood)}">${mood}/10</td>
                 <td style="padding: 12px 8px; border-bottom: ${symptomsHtml ? '0' : '1px solid #f3f4f6'}; ${energy !== null ? getColorStyle(energy) : ''}">${energy !== null ? energy + '/10' : '--'}</td>
@@ -1247,12 +1243,14 @@ async function updatePopupRpeHistory(playerId) {
     let html = '';
     rpeSnapshot.forEach(doc => {
         const data = doc.data();
-        const date = new Date(data.date);
-        const dateStr = date.toLocaleDateString('fr-FR');
-        
-        const rpeVal = data.rpe || data.rpeValue || 5;
-        const duration = data.duration || 0;
-        const charge = rpeVal * duration;
+        const rawDate = data.date;
+        const dateObj = rawDate?.toDate ? rawDate.toDate() : new Date(rawDate);
+        const dateStr = dateObj.toLocaleDateString('fr-FR');
+
+        const rpeVal  = data.rpe || data.rpeValue || 5;
+        const duration = data.durationMin ?? data.duration ?? 0;
+        const type     = data.type || data.sessionType || 'Non spécifié';
+        const charge   = rpeVal * duration;
         
         html += `
             <tr>
@@ -1309,11 +1307,11 @@ async function loadPopupPrepChart(playerId) {
             
             if (checkinsMap[dateStr]) {
                 const c = checkinsMap[dateStr];
-                const sleep = c.sleepQuality || c.sleep || 5;
-                const soreness = c.soreness || 5;
-                const stress = c.stress || 5;
-                const mood = c.mood || 5;
-                const score = Math.round((sleep + (11 - soreness) + (11 - stress) + mood) / 4 * 10);
+                const sleep  = c.vitals?.sleep  ?? c.sleepQuality ?? c.sleep  ?? 5;
+                const aches  = c.vitals?.aches  ?? c.soreness                 ?? 5;
+                const stress = c.vitals?.stress ?? c.stress                   ?? 5;
+                const mood   = c.vitals?.mood   ?? c.mood                     ?? 5;
+                const score = Math.round((sleep + (11 - aches) + (11 - stress) + mood) / 4 * 10);
                 scores.push(score);
             } else {
                 scores.push(null);
