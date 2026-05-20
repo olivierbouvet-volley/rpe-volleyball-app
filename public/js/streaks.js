@@ -43,10 +43,10 @@ async function calculateActualCheckInStreak(playerId) {
                         const endDate = new Date(data.endDate);
                         endDate.setHours(0, 0, 0, 0);
                         
-                        // Garder les périodes qui se terminent dans les 120 derniers jours minimum
+                        // Garder les périodes qui se terminent dans les 500 derniers jours minimum
                         const daysSinceEnd = Math.floor((today - endDate) / (1000 * 60 * 60 * 24));
-                        
-                        if (daysSinceEnd <= 120) {
+
+                        if (daysSinceEnd <= 500) {
                             restPeriods.push({
                                 startDate: data.startDate,
                                 endDate: data.endDate,
@@ -69,9 +69,9 @@ async function calculateActualCheckInStreak(playerId) {
         } else {
             console.warn('⚠️ Aucune période de repos trouvée dans Firestore');
         }        
-        // Récupérer tous les check-ins récents (120 derniers jours pour couvrir depuis octobre)
+        // Récupérer tous les check-ins récents (500 derniers jours)
         const maxDaysAgo = new Date(today);
-        maxDaysAgo.setDate(maxDaysAgo.getDate() - 120);
+        maxDaysAgo.setDate(maxDaysAgo.getDate() - 500);
         const maxDaysAgoStr = maxDaysAgo.toISOString().split('T')[0];
         
         const checkinsSnapshot = await db.collection('checkins')
@@ -121,7 +121,7 @@ async function calculateActualCheckInStreak(playerId) {
             }
         });
         
-        console.log(`📊 ${checkinDates.size} jours de check-in trouvés dans les 120 derniers jours`);
+        console.log(`📊 ${checkinDates.size} jours de check-in trouvés dans les 500 derniers jours`);
         console.log(`📊 Dernier check-in: ${lastCheckinDate}`);
         
         // Vérifier si le dernier check-in est aujourd'hui ou hier
@@ -224,9 +224,9 @@ async function calculateActualCheckInStreak(playerId) {
                 }
             }
             
-            // Limiter à 120 jours pour éviter les boucles infinies
-            if (streak >= 120) {
-                console.log(`📊 Limite de 120 jours atteinte`);
+            // Limite de sécurité pour éviter les boucles infinies
+            if (streak >= 500) {
+                console.log(`📊 Limite de 500 jours atteinte`);
                 break;
             }
         }

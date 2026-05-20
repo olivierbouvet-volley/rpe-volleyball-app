@@ -582,36 +582,38 @@ async function checkAndAwardStickers(playerId, triggerType = 'rpe') {
  * Vérifie les stickers liés aux RPE
  */
 async function checkRPEStickers(playerId, playerData, trainingStats, currentStickers, newStickers) {
-    // Streak 5 jours
-    if (!currentStickers.includes('consistent_player') && trainingStats.weeklyStreak >= 1) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 5) {
-            newStickers.push(STICKER_DEFINITIONS.consistent_player);
-        }
+    // Utiliser le meilleur streak historique pour que les stickers soient acquis à vie
+    const engagementDoc = await db.collection('players').doc(playerId).collection('stats').doc('engagement').get();
+    const engagement = engagementDoc.exists ? engagementDoc.data() : {};
+    const bestStreak = Math.max(engagement.currentStreak || 0, engagement.longestStreak || 0);
+
+    // Total RPE soumis (collection racine avec filtre par joueuse)
+    const rpeSnapshot = await db.collection('rpe').where('playerId', '==', playerId).get();
+    const totalRPE = rpeSnapshot.size;
+    const totalCheckIns = engagement.totalCheckIns || 0;
+
+    if (!currentStickers.includes('consistent_player') && bestStreak >= 5) {
+        newStickers.push(STICKER_DEFINITIONS.consistent_player);
     }
 
-    // Streak 7 jours
-    if (!currentStickers.includes('streak_7')) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 7) {
-            newStickers.push(STICKER_DEFINITIONS.streak_7);
-        }
+    if (!currentStickers.includes('streak_7') && bestStreak >= 7) {
+        newStickers.push(STICKER_DEFINITIONS.streak_7);
     }
 
-    // Streak 14 jours
-    if (!currentStickers.includes('streak_14')) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 14) {
-            newStickers.push(STICKER_DEFINITIONS.streak_14);
-        }
+    if (!currentStickers.includes('streak_14') && bestStreak >= 14) {
+        newStickers.push(STICKER_DEFINITIONS.streak_14);
     }
 
-    // Coach Alexis (Streak 30 jours)
-    if (!currentStickers.includes('coach_alexis')) {
-        const currentStreak = await getCurrentStreak(playerId);
-        if (currentStreak >= 30) {
-            newStickers.push(STICKER_DEFINITIONS.coach_alexis);
-        }
+    if (!currentStickers.includes('rpe_regular') && totalRPE >= 50) {
+        newStickers.push(STICKER_DEFINITIONS.rpe_regular);
+    }
+
+    if (!currentStickers.includes('rpe_expert') && totalRPE >= 200) {
+        newStickers.push(STICKER_DEFINITIONS.rpe_expert);
+    }
+
+    if (!currentStickers.includes('checkin_master') && totalCheckIns >= 100) {
+        newStickers.push(STICKER_DEFINITIONS.checkin_master);
     }
 }
 
@@ -697,29 +699,23 @@ async function checkWeeklyStickers(playerId, playerData, trainingStats, currentS
     }
 
     // === STICKERS LÉGENDAIRES - JOUEUSES (critères progressifs) ===
-    const playerName = playerData.name ? playerData.name.toLowerCase() : '';
-    
-    // Vérifier chaque sticker de joueuse individuellement selon son critère
+    // Toutes les joueuses débloquent les stickers de leurs coéquipières selon leur avancement
+    // (ex : 2 semaines complètes = sticker Charlotte, 3 semaines = Chloé, etc.)
     Object.entries(STICKER_DEFINITIONS).forEach(([stickerId, sticker]) => {
         if (sticker.rarity === 'legendary' && stickerId.startsWith('player_')) {
-            // Vérifier si déjà possédé
             if (currentStickers.includes(stickerId)) return;
-            
-            // Vérifier si c'est la bonne joueuse
-            const stickerKey = stickerId.replace('player_', '');
-            if (!playerName.includes(stickerKey)) return;
-            
-            // Vérifier si le critère est atteint
-            const requiredWeeks = sticker.criteria.required;
-            if (weeksCompleteCount >= requiredWeeks) {
+            if (weeksCompleteCount >= sticker.criteria.required) {
                 newStickers.push(sticker);
             }
         }
     });
 
-    // Coach Olivier (6 semaines parfaites)
-    if (!currentStickers.includes('coach_olivier') && weeksPerfectCount >= 6) {
+    // Stickers Coachs
+    if (!currentStickers.includes('coach_olivier') && weeksPerfectCount >= 2) {
         newStickers.push(STICKER_DEFINITIONS.coach_olivier);
+    }
+    if (!currentStickers.includes('coach_alexis') && weeksPerfectCount >= 3) {
+        newStickers.push(STICKER_DEFINITIONS.coach_alexis);
     }
 
     // Collectif Sablé (tous les stickers joueurs débloqués)
@@ -745,14 +741,14 @@ async function checkMonthlyStickers(playerId, playerData, currentStickers, newSt
 }
 
 /**
- * Récupère le streak actuel de la joueuse
+ * Récupère le streak actuel de la joueuse (check-ins consécutifs)
  */
 async function getCurrentStreak(playerId) {
     try {
-        const trainingDoc = await db.collection('players').doc(playerId).collection('stats').doc('training').get();
-        if (trainingDoc.exists) {
-            const data = trainingDoc.data();
-            return data.weeklyStreak || 0;
+        const engagementDoc = await db.collection('players').doc(playerId).collection('stats').doc('engagement').get();
+        if (engagementDoc.exists) {
+            const data = engagementDoc.data();
+            return data.currentStreak || 0;
         }
         return 0;
     } catch (error) {
@@ -771,9 +767,8 @@ async function getWeekCheckins(playerId) {
         startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Lundi
         startOfWeek.setHours(0, 0, 0, 0);
 
-        const snapshot = await db.collection('players')
-            .doc(playerId)
-            .collection('checkIns')
+        const snapshot = await db.collection('checkins')
+            .where('playerId', '==', playerId)
             .where('date', '>=', startOfWeek.toISOString().split('T')[0])
             .get();
 

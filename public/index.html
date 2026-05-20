@@ -1089,7 +1089,13 @@
                 
                 <!-- Widget Collection Stickers -->
                 <div id="stickerWidget" style="margin-bottom: var(--space-16); display: none;"></div>
-                
+
+                <!-- Widget RDV Médecin -->
+                <div id="doctorRdvWidget" style="margin-bottom: var(--space-16); display: none;"></div>
+
+                <!-- Widget Demande Kiné -->
+                <div id="kineRequestWidget" style="margin-bottom: var(--space-16); display: none;"></div>
+
                 <div class="metrics-grid">
                     <div class="metric-card">
                         <div class="metric-value" id="readinessScore">--</div>
@@ -2380,7 +2386,7 @@
                     <i class="fas fa-volleyball-ball" style="margin-right:6px;"></i>Matchs Week-end
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('injuries')" data-tab="injuries" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
-                    <i class="fas fa-medkit" style="margin-right:6px;"></i>Blessures
+                    <i class="fas fa-stethoscope" style="margin-right:6px;"></i>Médical
                 </button>
                 <button class="tab-btn" onclick="switchCoachTab('messages')" data-tab="messages" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
                     <i class="fas fa-bullhorn" style="margin-right:6px;"></i>Messages
@@ -2497,9 +2503,35 @@
 
             <!-- Onglet Blessures -->
             <div id="injuriesTab" class="coach-tab-content" style="display: none;">
+                <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin: 0 0 20px 0;">🩺 Médical</h2>
+
+                <!-- Sous-onglets Médical -->
+                <div style="display: flex; gap: 0; border-bottom: 2px solid var(--color-border); margin-bottom: 24px; overflow-x: auto;">
+                    <button class="med-tab-btn active" data-medtab="blessures" onclick="switchMedTab('blessures')"
+                        style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 14px; border-bottom: 3px solid var(--color-primary); color: var(--color-primary); white-space: nowrap;">
+                        🤕 Blessures &amp; Douleurs
+                    </button>
+                    <button class="med-tab-btn" data-medtab="kine" onclick="switchMedTab('kine')"
+                        style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 14px; border-bottom: 3px solid transparent; color: var(--color-text-secondary); white-space: nowrap;">
+                        💆 Planning Kiné
+                    </button>
+                    <button class="med-tab-btn" data-medtab="medecin" onclick="switchMedTab('medecin')"
+                        style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 14px; border-bottom: 3px solid transparent; color: var(--color-text-secondary); white-space: nowrap;">
+                        🩺 Planning Médecin
+                    </button>
+                    <button class="med-tab-btn" data-medtab="contacts" onclick="switchMedTab('contacts')"
+                        style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; font-size: 14px; border-bottom: 3px solid transparent; color: var(--color-text-secondary); white-space: nowrap;">
+                        📱 Contacts
+                    </button>
+                </div>
+
+                <!-- ══════════════════════════════════════════ -->
+                <!-- SOUS-ONGLET : BLESSURES & DOULEURS        -->
+                <!-- ══════════════════════════════════════════ -->
+                <div id="medTab_blessures" class="med-tab-content">
                 <!-- En-tête avec bouton nouvelle blessure -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-24);">
-                    <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); margin: 0;">Suivi des Blessures</h2>
+                    <h3 style="font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); margin: 0;">Suivi des Blessures</h3>
                     <button id="btnNewInjury" class="btn btn-primary">
                         + Déclarer une blessure
                     </button>
@@ -2653,45 +2685,6 @@
                     </div>
                 </div>
 
-                <!-- Section contacts staff médical (WhatsApp) -->
-                <div class="card" style="margin-bottom: var(--space-24); border-left: 4px solid #25d366;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h3 class="card-title" style="margin: 0;">📱 Contacts Staff Médical (WhatsApp)</h3>
-                        <button onclick="toggleMedicalContactsForm()" id="toggleMedicalContactsBtn" style="padding: 6px 12px; background: var(--color-background); border: 1px solid var(--color-border); border-radius: 6px; cursor: pointer; font-size: 13px;">
-                            ⚙️ Configurer
-                        </button>
-                    </div>
-                    <div id="medicalContactsForm" style="display: none;">
-                        <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px;">
-                            Ces numéros seront utilisés pour les boutons WhatsApp dans le tableau des douleurs. Format : 33612345678 (sans le +)
-                        </p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                            <div>
-                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Nom du Kiné</label>
-                                <input type="text" id="kineNameInput" placeholder="Ex: Dupont" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Numéro Kiné</label>
-                                <input type="tel" id="kinePhoneInput" placeholder="Ex: 33612345678" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Nom du Groupe Staff</label>
-                                <input type="text" id="medicalGroupNameInput" placeholder="Ex: Staff Médical Pôle" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Numéro Groupe Staff</label>
-                                <input type="tel" id="medicalGroupPhoneInput" placeholder="Ex: 33698765432" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
-                            </div>
-                        </div>
-                        <button onclick="saveMedicalContacts()" style="padding: 8px 20px; background: #25d366; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                            💾 Enregistrer les contacts
-                        </button>
-                    </div>
-                    <div id="medicalContactsDisplay" style="font-size: 13px; color: var(--color-text-secondary);">
-                        Chargement des contacts...
-                    </div>
-                </div>
-
                 <!-- Filtres -->
 
                 <div style="display: flex; gap: var(--space-12); margin-bottom: var(--space-16);">
@@ -2730,7 +2723,188 @@
                         </table>
                     </div>
                 </div>
-            </div>
+                </div><!-- fin medTab_blessures -->
+
+                <!-- ══════════════════════════════════════════ -->
+                <!-- SOUS-ONGLET : PLANNING KINÉ               -->
+                <!-- ══════════════════════════════════════════ -->
+                <div id="medTab_kine" class="med-tab-content" style="display:none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+                        <!-- Liste des demandes + réorganisation -->
+                        <div class="card" style="grid-column: 1 / -1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 class="card-title" style="margin:0;">💆 Demandes de passage kiné</h3>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <label style="font-size: 13px; color: var(--color-text-secondary);">Date :</label>
+                                    <input type="date" id="kineRequestDateFilter" style="padding: 6px 10px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 13px;" onchange="loadKineRequests()">
+                                    <button onclick="loadKineRequests()" style="padding: 6px 14px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-background); cursor: pointer; font-size: 13px;">🔄 Actualiser</button>
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px;">
+                                Les joueuses s'inscrivent depuis leur dashboard. Utilisez les flèches pour ajuster l'ordre de passage.
+                            </p>
+                            <div id="kineRequestsList">
+                                <p style="color: var(--color-text-secondary); font-style: italic; text-align: center; padding: 24px;">Sélectionnez une date pour voir les demandes.</p>
+                            </div>
+                        </div>
+
+                        <!-- Calendrier kiné (dates de présence) -->
+                        <div class="card">
+                            <h3 class="card-title">📅 Jours de passage du kiné</h3>
+                            <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px;">
+                                Planifie les jours où le kiné est présent au pôle.
+                            </p>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <button onclick="kineCalPrevMonth()" style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-background); cursor: pointer;">◀</button>
+                                <span id="kineCalMonthLabel" style="font-weight: 700; font-size: 15px; flex: 1; text-align: center;"></span>
+                                <button onclick="kineCalNextMonth()" style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-background); cursor: pointer;">▶</button>
+                            </div>
+                            <div id="kineCalendar" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center;"></div>
+                            <button onclick="saveKineDates()" style="margin-top: 16px; width: 100%; padding: 10px; background: var(--color-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                                💾 Enregistrer les dates kiné
+                            </button>
+                        </div>
+
+                        <!-- Prochaine visite kiné -->
+                        <div class="card">
+                            <h3 class="card-title">📋 Prochaines visites kiné</h3>
+                            <div id="upcomingKineVisits">
+                                <p style="color: var(--color-text-secondary); font-size: 13px; font-style: italic;">Aucune date programmée</p>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- fin medTab_kine -->
+
+                <!-- ══════════════════════════════════════════ -->
+                <!-- SOUS-ONGLET : PLANNING MÉDECIN            -->
+                <!-- ══════════════════════════════════════════ -->
+                <div id="medTab_medecin" class="med-tab-content" style="display:none;">
+
+                    <!-- Alerte J-2 visite médecin -->
+                    <div id="doctorVisitAlert" style="display:none; background: linear-gradient(135deg,#fef3c7,#fde68a); border: 1px solid #f59e0b; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
+                        <div style="font-size: 32px;">🔔</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 15px; color: #92400e;">Visite médecin dans 2 jours !</div>
+                            <div id="doctorVisitAlertMsg" style="font-size: 13px; color: #78350f; margin-top: 4px;"></div>
+                        </div>
+                        <button onclick="openDoctorScheduler()" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap;">
+                            📋 Planifier les RDV
+                        </button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Calendrier médecin -->
+                        <div class="card">
+                            <h3 class="card-title">📅 Jours de visite du médecin</h3>
+                            <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px;">
+                                Clique sur les jours où le médecin vient au pôle. Une alerte sera envoyée 2 jours avant.
+                            </p>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <button onclick="docCalPrevMonth()" style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-background); cursor: pointer;">◀</button>
+                                <span id="docCalMonthLabel" style="font-weight: 700; font-size: 15px; flex: 1; text-align: center;"></span>
+                                <button onclick="docCalNextMonth()" style="padding: 6px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-background); cursor: pointer;">▶</button>
+                            </div>
+                            <div id="docCalendar" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center;"></div>
+                            <button onclick="saveDocDates()" style="margin-top: 16px; width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                                💾 Enregistrer les dates médecin
+                            </button>
+                        </div>
+
+                        <!-- Visites planifiées + RDV -->
+                        <div class="card">
+                            <h3 class="card-title">📋 Visites &amp; RDV planifiés</h3>
+                            <!-- Dates de visite avec bouton Planifier -->
+                            <div id="doctorVisitDatesList" style="margin-bottom: 16px;"></div>
+                            <!-- RDV déjà assignés -->
+                            <div style="font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--color-text-secondary);">RDV confirmés :</div>
+                            <div id="upcomingDoctorRdv">
+                                <span style="color: var(--color-text-secondary); font-size: 13px;">Aucun RDV planifié</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Planificateur RDV -->
+                    <div id="doctorSchedulerBlock" class="card" style="display:none; border: 2px solid #3b82f6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 class="card-title" style="margin: 0;">📋 Planifier les RDV — <span id="schedulerDateLabel"></span></h3>
+                            <button onclick="closeDoctorScheduler()" style="padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-background); cursor: pointer; font-size: 13px;">✕ Fermer</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Début</label>
+                                <input type="time" id="schedStartTime" value="14:00" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Fin</label>
+                                <input type="time" id="schedEndTime" value="17:00" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px;">Durée (min)</label>
+                                <select id="schedSlotDuration" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;">
+                                    <option value="15">15 min</option>
+                                    <option value="20">20 min</option>
+                                    <option value="30" selected>30 min</option>
+                                    <option value="45">45 min</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="generateSlots()" style="margin-bottom: 16px; padding: 8px 20px; background: var(--color-background); border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                            🔄 Générer les créneaux
+                        </button>
+                        <div id="slotsGrid" style="margin-bottom: 16px;"></div>
+                        <button id="btnValidateRdv" onclick="validateAndNotifyAppointments()" style="display:none; width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px;">
+                            ✅ Valider et notifier les joueuses
+                        </button>
+                    </div>
+                </div><!-- fin medTab_medecin -->
+
+                <!-- ══════════════════════════════════════════ -->
+                <!-- SOUS-ONGLET : CONTACTS STAFF MÉDICAL      -->
+                <!-- ══════════════════════════════════════════ -->
+                <div id="medTab_contacts" class="med-tab-content" style="display:none;">
+                    <div class="card" style="max-width: 600px; border-left: 4px solid #25d366;">
+                        <h3 class="card-title">📱 Contacts Staff Médical (WhatsApp)</h3>
+                        <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px;">
+                            Ces numéros sont utilisés pour les boutons WhatsApp dans le tableau des douleurs.<br>
+                            Format : <strong>33612345678</strong> (sans le +)
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Nom du Kiné</label>
+                                <input type="text" id="kineNameInput" placeholder="Ex: Dupont" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Numéro Kiné</label>
+                                <input type="tel" id="kinePhoneInput" placeholder="Ex: 33612345678" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Nom du Médecin</label>
+                                <input type="text" id="doctorNameInput" placeholder="Ex: Martin" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Numéro Médecin</label>
+                                <input type="tel" id="doctorPhoneInput" placeholder="Ex: 33612345678" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Nom du Groupe Staff</label>
+                                <input type="text" id="medicalGroupNameInput" placeholder="Ex: Staff Médical Pôle" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600;">Numéro Groupe Staff</label>
+                                <input type="tel" id="medicalGroupPhoneInput" placeholder="Ex: 33698765432" style="width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                        </div>
+                        <button onclick="saveMedicalContacts()" style="padding: 10px 24px; background: #25d366; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
+                            💾 Enregistrer les contacts
+                        </button>
+                        <div id="medicalContactsDisplay" style="margin-top: 16px; font-size: 13px; color: var(--color-text-secondary);">
+                            Chargement des contacts...
+                        </div>
+                    </div>
+                </div><!-- fin medTab_contacts -->
+
+            </div><!-- fin injuriesTab -->
             
             <!-- Onglet Messages Urgents -->
             <div id="messagesTab" class="coach-tab-content" style="display: none;">
@@ -4017,6 +4191,9 @@
             }
         });
     </script>
+    <script src="/js/injury-constants.js"></script>
+    <script src="/js/injury-management.js"></script>
+    <script src="/js/medical-module.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/app-additions.js"></script>
     <script src="/js/app-photo-manager-simple.js"></script>
@@ -4038,8 +4215,6 @@
     <script src="/js/app-reports.js"></script>
     <script src="/js/app-rattrapage.js"></script>
     <script src="/js/app-volume-stats.js"></script>
-    <script src="/js/injury-constants.js"></script>
-    <script src="/js/injury-management.js"></script>
     <script src="/js/notifications-manager.js"></script>
     <script src="/js/rest-periods-helper-COMPATIBLE.js"></script>
     <script src="/js/rest-periods-manager.js"></script>

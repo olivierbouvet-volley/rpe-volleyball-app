@@ -270,23 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-
-// Afficher un écran
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    document.getElementById(screenId).classList.add('active');
-}
-
-// Déconnexion
-function logout() {
-    appState.currentUser = null;
-    appState.currentRole = null;
-    showScreen('loginScreen');
-    document.getElementById('loginForm').reset();
-}
-
 // Gestion des onglets (joueuse)
 function switchTab(tabName) {
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -541,6 +524,16 @@ async function loadPlayerDashboard() {
         // === GAMIFICATION : Charger le widget stickers ===
         if (typeof displayStickerWidget === 'function') {
             setTimeout(() => displayStickerWidget(appState.currentUser), 400);
+        }
+
+        // === KINÉ : Widget demande de passage ===
+        if (typeof loadKineRequestWidget === 'function') {
+            setTimeout(() => loadKineRequestWidget(appState.currentUser), 500);
+        }
+
+        // === MÉDECIN : Widget RDV à venir ===
+        if (typeof loadPlayerDoctorAppointments === 'function') {
+            setTimeout(() => loadPlayerDoctorAppointments(appState.currentUser), 500);
         }
 
         // === DOULEURS : Vérifier les douleurs actives à confirmer ===
@@ -1066,7 +1059,11 @@ window.confirmPainGone = confirmPainGone;
 // Gestion du formulaire RPE
 document.getElementById('rpeForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn && submitBtn.disabled) return;
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ Enregistrement...'; }
+
     const sessionType = document.getElementById('sessionType').value;
     const rpeValue = parseInt(document.getElementById('rpeValue').value);
     const duration = parseInt(document.getElementById('duration').value);
@@ -1116,6 +1113,10 @@ document.getElementById('rpeForm').addEventListener('submit', async (e) => {
         }
     }
     
+    const restoreBtn = () => {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '✅ Enregistrer le RPE'; }
+    };
+
     try {
         // CAS SPÉCIAL: Muscu+Volley → Créer 2 entrées RPE
         if (sessionType === 'Muscu+Volley') {
@@ -1264,9 +1265,11 @@ document.getElementById('rpeForm').addEventListener('submit', async (e) => {
             updatePlayerVolumeStats(appState.currentUser);
         }
         
+        restoreBtn();
         switchTab('dashboard');
     } catch (error) {
         console.error('Erreur lors de l\'enregistrement du RPE:', error);
+        restoreBtn();
         alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
     }
 });

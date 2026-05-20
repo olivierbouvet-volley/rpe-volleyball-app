@@ -84,8 +84,9 @@ function showCollectionModal(unlockedStickers, filterRarity) {
 
 // Afficher la grille de collection
 function renderCollectionGrid(unlockedStickers) {
+    const totalStickers = Object.keys(STICKER_DEFINITIONS).length;
     let html = '<div class="collection-stats">';
-    html += `<p>🎯 ${unlockedStickers.length} / 48 stickers débloqués</p>`;
+    html += `<p>🎯 ${unlockedStickers.length} / ${totalStickers} stickers débloqués</p>`;
     html += '</div>';
 
     // Stickers communs
@@ -103,7 +104,7 @@ function renderCollectionGrid(unlockedStickers) {
 
     // Stickers rares
     html += '<div class="collection-category" data-rarity="rare">';
-    html += '<h3>🔵 Stickers Rares (5)</h3>';
+    html += '<h3>🔵 Stickers Rares (10)</h3>';
     html += '<div class="collection-grid">';
 
     Object.entries(STICKER_DEFINITIONS).forEach(([id, sticker]) => {

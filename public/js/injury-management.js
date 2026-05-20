@@ -63,17 +63,15 @@ async function initInjuryTracking() {
 async function loadInjuries() {
   try {
     const teamCode = appState.currentUser;
-    // Query sans orderBy pour éviter de créer un index composite
-    const snapshot = await injuriesCollection
-      .where('teamCode', '==', teamCode)
-      .get();
+    const snapshot = await injuriesCollection.get();
 
     allInjuries = [];
     snapshot.forEach(doc => {
-      allInjuries.push({
-        id: doc.id,
-        ...doc.data()
-      });
+      const data = doc.data();
+      // Inclure : même teamCode, teamCode 'pole' (entrées joueuses), ou pas de teamCode (legacy)
+      if (!data.teamCode || data.teamCode === teamCode || data.teamCode === 'pole') {
+        allInjuries.push({ id: doc.id, ...data });
+      }
     });
 
     // Trier côté client par date décroissante
@@ -594,8 +592,8 @@ async function loadPains() {
 
     snapshot.forEach(doc => {
       const data = doc.data();
-      // Inclure : même teamCode OU pas de teamCode (données legacy)
-      if (!data.teamCode || data.teamCode === teamCode) {
+      // Inclure : même teamCode, teamCode 'pole' (entrées joueuses via check-in), ou pas de teamCode (legacy)
+      if (!data.teamCode || data.teamCode === teamCode || data.teamCode === 'pole') {
         allPains.push({ id: doc.id, ...data });
       }
     });

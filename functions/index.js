@@ -1,4 +1,4 @@
-const functions = require('firebase-functions');
+const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
 
 admin.initializeApp();
@@ -154,6 +154,58 @@ exports.sendRpeReminder = europeWest1
             return null;
         }
     });
+
+// ============================================================================
+// NOTIFICATIONS RDV MÉDECIN
+// ============================================================================
+exports.sendDoctorAppointmentNotifications = europeWest1.https.onCall(async (data, context) => {
+    const { date } = data;
+    if (!date) throw new functions.https.HttpsError('invalid-argument', 'date requis');
+
+    const dateLabel = new Date(date).toLocaleDateString('fr-FR', {
+        weekday: 'long', day: 'numeric', month: 'long'
+    });
+
+    const snap = await db.collection('doctorAppointments')
+        .where('date', '==', date)
+        .get();
+
+    if (snap.empty) return { sent: 0 };
+
+    let sent = 0;
+    for (const doc of snap.docs) {
+        const rdv = doc.data();
+        if (!rdv.playerId) continue;
+
+        const tokenDoc = await db.collection('fcmTokens').doc(rdv.playerId).get();
+        if (!tokenDoc.exists) continue;
+
+        const token = tokenDoc.data().token;
+        const prenom = rdv.playerName ? rdv.playerName.split(' ')[0] : 'Joueuse';
+
+        try {
+            await admin.messaging().send({
+                notification: {
+                    title: '🩺 RDV Médecin',
+                    body: `${prenom}, ton RDV est le ${dateLabel} à ${rdv.time}`
+                },
+                token
+            });
+
+            await doc.ref.update({ notified: true });
+            sent++;
+        } catch(e) {
+            if (e.code === 'messaging/invalid-registration-token' ||
+                e.code === 'messaging/registration-token-not-registered') {
+                await db.collection('fcmTokens').doc(rdv.playerId).delete();
+            }
+            console.warn(`Notification échec pour ${rdv.playerId}:`, e.message);
+        }
+    }
+
+    console.log(`RDV médecin : ${sent} notifications envoyées pour le ${date}`);
+    return { sent };
+});
 
 // ============================================================================
 // TEST NOTIFICATION

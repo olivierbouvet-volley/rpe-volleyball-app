@@ -80,16 +80,17 @@ function getStatusInfo(statusId) {
 
 // Fonction pour calculer la durée d'indisponibilité en jours
 function calculateDaysOut(injuryDate, recoveryDate) {
+  if (!injuryDate) return 0;
   if (!recoveryDate) {
-    // Si pas encore rétablie, calculer depuis la date de blessure jusqu'à aujourd'hui
     const today = new Date();
     const injury = injuryDate.toDate ? injuryDate.toDate() : new Date(injuryDate);
+    if (isNaN(injury)) return 0;
     const diffTime = Math.abs(today - injury);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   } else {
-    // Calculer entre date de blessure et date de rétablissement
     const injury = injuryDate.toDate ? injuryDate.toDate() : new Date(injuryDate);
     const recovery = recoveryDate.toDate ? recoveryDate.toDate() : new Date(recoveryDate);
+    if (isNaN(injury) || isNaN(recovery)) return 0;
     const diffTime = Math.abs(recovery - injury);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }

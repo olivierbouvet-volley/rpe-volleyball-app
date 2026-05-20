@@ -53,7 +53,23 @@ function switchCoachTab(tabName) {
     const tabMap = {
         'team':        { tabId: 'teamTab',        callback: null },
         'weekend':     { tabId: 'weekendTab',      callback: () => typeof loadWeekendMatchRecap === 'function' && loadWeekendMatchRecap() },
-        'injuries':    { tabId: 'injuriesTab',     callback: () => typeof initInjuryTracking === 'function' && initInjuryTracking() },
+        'injuries':    { tabId: 'injuriesTab',     callback: () => {
+            if (typeof initInjuryTracking === 'function') initInjuryTracking();
+            if (typeof initMedicalSettings === 'function') {
+                initMedicalSettings().then(() => {
+                    if (typeof kineCalInit === 'function') kineCalInit(window.medicalSettings?.kineDates || []);
+                    if (typeof docCalInit === 'function') docCalInit(window.medicalSettings?.doctorDates || []);
+                    if (typeof prefillContactsForm === 'function') prefillContactsForm();
+                    if (typeof checkDoctorVisitAlert === 'function') checkDoctorVisitAlert();
+                    if (typeof loadUpcomingDoctorRdv === 'function') loadUpcomingDoctorRdv();
+                    if (typeof renderDoctorVisitDatesList === 'function') renderDoctorVisitDatesList();
+                    if (typeof renderUpcomingKineVisits === 'function') renderUpcomingKineVisits();
+                    // Pré-remplir la date du filtre kiné avec aujourd'hui
+                    const kineFilter = document.getElementById('kineRequestDateFilter');
+                    if (kineFilter && !kineFilter.value) kineFilter.value = new Date().toISOString().split('T')[0];
+                });
+            }
+        }},
         'messages':    { tabId: 'messagesTab',     callback: () => typeof loadScheduledMessages === 'function' && loadScheduledMessages() },
         'restPeriods': { tabId: 'restPeriodsTab',  callback: () => typeof loadRestPeriods === 'function' && loadRestPeriods() },
         'weekPlanner': { tabId: 'weekPlannerTab',  callback: () => typeof initWeekPlanner === 'function' && initWeekPlanner() },
