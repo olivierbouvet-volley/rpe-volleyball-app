@@ -38,6 +38,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
       match /days/{dateKey} { allow read, write: if isAuthenticated(); }
     }
+    match /seasonReportNotes/{id} { allow read, write: if isAuthenticated(); }
     match /{document=**} {
       allow read, write: if false;
     }

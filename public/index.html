@@ -32,6 +32,9 @@
     <!-- Pro Design System Upgrade -->
     <link rel="stylesheet" href="/css/pro-design.css">
 
+    <!-- Bilan de Saison -->
+    <link rel="stylesheet" href="css/season-report.css">
+
     <style>
         :root {
             /* Color Palette - Crème naturel & Teal */
@@ -2403,6 +2406,9 @@
                 <button class="tab-btn" onclick="switchCoachTab('engagement')" data-tab="engagement" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
                     <i class="fas fa-fire" style="margin-right:6px;"></i>Engagement
                 </button>
+                <button class="tab-btn" onclick="switchCoachTab('seasonReport')" data-tab="seasonReport" style="padding: var(--space-12) var(--space-24); border: none; background: none; cursor: pointer; font-weight: var(--font-weight-medium); border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--color-text-secondary);">
+                    <i class="fas fa-file-lines" style="margin-right:6px;"></i>Bilan de Saison
+                </button>
             </div>
 
             <!-- Onglet Équipe -->
@@ -3304,6 +3310,46 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Onglet Bilan de Saison -->
+            <div id="seasonReportTab" class="coach-tab-content" style="display:none;">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-24); flex-wrap: wrap; gap: var(--space-12);">
+                        <div>
+                            <h2 style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--color-text);"><i class="fas fa-file-lines" style="margin-right:8px;"></i>Bilan de Saison</h2>
+                            <p style="color: var(--color-text-secondary); margin-top: var(--space-4);">Vue d'ensemble de la charge, du bien-être et du cycle menstruel sur la période sélectionnée</p>
+                        </div>
+                        <div class="season-report-actions" style="display:flex; gap: var(--space-12); align-items:center;">
+                            <button class="btn" onclick="window.print()"><i class="fas fa-print" style="margin-right:6px;"></i>Imprimer</button>
+                        </div>
+                    </div>
+
+                    <!-- Sélection de la période -->
+                    <div class="season-report-filters" style="display:flex; flex-wrap: wrap; gap: var(--space-12); align-items:flex-end; margin-bottom: var(--space-24);">
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label" for="reportStartDate">Date de début</label>
+                            <input type="date" id="reportStartDate" class="form-control">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label class="form-label" for="reportEndDate">Date de fin</label>
+                            <input type="date" id="reportEndDate" class="form-control">
+                        </div>
+                        <button class="btn" id="useSeasonRangeBtn"><i class="fas fa-calendar-check" style="margin-right:6px;"></i>Utiliser la saison</button>
+                        <div class="form-group" style="margin:0; min-width:220px;">
+                            <label class="form-label" for="seasonReportPlayerSelect">Joueuse</label>
+                            <select id="seasonReportPlayerSelect" class="form-control">
+                                <option value="">-- Vue Équipe --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Vue Équipe -->
+                    <div id="seasonReportTeamView" class="printable-report"></div>
+
+                    <!-- Vue Individuelle -->
+                    <div id="seasonReportPlayerView" class="printable-report" style="display:none;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3847,6 +3893,7 @@
                         <p>Aucune donnée de cycle disponible</p>
                     </div>
                     <div id="popupCycleAnnotations" style="margin-top: 12px;"></div>
+                    <div id="popupDailyCycleAdvice" style="margin-top: 16px;"></div>
                 </div>
 
                 <!-- HISTORIQUE CHECK-INS -->
@@ -4192,9 +4239,11 @@
         });
     </script>
     <script src="/js/injury-constants.js"></script>
-    <script src="/js/injury-management.js"></script>
     <script src="/js/medical-module.js"></script>
     <script src="/js/app.js"></script>
+    <!-- injury-management.js utilise `db` dès son chargement (top-level), doit donc
+         être chargé après app.js qui définit `db` -->
+    <script src="/js/injury-management.js"></script>
     <script src="/js/app-additions.js"></script>
     <script src="/js/app-photo-manager-simple.js"></script>
     <script src="/js/app-rpe-delete-SIMPLE.js"></script>
@@ -4215,6 +4264,7 @@
     <script src="/js/app-reports.js"></script>
     <script src="/js/app-rattrapage.js"></script>
     <script src="/js/app-volume-stats.js"></script>
+    <script src="js/season-report.js"></script>
     <script src="/js/notifications-manager.js"></script>
     <script src="/js/rest-periods-helper-COMPATIBLE.js"></script>
     <script src="/js/rest-periods-manager.js"></script>
@@ -4223,6 +4273,8 @@
     <script src="/js/coach-dashboard-charts.js"></script>
     <script src="/js/health-alerts.js"></script>
     <script src="/js/training-recommendations.js"></script>
+    <!-- Profil Cycle Personnalisé : dépend de season-report.js et training-recommendations.js -->
+    <script src="/js/cycle-profile-engine.js"></script>
     <script src="/js/week-planner.js"></script>
     <script src="/js/team-planner.js"></script>
     <script src="/js/coach-alerts.js"></script>

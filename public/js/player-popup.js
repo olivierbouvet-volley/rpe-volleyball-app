@@ -61,7 +61,10 @@ async function showPlayerDetail(playerId) {
         
         // Graphique Cycle Menstruel
         await loadPopupCycleChart(playerId);
-        
+
+        // Conseil du jour (Profil Cycle Personnalisé — cycle-profile-engine.js)
+        await renderDailyCycleAdvice(playerId);
+
         // Historique check-ins
         await updatePopupCheckinsHistory(playerId);
         
@@ -1071,6 +1074,68 @@ async function loadPopupCycleChart(playerId, cycleOffset = 0) {
         console.error('Popup: Erreur graphique cycle:', error);
         canvas.style.display = 'none';
         emptyDiv.style.display = 'block';
+    }
+}
+
+// Échappe les caractères sensibles avant injection dans innerHTML. escapeHtml est
+// déjà défini globalement par season-report.js (chargé avant ce fichier) ; ce
+// fallback local ne sert qu'en cas d'ordre de chargement inattendu.
+function popupEscapeHtml(str) {
+    if (typeof escapeHtml === 'function') return escapeHtml(str);
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
+ * Affiche le "Conseil du jour" dans le popup coach : recommandation générique de
+ * phase (training-recommendations.js) enrichie des signaux personnels de la
+ * joueuse (cycle-profile-engine.js). N'affecte pas le graphique Cycle Menstruel
+ * existant, purement additif.
+ */
+async function renderDailyCycleAdvice(playerId) {
+    const container = document.getElementById('popupDailyCycleAdvice');
+    if (!container) return;
+
+    try {
+        const personalProfile = await buildPersonalCycleProfile(playerId);
+        const advice = await buildDailyCycleAdvice(playerId, personalProfile);
+
+        if (advice.status === 'no-checkin' || advice.status === 'no-cycle-data') {
+            container.innerHTML = `
+                <div style="padding: 12px; background: #f9fafb; border-radius: 8px; color: #6b7280; font-size: 14px;">
+                    ${popupEscapeHtml(advice.message)}
+                </div>
+            `;
+            return;
+        }
+
+        const isAttention = advice.severity === 'attention';
+        const bannerStyle = isAttention
+            ? 'padding: 14px; border-radius: 8px; background: #fef3c7; border-left: 4px solid #f59e0b;'
+            : 'padding: 14px; border-radius: 8px; background: #f0fdf4; border-left: 4px solid #10b981;';
+
+        const focusList = (advice.baselineRecommendation.focus || [])
+            .map(item => `<li>${popupEscapeHtml(item)}</li>`).join('');
+        const avoidList = (advice.baselineRecommendation.avoid || [])
+            .map(item => `<li>${popupEscapeHtml(item)}</li>`).join('');
+        const flagsList = (advice.personalFlags || [])
+            .map(flag => `<li>${popupEscapeHtml(flag)}</li>`).join('');
+
+        container.innerHTML = `
+            <div style="${bannerStyle}">
+                <div style="font-size: 15px; font-weight: 600; color: #1f2937; margin-bottom: 8px;">💡 Conseil du jour${advice.phaseLabel ? ' — ' + popupEscapeHtml(advice.phaseLabel) : ''}</div>
+                ${advice.baselineRecommendation.global ? `<p style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">${popupEscapeHtml(advice.baselineRecommendation.global)}</p>` : ''}
+                ${focusList ? `<div style="font-size: 13px; color: #374151;"><strong>À privilégier :</strong><ul style="margin: 4px 0 8px 18px;">${focusList}</ul></div>` : ''}
+                ${avoidList ? `<div style="font-size: 13px; color: #374151;"><strong>À éviter :</strong><ul style="margin: 4px 0 8px 18px;">${avoidList}</ul></div>` : ''}
+                ${flagsList ? `<div style="font-size: 13px; color: #92400e;"><strong>⚠️ Signaux personnels :</strong><ul style="margin: 4px 0 0 18px;">${flagsList}</ul></div>` : ''}
+            </div>
+        `;
+    } catch (error) {
+        console.error('Popup: Erreur conseil du jour:', error);
+        container.innerHTML = '';
     }
 }
 

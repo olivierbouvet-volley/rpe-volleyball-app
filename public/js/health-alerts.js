@@ -98,7 +98,7 @@ async function checkAmenorrhea(playerId) {
                 message: `Absence de règles depuis ${daysSinceLastPeriod} jours`,
                 details: {
                     daysSinceLastPeriod,
-                    lastPeriodDate,
+                    lastPeriodDate: cycleStartDate,
                     threshold: HEALTH_ALERT_CONFIG.amenorrhea.threshold
                 },
                 recommendation: 'Consultation médicale recommandée. L\'aménorrhée peut être un signe de déficit énergétique ou d\'autres problèmes de santé.',

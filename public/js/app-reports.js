@@ -77,6 +77,7 @@ function switchCoachTab(tabName) {
         'physicalPrep':{ tabId: 'physicalPrepTab', callback: () => typeof initPhysicalPrepTab === 'function' && initPhysicalPrepTab() },
         'management':  { tabId: 'managementTab',   callback: () => typeof loadPlayersTable === 'function' && loadPlayersTable() },
         'engagement':  { tabId: 'engagementTab',   callback: () => { switchEngagementSubTab('stickers'); if (typeof updateFillIndicator === 'function') updateFillIndicator(); } },
+        'seasonReport': { tabId: 'seasonReportTab', callback: () => typeof loadSeasonReport === 'function' && loadSeasonReport() },
     };
 
     const entry = tabMap[tabName];
