@@ -463,7 +463,7 @@ async function loadATLCTLData(playerId) {
         
         rpeData.forEach((doc, index) => {
             const data = doc.data();
-            const load = data.rpe * data.duration;
+            const load = data.rpe * data.duration / 10;
             
             // ATL = moyenne sur 7 jours
             if (index < 7) {

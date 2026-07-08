@@ -1443,8 +1443,8 @@ async function loadPopupAtlCtlChart(playerId) {
         rpeSnapshot.forEach(doc => {
             const data = doc.data();
             const rpeVal = data.rpe || data.rpeValue || 5;
-            const charge = rpeVal * (data.duration || 0);
-            
+            const charge = rpeVal * (data.duration || 0) / 10;
+
             if (!chargeByDay[data.date]) chargeByDay[data.date] = 0;
             chargeByDay[data.date] += charge;
         });
